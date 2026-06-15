@@ -1,0 +1,1691 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SMO信息 - PD-001 - 北京协和医院</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Fira+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #0891B2;
+      --primary-hover: #0E7490;
+      --on-primary: #FFFFFF;
+      --secondary: #22D3EE;
+      --accent: #059669;
+      --background: #ECFEFF;
+      --foreground: #164E63;
+      --muted: #E8F1F6;
+      --border: #A5F3FC;
+      --destructive: #DC2626;
+      --success: #059669;
+      --text-primary: #0F172A;
+      --text-secondary: #475569;
+      --text-muted: #64748B;
+      --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+      --shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+      --radius: 8px;
+      --radius-lg: 12px;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Fira Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--background);
+      color: var(--text-primary);
+      line-height: 1.5;
+      min-height: 100vh;
+    }
+
+    .app-container {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 240px;
+      background: linear-gradient(180deg, #164E63 0%, #0F3D4A 100%);
+      color: var(--on-primary);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      position: fixed;
+      height: 100vh;
+      z-index: 100;
+    }
+
+    .sidebar-header {
+      padding: 20px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .sidebar-logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .sidebar-logo svg {
+      width: 32px;
+      height: 32px;
+    }
+
+    .sidebar-logo span {
+      font-size: 18px;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+    }
+
+    .sidebar-nav {
+      flex: 1;
+      padding: 16px 12px;
+      overflow-y: auto;
+    }
+
+    .nav-section {
+      margin-bottom: 24px;
+    }
+
+    .nav-section-title {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: rgba(255, 255, 255, 0.5);
+      padding: 0 8px;
+      margin-bottom: 8px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 12px;
+      border-radius: var(--radius);
+      color: rgba(255, 255, 255, 0.7);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      margin-bottom: 4px;
+    }
+
+    .nav-item:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: var(--on-primary);
+    }
+
+    .nav-item.active {
+      background: var(--primary);
+      color: var(--on-primary);
+    }
+
+    .nav-item svg {
+      width: 20px;
+      height: 20px;
+      flex-shrink: 0;
+    }
+
+    .nav-item-badge {
+      margin-left: auto;
+      background: rgba(255, 255, 255, 0.2);
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .nav-item.active .nav-item-badge {
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    /* Main Content */
+    .main-content {
+      flex: 1;
+      margin-left: 240px;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    /* Top Bar */
+    .topbar {
+      background: var(--on-primary);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .breadcrumb {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+    }
+
+    .breadcrumb-item {
+      color: var(--text-secondary);
+      text-decoration: none;
+      cursor: pointer;
+      transition: color 0.15s ease;
+    }
+
+    .breadcrumb-item:hover {
+      color: var(--primary);
+    }
+
+    .breadcrumb-item.current {
+      color: var(--text-primary);
+      font-weight: 500;
+    }
+
+    .breadcrumb-separator {
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+    }
+
+    .breadcrumb-separator svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    .topbar-actions {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .icon-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: var(--radius);
+      border: none;
+      background: transparent;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .icon-btn:hover {
+      background: var(--muted);
+      color: var(--foreground);
+    }
+
+    .icon-btn svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    .user-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--primary);
+      color: var(--on-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    /* Content Area */
+    .content-area {
+      flex: 1;
+      padding: 24px;
+    }
+
+    /* Center Overview */
+    .center-overview {
+      background: var(--on-primary);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      box-shadow: var(--shadow);
+      margin-bottom: 24px;
+      border-left: 4px solid var(--primary);
+    }
+
+    .overview-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+    }
+
+    .overview-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .center-name {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: -0.02em;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .status-badge.active {
+      background: #D1FAE5;
+      color: #059669;
+    }
+
+    .status-badge .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: currentColor;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    /* Cards Grid */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 24px;
+      margin-bottom: 24px;
+    }
+
+    /* Info Card */
+    .info-card {
+      background: var(--on-primary);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      transition: all 0.2s ease;
+    }
+
+    .info-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .info-card-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .info-card-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: var(--radius);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .info-card-icon.primary {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      color: var(--on-primary);
+    }
+
+    .info-card-icon.accent {
+      background: linear-gradient(135deg, var(--accent) 0%, #34D399 100%);
+      color: var(--on-primary);
+    }
+
+    .info-card-icon svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    .info-card-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .info-card-body {
+      padding: 20px;
+    }
+
+    /* Field List */
+    .field-list {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .field-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--muted);
+    }
+
+    .field-item:last-child {
+      border-bottom: none;
+    }
+
+    .field-label {
+      font-size: 14px;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .field-label svg {
+      width: 16px;
+      height: 16px;
+      color: var(--text-muted);
+    }
+
+    .field-value {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .field-value.mono {
+      font-family: 'Fira Code', monospace;
+      font-size: 13px;
+    }
+
+    .field-value.success {
+      color: var(--accent);
+    }
+
+    .field-value .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+
+    /* Rating Stars */
+    .rating-stars {
+      color: #F59E0B;
+      font-size: 14px;
+      letter-spacing: 2px;
+    }
+
+    /* CRC Info */
+    .crc-profile {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      background: var(--muted);
+      border-radius: var(--radius);
+      margin-bottom: 16px;
+    }
+
+    .crc-avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      color: var(--on-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .crc-details {
+      flex: 1;
+    }
+
+    .crc-name {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .crc-meta {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .crc-stats {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    .crc-stat {
+      text-align: center;
+      padding: 12px;
+      background: var(--muted);
+      border-radius: var(--radius);
+    }
+
+    .crc-stat-value {
+      font-size: 20px;
+      font-weight: 700;
+      font-family: 'Fira Code', monospace;
+      color: var(--primary);
+    }
+
+    .crc-stat-label {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    /* Progress Section */
+    .progress-section {
+      background: var(--on-primary);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow);
+      padding: 24px;
+      margin-bottom: 24px;
+      transition: all 0.2s ease;
+    }
+
+    .progress-section:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .progress-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .progress-header svg {
+      width: 24px;
+      height: 24px;
+      color: var(--primary);
+    }
+
+    .progress-header h3 {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .progress-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr;
+      gap: 24px;
+    }
+
+    .progress-item {
+      padding: 20px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+    }
+
+    .progress-item-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 16px;
+    }
+
+    .progress-item-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    .progress-item-value {
+      font-size: 24px;
+      font-weight: 700;
+      font-family: 'Fira Code', monospace;
+      color: var(--text-primary);
+    }
+
+    .progress-item-value .total {
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--text-muted);
+    }
+
+    .progress-bar {
+      height: 12px;
+      background: var(--muted);
+      border-radius: 6px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      border-radius: 6px;
+      background: linear-gradient(90deg, var(--primary) 0%, var(--secondary) 100%);
+      transition: width 1.2s ease-out;
+      position: relative;
+    }
+
+    .progress-bar-fill::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.3) 50%, transparent 100%);
+      animation: shimmer 2s infinite;
+    }
+
+    @keyframes shimmer {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+
+    .progress-bar-label {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .progress-stat {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      text-align: center;
+    }
+
+    .progress-stat-value {
+      font-size: 32px;
+      font-weight: 700;
+      font-family: 'Fira Code', monospace;
+      color: var(--primary);
+    }
+
+    .progress-stat-label {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-top: 4px;
+    }
+
+    .progress-stat-icon {
+      width: 48px;
+      height: 48px;
+      margin: 0 auto 12px;
+      background: linear-gradient(135deg, rgba(8, 145, 178, 0.1) 0%, rgba(34, 211, 238, 0.1) 100%);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--primary);
+    }
+
+    .progress-stat-icon svg {
+      width: 24px;
+      height: 24px;
+    }
+
+    /* Action Buttons */
+    .action-bar {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px 20px;
+      border-radius: var(--radius);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      border: none;
+      font-family: inherit;
+    }
+
+    .btn svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: var(--on-primary);
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-hover);
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .btn-secondary {
+      background: var(--muted);
+      color: var(--foreground);
+      border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover {
+      background: var(--border);
+      transform: translateY(-1px);
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--primary);
+    }
+
+    .btn-ghost:hover {
+      background: var(--muted);
+    }
+
+    /* Back Button */
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 16px;
+      background: var(--on-primary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.15s ease;
+      margin-bottom: 20px;
+    }
+
+    .back-btn:hover {
+      background: var(--muted);
+      color: var(--foreground);
+      transform: translateX(-4px);
+    }
+
+    .back-btn svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .modal {
+      background: var(--on-primary);
+      border-radius: 16px;
+      width: 90%;
+      max-width: 720px;
+      max-height: 90vh;
+      overflow: hidden;
+      transform: translateY(20px) scale(0.95);
+      transition: transform 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      box-shadow: var(--shadow-lg);
+    }
+
+    .modal-overlay.active .modal {
+      transform: translateY(0) scale(1);
+    }
+
+    .modal-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--muted);
+    }
+
+    .modal-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .modal-title svg {
+      width: 24px;
+      height: 24px;
+      color: var(--primary);
+    }
+
+    .modal-close {
+      width: 36px;
+      height: 36px;
+      border-radius: var(--radius);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background 0.2s;
+      background: transparent;
+      border: none;
+    }
+
+    .modal-close:hover {
+      background: var(--border);
+    }
+
+    .modal-close svg {
+      width: 20px;
+      height: 20px;
+      color: var(--text-muted);
+    }
+
+    .modal-body {
+      padding: 24px;
+      overflow-y: auto;
+      flex: 1;
+    }
+
+    .modal-footer {
+      padding: 16px 24px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      background: var(--muted);
+    }
+
+    /* Detail Grid */
+    .detail-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+
+    .detail-item {
+      padding: 16px;
+      background: var(--muted);
+      border-radius: var(--radius);
+    }
+
+    .detail-item .label {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .detail-item .label svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    .detail-item .value {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .detail-item .value.mono {
+      font-family: 'Fira Code', monospace;
+    }
+
+    .detail-item.full-width {
+      grid-column: span 2;
+    }
+
+    /* Person Card */
+    .person-card {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 20px;
+      background: linear-gradient(135deg, rgba(8, 145, 178, 0.05) 0%, rgba(34, 211, 238, 0.05) 100%);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+    }
+
+    .person-avatar-lg {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      color: var(--on-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      font-weight: 600;
+    }
+
+    .person-info-block {
+      flex: 1;
+    }
+
+    .person-name-lg {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+
+    .person-title-lg {
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin-bottom: 8px;
+    }
+
+    .person-tags {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .person-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 10px;
+      background: var(--on-primary);
+      border-radius: 20px;
+      font-size: 12px;
+      color: var(--text-secondary);
+      border: 1px solid var(--border);
+    }
+
+    .person-tag svg {
+      width: 12px;
+      height: 12px;
+    }
+
+    .person-tag.success {
+      background: #D1FAE5;
+      color: var(--accent);
+      border-color: #A7F3D0;
+    }
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      gap: 4px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 20px;
+    }
+
+    .tab {
+      padding: 12px 20px;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-muted);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s;
+      margin-bottom: -1px;
+    }
+
+    .tab:hover {
+      color: var(--foreground);
+    }
+
+    .tab.active {
+      color: var(--primary);
+      border-bottom-color: var(--primary);
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    /* Animation */
+    .animate-in {
+      animation: fadeSlideIn 0.5s ease-out forwards;
+      opacity: 0;
+    }
+
+    @keyframes fadeSlideIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .delay-1 { animation-delay: 0.1s; }
+    .delay-2 { animation-delay: 0.2s; }
+    .delay-3 { animation-delay: 0.3s; }
+    .delay-4 { animation-delay: 0.4s; }
+
+    /* Responsive */
+    @media (max-width: 1200px) {
+      .cards-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .progress-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .detail-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .detail-item.full-width {
+        grid-column: span 1;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .sidebar {
+        display: none;
+      }
+
+      .main-content {
+        margin-left: 0;
+      }
+
+      .topbar {
+        padding: 12px 16px;
+      }
+
+      .content-area {
+        padding: 16px;
+      }
+
+      .action-bar {
+        flex-direction: column;
+      }
+
+      .btn {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-logo">
+          <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="32" height="32" rx="8" fill="#0891B2"/>
+            <path d="M8 16L14 22L24 10" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span>药物研发平台</span>
+        </div>
+      </div>
+      <nav class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">项目总览</div>
+          <a class="nav-item" href="#">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+            项目概览
+          </a>
+          <a class="nav-item" href="#">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+            数据分析
+          </a>
+        </div>
+        <div class="nav-section">
+          <div class="nav-section-title">项目管理</div>
+          <a class="nav-item" href="#">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            中心管理
+            <span class="nav-item-badge">12</span>
+          </a>
+          <a class="nav-item active" href="#">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 22h14a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v4"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M5 12h14"/><path d="M5 18V6a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v12"/></svg>
+            SMO管理
+          </a>
+          <a class="nav-item" href="#">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+            方案设计
+          </a>
+        </div>
+        <div class="nav-section">
+          <div class="nav-section-title">工具</div>
+          <a class="nav-item" href="#">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            系统设置
+          </a>
+        </div>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Top Bar -->
+      <header class="topbar">
+        <nav class="breadcrumb">
+          <a class="breadcrumb-item" href="#">项目中心</a>
+          <span class="breadcrumb-separator">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+          </span>
+          <a class="breadcrumb-item" href="#">PD-001</a>
+          <span class="breadcrumb-separator">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+          </span>
+          <a class="breadcrumb-item" href="#">中心管理驾驶舱</a>
+          <span class="breadcrumb-separator">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+          </span>
+          <span class="breadcrumb-item current">SMO信息</span>
+        </nav>
+        <div class="topbar-actions">
+          <button class="icon-btn" title="搜索">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          </button>
+          <button class="icon-btn" title="通知">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+          </button>
+          <div class="user-avatar" title="用户菜单">李</div>
+        </div>
+      </header>
+
+      <!-- Content Area -->
+      <div class="content-area">
+        <!-- Back Button -->
+        <button class="back-btn" onclick="history.back()">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+          返回中心驾驶舱
+        </button>
+
+        <!-- Center Overview -->
+        <section class="center-overview animate-in delay-1">
+          <div class="overview-header">
+            <div class="overview-title">
+              <h1 class="center-name">北京协和医院</h1>
+              <span class="status-badge active">
+                <span class="dot"></span>
+                执行中
+              </span>
+            </div>
+          </div>
+        </section>
+
+        <!-- Info Cards Grid -->
+        <div class="cards-grid">
+          <!-- SMO Info Card -->
+          <div class="info-card animate-in delay-2">
+            <div class="info-card-header">
+              <div class="info-card-icon primary">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M9 8h1"/><path d="M9 12h1"/><path d="M9 16h1"/><path d="M14 8h1"/><path d="M14 12h1"/><path d="M14 16h1"/><path d="M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16"/></svg>
+              </div>
+              <h2 class="info-card-title">SMO合作信息</h2>
+            </div>
+            <div class="info-card-body">
+              <div class="field-list">
+                <div class="field-item">
+                  <span class="field-label">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.42 4.58a5.4 5.4 0 0 0-7.65 0l-.77.78-.77-.78a5.4 5.4 0 0 0-7.65 0C1.46 6.7 1.33 10.28 4 13l8 8 8-8c2.67-2.72 2.54-6.3.42-8.42z"/></svg>
+                    合作SMO
+                  </span>
+                  <span class="field-value">恒瑞SMO</span>
+                </div>
+                <div class="field-item">
+                  <span class="field-label">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                    SMO评级
+                  </span>
+                  <span class="field-value">
+                    <span class="rating-stars">★★★★☆</span>
+                  </span>
+                </div>
+                <div class="field-item">
+                  <span class="field-label">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg>
+                    合同状态
+                  </span>
+                  <span class="field-value success">
+                    <span class="dot"></span>
+                    有效
+                  </span>
+                </div>
+                <div class="field-item">
+                  <span class="field-label">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 22h14a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v4"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M5 12H3"/></svg>
+                    合同编号
+                  </span>
+                  <span class="field-value mono">SMO-PD001-XH-001</span>
+                </div>
+                <div class="field-item">
+                  <span class="field-label">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                    合同金额
+                  </span>
+                  <span class="field-value">¥100,000</span>
+                </div>
+                <div class="field-item">
+                  <span class="field-label">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                    已执行
+                  </span>
+                  <span class="field-value mono">¥45,000 (45%)</span>
+                </div>
+              </div>
+              <div class="action-bar" style="margin-top: 16px;">
+                <button class="btn btn-primary" onclick="openSmoDetailModal()">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                  查看SMO详情
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- CRC Info Card -->
+          <div class="info-card animate-in delay-3">
+            <div class="info-card-header">
+              <div class="info-card-icon accent">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              </div>
+              <h2 class="info-card-title">CRC信息</h2>
+            </div>
+            <div class="info-card-body">
+              <div class="crc-profile">
+                <div class="crc-avatar">张A</div>
+                <div class="crc-details">
+                  <div class="crc-name">张A</div>
+                  <div class="crc-meta">138****5678 · 3年经验</div>
+                </div>
+              </div>
+              <div class="field-list">
+                <div class="field-item">
+                  <span class="field-label">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg>
+                    GCP证书
+                  </span>
+                  <span class="field-value success">
+                    <span class="dot"></span>
+                    有效
+                  </span>
+                </div>
+                <div class="field-item">
+                  <span class="field-label">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                    证书到期
+                  </span>
+                  <span class="field-value mono">2027-01-01</span>
+                </div>
+              </div>
+              <div class="crc-stats" style="margin-top: 16px;">
+                <div class="crc-stat">
+                  <div class="crc-stat-value">160h</div>
+                  <div class="crc-stat-label">累计工时</div>
+                </div>
+                <div class="crc-stat">
+                  <div class="crc-stat-value">5/10</div>
+                  <div class="crc-stat-label">入组贡献</div>
+                </div>
+              </div>
+              <div class="action-bar" style="margin-top: 16px;">
+                <button class="btn btn-secondary" onclick="openCrcDetailModal()">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                  查看CRC详情
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Progress Section -->
+        <section class="progress-section animate-in delay-4">
+          <div class="progress-header">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+            <h3>中心运营指标</h3>
+          </div>
+          <div class="progress-grid">
+            <div class="progress-item">
+              <div class="progress-item-header">
+                <span class="progress-item-title">入组进度</span>
+                <span class="progress-item-value">8<span class="total"> / 15</span></span>
+              </div>
+              <div class="progress-bar">
+                <div class="progress-bar-fill" style="width: 0%;" data-width="53%"></div>
+              </div>
+              <div class="progress-bar-label">
+                <span>当前进度</span>
+                <span>53%</span>
+              </div>
+            </div>
+
+            <div class="progress-item">
+              <div class="progress-stat">
+                <div class="progress-stat-icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg>
+                </div>
+                <div class="progress-stat-value">45</div>
+                <div class="progress-stat-label">访视完成</div>
+              </div>
+            </div>
+
+            <div class="progress-item">
+              <div class="progress-stat">
+                <div class="progress-stat-icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
+                </div>
+                <div class="progress-stat-value">92%</div>
+                <div class="progress-stat-label">数据录入</div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <!-- SMO详情弹窗 -->
+  <div id="smo-modal" class="modal-overlay">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M9 8h1"/><path d="M9 12h1"/><path d="M9 16h1"/><path d="M14 8h1"/><path d="M14 12h1"/><path d="M14 16h1"/><path d="M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16"/></svg>
+          恒瑞SMO - 详情
+        </h3>
+        <button class="modal-close" onclick="closeModal('smo-modal')">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="tabs">
+          <div class="tab active" onclick="switchTab(this, 'smo-basic')">基本信息</div>
+          <div class="tab" onclick="switchTab(this, 'smo-contract')">合同信息</div>
+          <div class="tab" onclick="switchTab(this, 'smo-crc')">CRC分配</div>
+          <div class="tab" onclick="switchTab(this, 'smo-fee')">费用</div>
+        </div>
+
+        <div id="smo-basic" class="tab-content active">
+          <div class="detail-grid">
+            <div class="detail-item">
+              <div class="label">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.42 4.58a5.4 5.4 0 0 0-7.65 0l-.77.78-.77-.78a5.4 5.4 0 0 0-7.65 0C1.46 6.7 1.33 10.28 4 13l8 8 8-8c2.67-2.72 2.54-6.3.42-8.42z"/></svg>
+                SMO名称
+              </div>
+              <div class="value">恒瑞SMO</div>
+            </div>
+            <div class="detail-item">
+              <div class="label">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                SMO评级
+              </div>
+              <div class="value"><span class="rating-stars">★★★★☆</span></div>
+            </div>
+            <div class="detail-item">
+              <div class="label">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg>
+                合作状态
+              </div>
+              <div class="value" style="color: var(--accent);">
+                <span class="dot" style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); margin-right: 6px;"></span>
+                进行中
+              </div>
+            </div>
+            <div class="detail-item">
+              <div class="label">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+                CRC数量
+              </div>
+              <div class="value">8人</div>
+            </div>
+            <div class="detail-item full-width">
+              <div class="label">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                覆盖中心
+              </div>
+              <div class="value">北京协和医院、北医三院、宣武医院、阜外医院、朝阳医院</div>
+            </div>
+          </div>
+        </div>
+
+        <div id="smo-contract" class="tab-content">
+          <div class="detail-grid">
+            <div class="detail-item">
+              <div class="label">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 22h14a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v4"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg>
+                合同编号
+              </div>
+              <div class="value mono">SMO-PD001-XH-001</div>
+            </div>
+            <div class="detail-item">
+              <div class="label">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg>
+                合同状态
+              </div>
+              <div class="value" style="color: var(--accent);">有效</div>
+            </div>
+            <div class="detail-item">
+              <div class="label">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                合同金额
+              </div>
+              <div class="value mono">¥100,000</div>
+            </div>
+            <div class="detail-item">
+              <div class="label">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                已执行金额
+              </div>
+              <div class="value mono">¥45,000 (45%)</div>
+            </div>
+            <div class="detail-item full-width">
+              <div class="label">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                合同有效期
+              </div>
+              <div class="value mono">2024-01-01 至 2024-12-31</div>
+            </div>
+          </div>
+        </div>
+
+        <div id="smo-crc" class="tab-content">
+          <div class="person-card" style="margin-bottom: 20px;">
+            <div class="person-avatar-lg">张A</div>
+            <div class="person-info-block">
+              <div class="person-name-lg">张A</div>
+              <div class="person-title-lg">CRC临床协调员</div>
+              <div class="person-tags">
+                <span class="person-tag success">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg>
+                  GCP有效
+                </span>
+                <span class="person-tag">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                  3年经验
+                </span>
+                <span class="person-tag">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                  累计160h
+                </span>
+              </div>
+            </div>
+          </div>
+          <div class="detail-grid">
+            <div class="detail-item">
+              <div class="label">分配中心</div>
+              <div class="value">北京协和医院</div>
+            </div>
+            <div class="detail-item">
+              <div class="label">入组贡献</div>
+              <div class="value mono">5/10 (50%)</div>
+            </div>
+            <div class="detail-item">
+              <div class="label">当前项目数</div>
+              <div class="value">2个</div>
+            </div>
+            <div class="detail-item">
+              <div class="label">GCP到期</div>
+              <div class="value mono">2027-01-01</div>
+            </div>
+          </div>
+        </div>
+
+        <div id="smo-fee" class="tab-content">
+          <div class="detail-grid">
+            <div class="detail-item">
+              <div class="label">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                预算金额
+              </div>
+              <div class="value mono">¥100,000</div>
+            </div>
+            <div class="detail-item">
+              <div class="label">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                已执行
+              </div>
+              <div class="value mono">¥45,000</div>
+            </div>
+            <div class="detail-item">
+              <div class="label">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                执行率
+              </div>
+              <div class="value">45%</div>
+            </div>
+            <div class="detail-item">
+              <div class="label">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                剩余预算
+              </div>
+              <div class="value mono">¥55,000</div>
+            </div>
+          </div>
+          <div style="margin-top: 20px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+              <span style="font-size: 14px; color: var(--text-secondary);">预算执行进度</span>
+              <span style="font-size: 14px; font-weight: 600; color: var(--primary);">45%</span>
+            </div>
+            <div class="progress-bar" style="height: 16px;">
+              <div class="progress-bar-fill" style="width: 45%;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('smo-modal')">关闭</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CRC详情弹窗 -->
+  <div id="crc-modal" class="modal-overlay">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          CRC人员详情
+        </h3>
+        <button class="modal-close" onclick="closeModal('crc-modal')">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="person-card" style="margin-bottom: 24px;">
+          <div class="person-avatar-lg">张A</div>
+          <div class="person-info-block">
+            <div class="person-name-lg">张A</div>
+            <div class="person-title-lg">CRC临床协调员</div>
+            <div class="person-tags">
+              <span class="person-tag success">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg>
+                GCP有效
+              </span>
+              <span class="person-tag">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                证书到期: 2027-01-01
+              </span>
+              <span class="person-tag">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                从业3年
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="detail-grid">
+          <div class="detail-item">
+            <div class="label">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+              联系电话
+            </div>
+            <div class="value mono">138****5678</div>
+          </div>
+          <div class="detail-item">
+            <div class="label">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+              分配中心
+            </div>
+            <div class="value">北京协和医院</div>
+          </div>
+          <div class="detail-item">
+            <div class="label">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+              当前项目
+            </div>
+            <div class="value">PD-001</div>
+          </div>
+          <div class="detail-item">
+            <div class="label">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              累计工时
+            </div>
+            <div class="value mono">160h</div>
+          </div>
+          <div class="detail-item">
+            <div class="label">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              入组贡献
+            </div>
+            <div class="value mono">5/10 (50%)</div>
+          </div>
+          <div class="detail-item">
+            <div class="label">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+              绩效评分
+            </div>
+            <div class="value"><span class="rating-stars">★★★★☆</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('crc-modal')">关闭</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 动画效果
+    document.addEventListener('DOMContentLoaded', function() {
+      // 进度条动画
+      setTimeout(function() {
+        document.querySelectorAll('.progress-bar-fill').forEach(function(bar) {
+          bar.style.width = bar.dataset.width;
+        });
+      }, 300);
+    });
+
+    // 打开SMO详情弹窗
+    function openSmoDetailModal() {
+      document.getElementById('smo-modal').classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+
+    // 打开CRC详情弹窗
+    function openCrcDetailModal() {
+      document.getElementById('crc-modal').classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+
+    // 关闭弹窗
+    function closeModal(modalId) {
+      document.getElementById(modalId).classList.remove('active');
+      document.body.style.overflow = '';
+    }
+
+    // 点击弹窗背景关闭
+    document.querySelectorAll('.modal-overlay').forEach(function(overlay) {
+      overlay.addEventListener('click', function(e) {
+        if (e.target === overlay) {
+          overlay.classList.remove('active');
+          document.body.style.overflow = '';
+        }
+      });
+    });
+
+    // Tab切换
+    function switchTab(tabElement, tabId) {
+      // 切换tab高亮
+      tabElement.parentElement.querySelectorAll('.tab').forEach(function(tab) {
+        tab.classList.remove('active');
+      });
+      tabElement.classList.add('active');
+      
+      // 切换内容
+      tabElement.closest('.modal-body').querySelectorAll('.tab-content').forEach(function(content) {
+        content.classList.remove('active');
+      });
+      document.getElementById(tabId).classList.add('active');
+    }
+
+    // Respect reduced motion preference
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      document.querySelectorAll('.animate-in').forEach(function(el) {
+        el.style.animation = 'none';
+        el.style.opacity = '1';
+      });
+      document.querySelectorAll('[data-width]').forEach(function(el) {
+        el.style.transition = 'none';
+        el.style.width = el.dataset.width;
+      });
+    }
+
+    // ESC键关闭弹窗
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        document.querySelectorAll('.modal-overlay.active').forEach(function(modal) {
+          modal.classList.remove('active');
+        });
+        document.body.style.overflow = '';
+      }
+    });
+  </script>
+</body>
+</html>

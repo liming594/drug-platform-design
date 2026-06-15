@@ -1,0 +1,1928 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>申办方管理 - 药物研发平台</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Fira+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #0891B2;
+      --primary-dark: #0E7490;
+      --primary-light: #22D3EE;
+      --accent: #059669;
+      --accent-light: #34D399;
+      --background: #ECFEFF;
+      --foreground: #164E63;
+      --muted: #E8F1F6;
+      --border: #A5F3FC;
+      --destructive: #DC2626;
+      --text-muted: #64748B;
+      --sidebar-bg: #0F172A;
+      --sidebar-hover: #1E293B;
+      --card-shadow: 0 4px 6px -1px rgba(8, 145, 178, 0.1), 0 2px 4px -2px rgba(8, 145, 178, 0.1);
+      --card-shadow-hover: 0 20px 25px -5px rgba(8, 145, 178, 0.15), 0 8px 10px -6px rgba(8, 145, 178, 0.1);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Fira Sans', sans-serif;
+      background: var(--background);
+      color: var(--foreground);
+      min-height: 100vh;
+      display: flex;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 260px;
+      background: var(--sidebar-bg);
+      min-height: 100vh;
+      position: fixed;
+      left: 0;
+      top: 0;
+      padding: 24px 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .sidebar-logo {
+      padding: 0 24px;
+      margin-bottom: 32px;
+    }
+
+    .sidebar-logo h1 {
+      font-size: 18px;
+      font-weight: 600;
+      color: #F8FAFC;
+      letter-spacing: -0.5px;
+    }
+
+    .sidebar-logo span {
+      font-size: 12px;
+      color: #64748B;
+      display: block;
+      margin-top: 4px;
+    }
+
+    .sidebar-section {
+      margin-bottom: 24px;
+    }
+
+    .sidebar-section-title {
+      font-size: 11px;
+      font-weight: 600;
+      color: #475569;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 0 24px;
+      margin-bottom: 8px;
+    }
+
+    .sidebar-nav {
+      list-style: none;
+    }
+
+    .sidebar-nav-item {
+      padding: 10px 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: #94A3B8;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border-left: 3px solid transparent;
+      font-size: 14px;
+    }
+
+    .sidebar-nav-item:hover {
+      background: var(--sidebar-hover);
+      color: #E2E8F0;
+    }
+
+    .sidebar-nav-item.active {
+      background: rgba(8, 145, 178, 0.15);
+      color: var(--primary-light);
+      border-left-color: var(--primary-light);
+    }
+
+    .sidebar-nav-item svg {
+      width: 20px;
+      height: 20px;
+      flex-shrink: 0;
+    }
+
+    .sidebar-nav-item .badge {
+      margin-left: auto;
+      background: var(--primary);
+      color: white;
+      font-size: 11px;
+      font-family: 'Fira Code', monospace;
+      padding: 2px 8px;
+      border-radius: 10px;
+    }
+
+    /* Main Content */
+    .main-content {
+      flex: 1;
+      margin-left: 260px;
+      padding: 32px;
+    }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 32px;
+    }
+
+    .breadcrumb {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .breadcrumb a {
+      color: var(--primary);
+      text-decoration: none;
+    }
+
+    .breadcrumb a:hover {
+      text-decoration: underline;
+    }
+
+    .page-title {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--foreground);
+      letter-spacing: -0.5px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border: none;
+      font-family: 'Fira Sans', sans-serif;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-dark);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(8, 145, 178, 0.3);
+    }
+
+    .btn svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    /* Stats Cards */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 24px;
+      margin-bottom: 32px;
+    }
+
+    .stat-card {
+      background: white;
+      border-radius: 16px;
+      padding: 24px;
+      border: 1px solid var(--border);
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--card-shadow-hover);
+      border-color: var(--primary);
+    }
+
+    .stat-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 16px;
+    }
+
+    .stat-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .stat-icon.primary { background: rgba(8, 145, 178, 0.1); color: var(--primary); }
+    .stat-icon.accent { background: rgba(5, 150, 105, 0.1); color: var(--accent); }
+    .stat-icon.warning { background: rgba(245, 158, 11, 0.1); color: #F59E0B; }
+    .stat-icon.purple { background: rgba(139, 92, 246, 0.1); color: #8B5CF6; }
+
+    .stat-icon svg {
+      width: 24px;
+      height: 24px;
+    }
+
+    .stat-trend {
+      font-size: 12px;
+      font-weight: 500;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-family: 'Fira Code', monospace;
+    }
+
+    .stat-trend.up {
+      background: rgba(5, 150, 105, 0.1);
+      color: var(--accent);
+    }
+
+    .stat-trend.down {
+      background: rgba(220, 38, 38, 0.1);
+      color: var(--destructive);
+    }
+
+    .stat-value {
+      font-size: 36px;
+      font-weight: 700;
+      color: var(--foreground);
+      font-family: 'Fira Code', monospace;
+      letter-spacing: -1px;
+      margin-bottom: 4px;
+    }
+
+    .stat-label {
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    /* Filter Bar */
+    .filter-bar {
+      background: white;
+      border-radius: 16px;
+      padding: 20px 24px;
+      margin-bottom: 24px;
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .search-box {
+      flex: 1;
+      min-width: 280px;
+      position: relative;
+    }
+
+    .search-box svg {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 20px;
+      height: 20px;
+      color: var(--text-muted);
+    }
+
+    .search-box input {
+      width: 100%;
+      padding: 12px 16px 12px 44px;
+      border: 1px solid var(--muted);
+      border-radius: 10px;
+      font-size: 14px;
+      font-family: 'Fira Sans', sans-serif;
+      background: var(--muted);
+      transition: all 0.2s ease;
+    }
+
+    .search-box input:focus {
+      outline: none;
+      border-color: var(--primary);
+      background: white;
+      box-shadow: 0 0 0 3px rgba(8, 145, 178, 0.1);
+    }
+
+    .filter-select {
+      padding: 12px 36px 12px 16px;
+      border: 1px solid var(--muted);
+      border-radius: 10px;
+      font-size: 14px;
+      font-family: 'Fira Sans', sans-serif;
+      background: white;
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%2364748B' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+      transition: all 0.2s ease;
+    }
+
+    .filter-select:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+
+    .filter-tags {
+      display: flex;
+      gap: 8px;
+      margin-left: auto;
+    }
+
+    .filter-tag {
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border: 1px solid var(--muted);
+      background: white;
+      color: var(--text-muted);
+    }
+
+    .filter-tag:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    .filter-tag.active {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+
+    /* Data Table */
+    .data-table-wrapper {
+      background: white;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .data-table thead {
+      background: var(--muted);
+    }
+
+    .data-table th {
+      padding: 14px 20px;
+      text-align: left;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .data-table td {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--muted);
+      font-size: 14px;
+      vertical-align: middle;
+    }
+
+    .data-table tbody tr {
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+
+    .data-table tbody tr:hover {
+      background: rgba(8, 145, 178, 0.03);
+    }
+
+    .data-table tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    .sponsor-name {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .sponsor-name .name {
+      font-weight: 600;
+      color: var(--foreground);
+    }
+
+    .sponsor-name .code {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-family: 'Fira Code', monospace;
+    }
+
+    .type-badge {
+      display: inline-flex;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .type-badge.large {
+      background: rgba(139, 92, 246, 0.1);
+      color: #7C3AED;
+    }
+
+    .type-badge.biotech {
+      background: rgba(8, 145, 178, 0.1);
+      color: var(--primary);
+    }
+
+    .type-badge.cro {
+      background: rgba(5, 150, 105, 0.1);
+      color: var(--accent);
+    }
+
+    .rating {
+      color: #F59E0B;
+      letter-spacing: 1px;
+    }
+
+    .rating .empty {
+      color: var(--muted);
+    }
+
+    .priority-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 500;
+      background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+      color: white;
+    }
+
+    .priority-badge svg {
+      width: 12px;
+      height: 12px;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .status-badge.active {
+      background: rgba(5, 150, 105, 0.1);
+      color: var(--accent);
+    }
+
+    .status-badge.inactive {
+      background: rgba(100, 116, 139, 0.1);
+      color: var(--text-muted);
+    }
+
+    .action-btns {
+      display: flex;
+      gap: 8px;
+    }
+
+    .action-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--muted);
+      background: white;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      color: var(--text-muted);
+    }
+
+    .action-btn:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+      background: rgba(8, 145, 178, 0.05);
+    }
+
+    .action-btn svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    .action-btn.danger:hover {
+      border-color: var(--destructive);
+      color: var(--destructive);
+      background: rgba(220, 38, 38, 0.05);
+    }
+
+    /* Pagination */
+    .pagination {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 20px;
+      border-top: 1px solid var(--muted);
+    }
+
+    .pagination-info {
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    .pagination-info strong {
+      color: var(--foreground);
+      font-family: 'Fira Code', monospace;
+    }
+
+    .pagination-btns {
+      display: flex;
+      gap: 8px;
+    }
+
+    .page-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--muted);
+      background: white;
+      cursor: pointer;
+      font-size: 14px;
+      font-family: 'Fira Code', monospace;
+      color: var(--text-muted);
+      transition: all 0.2s ease;
+    }
+
+    .page-btn:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    .page-btn.active {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+
+    .page-btn svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .modal {
+      background: white;
+      border-radius: 20px;
+      width: 90%;
+      max-width: 800px;
+      max-height: 90vh;
+      overflow: hidden;
+      transform: scale(0.9);
+      transition: transform 0.3s ease;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    }
+
+    .modal-overlay.active .modal {
+      transform: scale(1);
+    }
+
+    .modal-header {
+      padding: 24px 28px;
+      border-bottom: 1px solid var(--muted);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-title {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--foreground);
+    }
+
+    .modal-close {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: none;
+      background: var(--muted);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      color: var(--text-muted);
+    }
+
+    .modal-close:hover {
+      background: var(--destructive);
+      color: white;
+    }
+
+    .modal-close svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    .modal-body {
+      padding: 28px;
+      max-height: calc(90vh - 140px);
+      overflow-y: auto;
+    }
+
+    .modal-footer {
+      padding: 20px 28px;
+      border-top: 1px solid var(--muted);
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+    }
+
+    .btn-secondary {
+      background: var(--muted);
+      color: var(--foreground);
+    }
+
+    .btn-secondary:hover {
+      background: #D1E7EF;
+    }
+
+    /* Form Styles */
+    .form-section {
+      margin-bottom: 28px;
+    }
+
+    .form-section-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--foreground);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .form-section-title::before {
+      content: '';
+      width: 4px;
+      height: 16px;
+      background: var(--primary);
+      border-radius: 2px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .form-group.full-width {
+      grid-column: span 2;
+    }
+
+    .form-label {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--foreground);
+    }
+
+    .form-label .required {
+      color: var(--destructive);
+    }
+
+    .form-input {
+      padding: 12px 16px;
+      border: 1px solid var(--muted);
+      border-radius: 10px;
+      font-size: 14px;
+      font-family: 'Fira Sans', sans-serif;
+      transition: all 0.2s ease;
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(8, 145, 178, 0.1);
+    }
+
+    .form-input::placeholder {
+      color: var(--text-muted);
+    }
+
+    textarea.form-input {
+      min-height: 100px;
+      resize: vertical;
+    }
+
+    .form-checkbox-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .form-checkbox {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+    }
+
+    .form-checkbox input {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--primary);
+      cursor: pointer;
+    }
+
+    .form-checkbox span {
+      font-size: 14px;
+      color: var(--foreground);
+    }
+
+    /* Detail Modal Tabs */
+    .detail-tabs {
+      display: flex;
+      gap: 4px;
+      border-bottom: 1px solid var(--muted);
+      margin-bottom: 24px;
+    }
+
+    .detail-tab {
+      padding: 12px 20px;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-muted);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s ease;
+      margin-bottom: -1px;
+    }
+
+    .detail-tab:hover {
+      color: var(--primary);
+    }
+
+    .detail-tab.active {
+      color: var(--primary);
+      border-bottom-color: var(--primary);
+    }
+
+    .detail-content {
+      display: none;
+    }
+
+    .detail-content.active {
+      display: block;
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+    }
+
+    .info-item {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .info-item-label {
+      font-size: 12px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .info-item-value {
+      font-size: 14px;
+      color: var(--foreground);
+      font-weight: 500;
+    }
+
+    .timeline {
+      position: relative;
+      padding-left: 24px;
+    }
+
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 7px;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: var(--border);
+    }
+
+    .timeline-item {
+      position: relative;
+      padding-bottom: 24px;
+    }
+
+    .timeline-item::before {
+      content: '';
+      position: absolute;
+      left: -24px;
+      top: 4px;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--primary);
+      border: 3px solid white;
+      box-shadow: 0 0 0 2px var(--primary);
+    }
+
+    .timeline-date {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-family: 'Fira Code', monospace;
+      margin-bottom: 4px;
+    }
+
+    .timeline-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--foreground);
+      margin-bottom: 4px;
+    }
+
+    .timeline-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    /* 合同入口摘要样式 */
+    .contract-summary {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 20px 24px;
+      background: linear-gradient(135deg, rgba(139, 92, 246, 0.08) 0%, rgba(139, 92, 246, 0.03) 100%);
+      border: 1px solid rgba(139, 92, 246, 0.2);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .contract-summary:hover {
+      background: linear-gradient(135deg, rgba(139, 92, 246, 0.12) 0%, rgba(139, 92, 246, 0.05) 100%);
+      border-color: rgba(139, 92, 246, 0.3);
+      transform: translateY(-2px);
+    }
+
+    .contract-summary-icon {
+      width: 48px;
+      height: 48px;
+      background: rgba(139, 92, 246, 0.15);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #7C3AED;
+    }
+
+    .contract-summary-icon svg {
+      width: 24px;
+      height: 24px;
+    }
+
+    .contract-summary-info {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .contract-summary-label {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .contract-summary-value {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--foreground);
+      font-family: 'Fira Code', monospace;
+    }
+
+    .contract-summary-arrow {
+      font-size: 14px;
+      font-weight: 500;
+      color: #7C3AED;
+      padding: 8px 16px;
+      background: rgba(139, 92, 246, 0.1);
+      border-radius: 8px;
+      transition: all 0.2s ease;
+    }
+
+    .contract-summary:hover .contract-summary-arrow {
+      background: rgba(139, 92, 246, 0.2);
+    }
+
+    /* 提示弹窗样式 */
+    .toast {
+      position: fixed;
+      top: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-100px);
+      background: var(--foreground);
+      color: white;
+      padding: 14px 24px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 500;
+      z-index: 2000;
+      opacity: 0;
+      transition: all 0.3s ease;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* Animations */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .stat-card {
+      animation: fadeIn 0.5s ease forwards;
+    }
+
+    .stat-card:nth-child(1) { animation-delay: 0.1s; }
+    .stat-card:nth-child(2) { animation-delay: 0.2s; }
+    .stat-card:nth-child(3) { animation-delay: 0.3s; }
+    .stat-card:nth-child(4) { animation-delay: 0.4s; }
+
+    /* Spacing: 8px grid rhythm */
+    .stats-grid { gap: 8px !important; }
+    .main-content > * + * { margin-top: 0; }
+    .stats-grid + .filter-bar { margin-top: 16px; }
+    .filter-bar + .data-table-wrapper { margin-top: 16px; }
+
+    /* Data table: compact rows, short-name col, hover accent bar */
+    .data-table td { padding: 12px 16px; }
+    .data-table th { padding: 12px 16px; }
+
+    .sponsor-short-name {
+      font-weight: 600;
+      color: var(--primary);
+      font-size: 14px;
+    }
+
+    .table-row-clickable {
+      position: relative;
+      cursor: pointer;
+    }
+
+    .table-row-clickable::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 0;
+      background: var(--accent);
+      transition: width 0.2s ease;
+      border-radius: 0 2px 2px 0;
+    }
+
+    .table-row-clickable:hover::before {
+      width: 2px;
+    }
+
+    .table-row-clickable:hover {
+      background: rgba(5, 150, 105, 0.04) !important;
+    }
+
+    /* Table sort icons on hover */
+    .data-table th:hover svg {
+      opacity: 1 !important;
+    }
+
+    /* Filter tag: enhanced active state */
+    .filter-tag {
+      position: relative;
+    }
+
+    .filter-tag.active {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+      box-shadow: 0 2px 8px rgba(8, 145, 178, 0.25);
+    }
+
+    /* Search box: wider & clear placeholder */
+    .search-box input {
+      min-height: 44px;
+    }
+
+    /* Filter selects: unified width */
+    .filter-select {
+      min-width: 140px;
+    }
+
+    /* Pagination: total count display */
+    .pagination-info strong {
+      color: var(--primary);
+    }
+
+    /* Row projects count badge */
+    .projects-count {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--muted);
+      color: var(--foreground);
+      font-family: 'Fira Code', monospace;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 6px;
+      min-width: 32px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <h1>MediResearch</h1>
+      <span>药物研发平台</span>
+    </div>
+    
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">工作台</div>
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-item">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
+          <span>工作台</span>
+        </li>
+        <li class="sidebar-nav-item">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+          <span>我的任务</span>
+          <span class="badge">8</span>
+        </li>
+      </ul>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">项目中心</div>
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-item">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"/></svg>
+          <span>项目列表</span>
+          <span class="badge">12</span>
+        </li>
+        <li class="sidebar-nav-item">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+          <span>临床试验</span>
+        </li>
+        <li class="sidebar-nav-item">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+          <span>数据分析</span>
+        </li>
+      </ul>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">综合管理</div>
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-item">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          <span>人员管理</span>
+        </li>
+        <li class="sidebar-nav-item">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <span>合作主体</span>
+        </li>
+        <li class="sidebar-nav-item active">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/></svg>
+          <span>申办方管理</span>
+        </li>
+        <li class="sidebar-nav-item">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
+          <span>合同管理</span>
+        </li>
+      </ul>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">系统</div>
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-item">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          <span>系统设置</span>
+        </li>
+      </ul>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <div class="page-header">
+      <div>
+        <div class="breadcrumb">
+          <a href="#">综合管理</a>
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+          <a href="#">合作主体</a>
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+          <span>申办方管理</span>
+        </div>
+        <h1 class="page-title">申办方管理</h1>
+      </div>
+      <button class="btn btn-primary" onclick="openAddModal()">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+        新增申办方
+      </button>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-card-header">
+          <div class="stat-icon primary">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/></svg>
+          </div>
+          <span class="stat-trend up">+12%</span>
+        </div>
+        <div class="stat-value">156</div>
+        <div class="stat-label">申办方总数</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-header">
+          <div class="stat-icon accent">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="m9 12 2 2 4-4"/></svg>
+          </div>
+          <span class="stat-trend up">+8%</span>
+        </div>
+        <div class="stat-value">128</div>
+        <div class="stat-label">活跃申办方</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-header">
+          <div class="stat-icon warning">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          </div>
+          <span class="stat-trend down">-2</span>
+        </div>
+        <div class="stat-value">24</div>
+        <div class="stat-label">重点客户</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-header">
+          <div class="stat-icon purple">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" x2="12" y1="2" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          </div>
+          <span class="stat-trend up">+23%</span>
+        </div>
+        <div class="stat-value">¥2.8亿</div>
+        <div class="stat-label">合同总额</div>
+      </div>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="filter-bar">
+      <div class="search-box">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        <input type="text" placeholder="搜索申办方名称、统一社会信用代码...">
+      </div>
+      <select class="filter-select">
+        <option>全部类型</option>
+        <option>大型药企</option>
+        <option>Biotech</option>
+        <option>CRO</option>
+      </select>
+      <select class="filter-select">
+        <option>全部评级</option>
+        <option>★★★★★</option>
+        <option>★★★★☆</option>
+        <option>★★★☆☆</option>
+      </select>
+      <div class="filter-tags">
+        <span class="filter-tag active">全部</span>
+        <span class="filter-tag">重点客户</span>
+        <span class="filter-tag">上市公司</span>
+        <span class="filter-tag">战略客户</span>
+      </div>
+    </div>
+
+    <!-- Data Table -->
+    <div class="data-table-wrapper">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th style="min-width:100px;cursor:pointer" onclick="sortTable('shortName')">简称 <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle;margin-left:4px;opacity:0.5"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></th>
+            <th style="min-width:200px;cursor:pointer" onclick="sortTable('fullName')">全称 <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle;margin-left:4px;opacity:0.5"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></th>
+            <th style="min-width:90px;cursor:pointer" onclick="sortTable('type')">类型 <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle;margin-left:4px;opacity:0.5"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></th>
+            <th style="min-width:90px;cursor:pointer" onclick="sortTable('projects')">合作项目 <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle;margin-left:4px;opacity:0.5"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></th>
+            <th style="min-width:100px;cursor:pointer" onclick="sortTable('rating')">评级 <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle;margin-left:4px;opacity:0.5"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></th>
+            <th style="min-width:100px">标识</th>
+            <th style="min-width:80px">状态</th>
+            <th style="min-width:90px">操作</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Row 1: 恒瑞医药 -->
+          <tr class="table-row-clickable" onclick="openDetailModal()">
+            <td><span class="sponsor-short-name">恒瑞医药</span></td>
+            <td>
+              <div class="sponsor-name">
+                <span class="name">江苏恒瑞医药股份有限公司</span>
+                <span class="code">91320000123456789X</span>
+              </div>
+            </td>
+            <td><span class="type-badge large">大型药企</span></td>
+            <td><span class="projects-count">12</span></td>
+            <td><span class="rating">★★★★★</span></td>
+            <td>
+              <span class="priority-badge">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                重点客户
+              </span>
+            </td>
+            <td><span class="status-badge active">活跃</span></td>
+            <td>
+              <div class="action-btns" onclick="event.stopPropagation()">
+                <button class="action-btn" title="查看详情" onclick="openDetailModal()">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                </button>
+                <button class="action-btn" title="编辑" onclick="event.stopPropagation(); showToast('编辑功能开发中')">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
+                </button>
+              </div>
+            </td>
+          </tr>
+          <!-- Row 2: 百济神州 -->
+          <tr class="table-row-clickable" onclick="openDetailModal()">
+            <td><span class="sponsor-short-name">百济神州</span></td>
+            <td>
+              <div class="sponsor-name">
+                <span class="name">百济神州（北京）生物科技有限公司</span>
+                <span class="code">911103027725XXXXX</span>
+              </div>
+            </td>
+            <td><span class="type-badge biotech">Biotech</span></td>
+            <td><span class="projects-count">8</span></td>
+            <td><span class="rating">★★★★☆<span class="empty">☆</span></span></td>
+            <td>
+              <span class="priority-badge">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                重点客户
+              </span>
+            </td>
+            <td><span class="status-badge active">活跃</span></td>
+            <td>
+              <div class="action-btns" onclick="event.stopPropagation()">
+                <button class="action-btn" title="查看详情" onclick="openDetailModal()">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                </button>
+                <button class="action-btn" title="编辑" onclick="event.stopPropagation(); showToast('编辑功能开发中')">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
+                </button>
+              </div>
+            </td>
+          </tr>
+          <!-- Row 3: 药明康德 -->
+          <tr class="table-row-clickable" onclick="openDetailModal()">
+            <td><span class="sponsor-short-name">药明康德</span></td>
+            <td>
+              <div class="sponsor-name">
+                <span class="name">上海药明康德新药开发有限公司</span>
+                <span class="code">9131000060XXXXXX</span>
+              </div>
+            </td>
+            <td><span class="type-badge cro">CRO</span></td>
+            <td><span class="projects-count">15</span></td>
+            <td><span class="rating">★★★★★</span></td>
+            <td>
+              <span class="priority-badge">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                战略客户
+              </span>
+            </td>
+            <td><span class="status-badge active">活跃</span></td>
+            <td>
+              <div class="action-btns" onclick="event.stopPropagation()">
+                <button class="action-btn" title="查看详情" onclick="openDetailModal()">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                </button>
+                <button class="action-btn" title="编辑" onclick="event.stopPropagation(); showToast('编辑功能开发中')">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
+                </button>
+              </div>
+            </td>
+          </tr>
+          <!-- Row 4: 信达生物 -->
+          <tr class="table-row-clickable" onclick="openDetailModal()">
+            <td><span class="sponsor-short-name">信达生物</span></td>
+            <td>
+              <div class="sponsor-name">
+                <span class="name">信达生物制药（苏州）有限公司</span>
+                <span class="code">913200005753XXXXX</span>
+              </div>
+            </td>
+            <td><span class="type-badge biotech">Biotech</span></td>
+            <td><span class="projects-count">6</span></td>
+            <td><span class="rating">★★★★☆<span class="empty">☆</span></span></td>
+            <td></td>
+            <td><span class="status-badge active">活跃</span></td>
+            <td>
+              <div class="action-btns" onclick="event.stopPropagation()">
+                <button class="action-btn" title="查看详情" onclick="openDetailModal()">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                </button>
+                <button class="action-btn" title="编辑" onclick="event.stopPropagation(); showToast('编辑功能开发中')">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
+                </button>
+              </div>
+            </td>
+          </tr>
+          <!-- Row 5: 阿斯利康 -->
+          <tr class="table-row-clickable" onclick="openDetailModal()">
+            <td><span class="sponsor-short-name">阿斯利康</span></td>
+            <td>
+              <div class="sponsor-name">
+                <span class="name">阿斯利康投资（中国）有限公司</span>
+                <span class="code">91310000XXXXXXX</span>
+              </div>
+            </td>
+            <td><span class="type-badge large">大型药企</span></td>
+            <td><span class="projects-count">9</span></td>
+            <td><span class="rating">★★★★★</span></td>
+            <td>
+              <span class="priority-badge">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                重点客户
+              </span>
+            </td>
+            <td><span class="status-badge active">活跃</span></td>
+            <td>
+              <div class="action-btns" onclick="event.stopPropagation()">
+                <button class="action-btn" title="查看详情" onclick="openDetailModal()">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                </button>
+                <button class="action-btn" title="编辑" onclick="event.stopPropagation(); showToast('编辑功能开发中')">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
+                </button>
+              </div>
+            </td>
+          </tr>
+          <!-- Row 6: 君实生物 -->
+          <tr class="table-row-clickable" onclick="openDetailModal()">
+            <td><span class="sponsor-short-name">君实生物</span></td>
+            <td>
+              <div class="sponsor-name">
+                <span class="name">上海君实生物医药科技股份有限公司</span>
+                <span class="code">91310000MA1XXXXX</span>
+              </div>
+            </td>
+            <td><span class="type-badge biotech">Biotech</span></td>
+            <td><span class="projects-count">4</span></td>
+            <td><span class="rating">★★★☆☆<span class="empty">☆☆</span></span></td>
+            <td></td>
+            <td><span class="status-badge inactive">非活跃</span></td>
+            <td>
+              <div class="action-btns" onclick="event.stopPropagation()">
+                <button class="action-btn" title="查看详情" onclick="openDetailModal()">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                </button>
+                <button class="action-btn" title="编辑" onclick="event.stopPropagation(); showToast('编辑功能开发中')">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="pagination">
+        <div class="pagination-info">
+          共 <strong>156</strong> 条记录，当前第 <strong>1</strong>/<strong>16</strong> 页
+        </div>
+        <div class="pagination-btns">
+          <button class="page-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+          </button>
+          <button class="page-btn active">1</button>
+          <button class="page-btn">2</button>
+          <button class="page-btn">3</button>
+          <button class="page-btn">4</button>
+          <button class="page-btn">5</button>
+          <button class="page-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Add Modal -->
+  <div class="modal-overlay" id="addModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 class="modal-title">新增申办方</h2>
+        <button class="modal-close" onclick="closeAddModal()">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="form-section">
+          <div class="form-section-title">基本信息</div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">全称 <span class="required">*</span></label>
+              <input type="text" class="form-input" placeholder="请输入企业全称">
+            </div>
+            <div class="form-group">
+              <label class="form-label">简称 <span class="required">*</span></label>
+              <input type="text" class="form-input" placeholder="请输入企业简称">
+            </div>
+            <div class="form-group">
+              <label class="form-label">统一社会信用代码 <span class="required">*</span></label>
+              <input type="text" class="form-input" placeholder="请输入18位统一社会信用代码">
+            </div>
+            <div class="form-group">
+              <label class="form-label">法人代表</label>
+              <input type="text" class="form-input" placeholder="请输入法人代表姓名">
+            </div>
+            <div class="form-group full-width">
+              <label class="form-label">注册地址</label>
+              <input type="text" class="form-input" placeholder="请输入详细地址">
+            </div>
+            <div class="form-group">
+              <label class="form-label">联系人</label>
+              <input type="text" class="form-input" placeholder="请输入联系人姓名">
+            </div>
+            <div class="form-group">
+              <label class="form-label">联系电话</label>
+              <input type="tel" class="form-input" placeholder="请输入联系电话">
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <div class="form-section-title">扩展信息</div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">企业类型</label>
+              <select class="form-input">
+                <option>请选择</option>
+                <option>大型药企</option>
+                <option>Biotech</option>
+                <option>CRO</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">评级</label>
+              <select class="form-input">
+                <option>请选择</option>
+                <option>★★★★★</option>
+                <option>★★★★☆</option>
+                <option>★★★☆☆</option>
+                <option>★★☆☆☆</option>
+                <option>★☆☆☆☆</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">重点客户等级</label>
+              <select class="form-input">
+                <option>非重点客户</option>
+                <option>普通重点</option>
+                <option>核心重点</option>
+                <option>战略合作</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">在研管线数量</label>
+              <input type="number" class="form-input" placeholder="请输入数量" min="0">
+            </div>
+            <div class="form-group full-width">
+              <label class="form-label">标识</label>
+              <div class="form-checkbox-group">
+                <label class="form-checkbox">
+                  <input type="checkbox">
+                  <span>上市公司</span>
+                </label>
+                <label class="form-checkbox">
+                  <input type="checkbox">
+                  <span>重点客户</span>
+                </label>
+                <label class="form-checkbox">
+                  <input type="checkbox">
+                  <span>战略客户</span>
+                </label>
+              </div>
+            </div>
+            <div class="form-group full-width">
+              <label class="form-label">开票信息</label>
+              <textarea class="form-input" placeholder="请输入开票信息，包括但不限于：开户银行、账号、税号等"></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeAddModal()">取消</button>
+        <button class="btn btn-primary">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Detail Modal -->
+  <div class="modal-overlay" id="detailModal">
+    <div class="modal" style="max-width: 900px;">
+      <div class="modal-header">
+        <h2 class="modal-title">申办方详情 - 恒瑞医药</h2>
+        <button class="modal-close" onclick="closeDetailModal()">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="detail-tabs">
+          <div class="detail-tab active" onclick="switchTab(this, 'basic')">基本信息</div>
+          <div class="detail-tab" onclick="switchTab(this, 'contact')">联系人</div>
+          <div class="detail-tab" onclick="switchTab(this, 'files')">资质文件</div>
+          <div class="detail-tab" onclick="switchTab(this, 'history')">合作项目</div>
+          <div class="detail-tab" onclick="switchTab(this, 'invoice')">开票信息</div>
+        </div>
+
+        <!-- Basic Info -->
+        <div class="detail-content active" id="basic">
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="info-item-label">全称</span>
+              <span class="info-item-value">江苏恒瑞医药股份有限公司</span>
+            </div>
+            <div class="info-item">
+              <span class="info-item-label">简称</span>
+              <span class="info-item-value">恒瑞医药</span>
+            </div>
+            <div class="info-item">
+              <span class="info-item-label">统一社会信用代码</span>
+              <span class="info-item-value" style="font-family: 'Fira Code', monospace;">91320000123456789X</span>
+            </div>
+            <div class="info-item">
+              <span class="info-item-label">企业类型</span>
+              <span class="info-item-value">大型药企</span>
+            </div>
+            <div class="info-item">
+              <span class="info-item-label">法人代表</span>
+              <span class="info-item-value">周云曙</span>
+            </div>
+            <div class="info-item">
+              <span class="info-item-label">评级</span>
+              <span class="info-item-value rating">★★★★★</span>
+            </div>
+            <div class="info-item">
+              <span class="info-item-label">注册地址</span>
+              <span class="info-item-value">江苏省连云港市经济技术开发区黄河路38号</span>
+            </div>
+            <div class="info-item">
+              <span class="info-item-label">在研管线</span>
+              <span class="info-item-value">12 个</span>
+            </div>
+            <div class="info-item">
+              <span class="info-item-label">重点客户等级</span>
+              <span class="info-item-value">核心重点</span>
+            </div>
+            <div class="info-item">
+              <span class="info-item-label">合作项目数</span>
+              <span class="info-item-value">12 个</span>
+            </div>
+            <div class="info-item">
+              <span class="info-item-label">上市公司</span>
+              <span class="info-item-value">是（上交所：600276）</span>
+            </div>
+            <div class="info-item">
+              <span class="info-item-label">战略客户</span>
+              <span class="info-item-value">是</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Contact Info -->
+        <div class="detail-content" id="contact">
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="info-item-label">主联系人</span>
+              <span class="info-item-value">张经理</span>
+            </div>
+            <div class="info-item">
+              <span class="info-item-label">职务</span>
+              <span class="info-item-value">临床运营总监</span>
+            </div>
+            <div class="info-item">
+              <span class="info-item-label">联系电话</span>
+              <span class="info-item-value" style="font-family: 'Fira Code', monospace;">138-1234-5678</span>
+            </div>
+            <div class="info-item">
+              <span class="info-item-label">邮箱</span>
+              <span class="info-item-value">zhangmanager@hengrui.com</span>
+            </div>
+            <div class="info-item">
+              <span class="info-item-label">备用联系人</span>
+              <span class="info-item-value">李主管</span>
+            </div>
+            <div class="info-item">
+              <span class="info-item-label">备用电话</span>
+              <span class="info-item-value" style="font-family: 'Fira Code', monospace;">139-8765-4321</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Files -->
+        <div class="detail-content" id="files">
+          <div style="display: flex; flex-direction: column; gap: 16px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; padding: 16px; background: var(--muted); border-radius: 10px;">
+              <div style="display: flex; align-items: center; gap: 12px;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg>
+                <div>
+                  <div style="font-weight: 500; color: var(--foreground);">营业执照.pdf</div>
+                  <div style="font-size: 12px; color: var(--text-muted);">2024-01-15 上传 · 2.3MB</div>
+                </div>
+              </div>
+              <button class="btn btn-secondary" style="padding: 8px 16px;">下载</button>
+            </div>
+            <div style="display: flex; align-items: center; justify-content: space-between; padding: 16px; background: var(--muted); border-radius: 10px;">
+              <div style="display: flex; align-items: center; gap: 12px;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg>
+                <div>
+                  <div style="font-weight: 500; color: var(--foreground);">GCP证书.pdf</div>
+                  <div style="font-size: 12px; color: var(--text-muted);">2024-03-20 上传 · 1.8MB</div>
+                </div>
+              </div>
+              <button class="btn btn-secondary" style="padding: 8px 16px;">下载</button>
+            </div>
+            <div style="display: flex; align-items: center; justify-content: space-between; padding: 16px; background: var(--muted); border-radius: 10px;">
+              <div style="display: flex; align-items: center; gap: 12px;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg>
+                <div>
+                  <div style="font-weight: 500; color: var(--foreground);">ISO9001认证.pdf</div>
+                  <div style="font-size: 12px; color: var(--text-muted);">2024-02-08 上传 · 3.1MB</div>
+                </div>
+              </div>
+              <button class="btn btn-secondary" style="padding: 8px 16px;">下载</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- History -->
+        <div class="detail-content" id="history">
+          <!-- 合同入口摘要 -->
+          <div class="contract-summary" onclick="showContractHint()">
+            <div class="contract-summary-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" x2="8" y1="13" y2="13"/><line x1="16" x2="8" y1="17" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+            </div>
+            <div class="contract-summary-info">
+              <span class="contract-summary-label">关联合同</span>
+              <span class="contract-summary-value">12 份</span>
+            </div>
+            <div class="contract-summary-arrow">查看合同 →</div>
+          </div>
+          <!-- 合作项目统计 -->
+          <div style="margin-top: 20px; display: flex; gap: 16px;">
+            <div style="padding: 8px 16px; background: #ECFEFF; border-radius: 6px; font-size: 13px; color: #164E63;">合作项目: <strong>5</strong>个</div>
+            <div style="padding: 8px 16px; background: #ECFDF5; border-radius: 6px; font-size: 13px; color: #065F46;">进行中: <strong>2</strong>个</div>
+            <div style="padding: 8px 16px; background: #F1F5F9; border-radius: 6px; font-size: 13px; color: #475569;">已结束: <strong>3</strong>个</div>
+          </div>
+          <!-- 合作项目表格 -->
+          <div style="margin-top: 16px;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+              <thead>
+                <tr style="background: #F0FDFA; border-bottom: 2px solid #A5F3FC;">
+                  <th style="padding: 10px 12px; text-align: left; color: #164E63; font-weight: 600;">项目编号</th>
+                  <th style="padding: 10px 12px; text-align: left; color: #164E63; font-weight: 600;">项目名称</th>
+                  <th style="padding: 10px 12px; text-align: left; color: #164E63; font-weight: 600;">项目类型</th>
+                  <th style="padding: 10px 12px; text-align: left; color: #164E63; font-weight: 600;">状态</th>
+                  <th style="padding: 10px 12px; text-align: right; color: #164E63; font-weight: 600;">累计收款</th>
+                  <th style="padding: 10px 12px; text-align: center; color: #164E63; font-weight: 600;">评价</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr style="border-bottom: 1px solid #E2E8F0; cursor: pointer;" onmouseover="this.style.background='#F0FDFA'" onmouseout="this.style.background=''">
+                  <td style="padding: 10px 12px; font-family: 'Fira Code', monospace; color: #0891B2;">PD-001</td>
+                  <td style="padding: 10px 12px;">心血管药物I期临床试验</td>
+                  <td style="padding: 10px 12px; color: #64748B;">I期临床</td>
+                  <td style="padding: 10px 12px;"><span style="display: inline-block; padding: 2px 10px; border-radius: 10px; font-size: 11px; background: #ECFDF5; color: #059669;">进行中</span></td>
+                  <td style="padding: 10px 12px; text-align: right; font-family: 'Fira Code', monospace;">¥3,000,000</td>
+                  <td style="padding: 10px 12px; text-align: center; color: #F59E0B;">★★★★☆</td>
+                </tr>
+                <tr style="border-bottom: 1px solid #E2E8F0; cursor: pointer;" onmouseover="this.style.background='#F0FDFA'" onmouseout="this.style.background=''">
+                  <td style="padding: 10px 12px; font-family: 'Fira Code', monospace; color: #0891B2;">PD-002</td>
+                  <td style="padding: 10px 12px;">糖尿病药物II期临床试验</td>
+                  <td style="padding: 10px 12px; color: #64748B;">II期临床</td>
+                  <td style="padding: 10px 12px;"><span style="display: inline-block; padding: 2px 10px; border-radius: 10px; font-size: 11px; background: #F1F5F9; color: #475569;">已结束</span></td>
+                  <td style="padding: 10px 12px; text-align: right; font-family: 'Fira Code', monospace;">¥5,000,000</td>
+                  <td style="padding: 10px 12px; text-align: center; color: #F59E0B;">★★★★☆</td>
+                </tr>
+                <tr style="border-bottom: 1px solid #E2E8F0; cursor: pointer;" onmouseover="this.style.background='#F0FDFA'" onmouseout="this.style.background=''">
+                  <td style="padding: 10px 12px; font-family: 'Fira Code', monospace; color: #0891B2;">PD-003</td>
+                  <td style="padding: 10px 12px;">抗肿瘤药物III期临床试验</td>
+                  <td style="padding: 10px 12px; color: #64748B;">III期临床</td>
+                  <td style="padding: 10px 12px;"><span style="display: inline-block; padding: 2px 10px; border-radius: 10px; font-size: 11px; background: #ECFDF5; color: #059669;">进行中</span></td>
+                  <td style="padding: 10px 12px; text-align: right; font-family: 'Fira Code', monospace;">¥10,000,000</td>
+                  <td style="padding: 10px 12px; text-align: center; color: #F59E0B;">★★★★★</td>
+                </tr>
+                <tr style="border-bottom: 1px solid #E2E8F0; cursor: pointer;" onmouseover="this.style.background='#F0FDFA'" onmouseout="this.style.background=''">
+                  <td style="padding: 10px 12px; font-family: 'Fira Code', monospace; color: #0891B2;">PD-004</td>
+                  <td style="padding: 10px 12px;">免疫药物II期临床试验</td>
+                  <td style="padding: 10px 12px; color: #64748B;">II期临床</td>
+                  <td style="padding: 10px 12px;"><span style="display: inline-block; padding: 2px 10px; border-radius: 10px; font-size: 11px; background: #F1F5F9; color: #475569;">已结束</span></td>
+                  <td style="padding: 10px 12px; text-align: right; font-family: 'Fira Code', monospace;">¥4,200,000</td>
+                  <td style="padding: 10px 12px; text-align: center; color: #F59E0B;">★★★☆☆</td>
+                </tr>
+                <tr style="cursor: pointer;" onmouseover="this.style.background='#F0FDFA'" onmouseout="this.style.background=''">
+                  <td style="padding: 10px 12px; font-family: 'Fira Code', monospace; color: #0891B2;">PD-005</td>
+                  <td style="padding: 10px 12px;">肝病药物I期临床试验</td>
+                  <td style="padding: 10px 12px; color: #64748B;">I期临床</td>
+                  <td style="padding: 10px 12px;"><span style="display: inline-block; padding: 2px 10px; border-radius: 10px; font-size: 11px; background: #F1F5F9; color: #475569;">已结束</span></td>
+                  <td style="padding: 10px 12px; text-align: right; font-family: 'Fira Code', monospace;">¥1,800,000</td>
+                  <td style="padding: 10px 12px; text-align: center; color: #F59E0B;">★★★★☆</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Invoice -->
+        <div class="detail-content" id="invoice">
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="info-item-label">开户银行</span>
+              <span class="info-item-value">中国工商银行连云港分行</span>
+            </div>
+            <div class="info-item">
+              <span class="info-item-label">银行账号</span>
+              <span class="info-item-value" style="font-family: 'Fira Code', monospace;">1107XXXXXXXXX789</span>
+            </div>
+            <div class="info-item">
+              <span class="info-item-label">户名</span>
+              <span class="info-item-value">江苏恒瑞医药股份有限公司</span>
+            </div>
+            <div class="info-item">
+              <span class="info-item-label">税号</span>
+              <span class="info-item-value" style="font-family: 'Fira Code', monospace;">91320000123456789X</span>
+            </div>
+            <div class="info-item">
+              <span class="info-item-label">开票地址</span>
+              <span class="info-item-value">江苏省连云港市经济技术开发区黄河路38号</span>
+            </div>
+            <div class="info-item">
+              <span class="info-item-label">电话</span>
+              <span class="info-item-value" style="font-family: 'Fira Code', monospace;">0518-XXXXXXX</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeDetailModal()">关闭</button>
+        <button class="btn btn-primary">编辑信息</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function openAddModal() {
+      document.getElementById('addModal').classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeAddModal() {
+      document.getElementById('addModal').classList.remove('active');
+      document.body.style.overflow = '';
+    }
+
+    function openDetailModal() {
+      document.getElementById('detailModal').classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeDetailModal() {
+      document.getElementById('detailModal').classList.remove('active');
+      document.body.style.overflow = '';
+    }
+
+    function switchTab(element, tabId) {
+      document.querySelectorAll('.detail-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.detail-content').forEach(c => c.classList.remove('active'));
+      element.classList.add('active');
+      document.getElementById(tabId).classList.add('active');
+    }
+
+    function showContractHint() {
+      showToast('跳转至合同管理');
+    }
+
+    function showToast(message) {
+      let toast = document.querySelector('.toast');
+      if (!toast) {
+        toast = document.createElement('div');
+        toast.className = 'toast';
+        document.body.appendChild(toast);
+      }
+      toast.textContent = message;
+      toast.classList.add('show');
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 2000);
+    }
+
+    // ESC key to close modals
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        closeAddModal();
+        closeDetailModal();
+      }
+    });
+
+    // Close modal on overlay click
+    document.querySelectorAll('.modal-overlay').forEach(overlay => {
+      overlay.addEventListener('click', function(e) {
+        if (e.target === overlay) {
+          closeAddModal();
+          closeDetailModal();
+        }
+      });
+    });
+
+    // Filter tag toggle - single active
+    function setFilterTag(el, type) {
+      document.querySelectorAll('.filter-tag').forEach(t => t.classList.remove('active'));
+      el.classList.add('active');
+      // Apply filter logic based on type
+      filterTable(document.querySelector('.search-box input').value);
+    }
+
+    // Table sorting
+    let sortDirection = {};
+    function sortTable(column) {
+      sortDirection[column] = sortDirection[column] === 'asc' ? 'desc' : 'asc';
+      showToast('按 ' + column + ' ' + (sortDirection[column] === 'asc' ? '↑ 升序' : '↓ 降序') + ' 排序');
+    }
+
+    // Filter tag toggle (legacy)
+    document.querySelectorAll('.filter-tag').forEach(tag => {
+      tag.addEventListener('click', function() {
+        // Handled by setFilterTag
+      });
+    });
+  </script>
+</body>
+</html>

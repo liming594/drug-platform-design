@@ -1,0 +1,2023 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SMO管理 - 药物研发平台</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Fira+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #0891B2;
+            --primary-hover: #0e7490;
+            --on-primary: #FFFFFF;
+            --secondary: #22D3EE;
+            --accent: #059669;
+            --accent-light: #D1FAE5;
+            --background: #ECFEFF;
+            --foreground: #164E63;
+            --muted: #E8F1F6;
+            --muted-foreground: #64748B;
+            --border: #A5F3FC;
+            --destructive: #DC2626;
+            --destructive-light: #FEE2E2;
+            --warning: #F59E0B;
+            --warning-light: #FEF3C7;
+            --gray: #6B7280;
+            --gray-light: #F3F4F6;
+            --gray-dark: #374151;
+            --sidebar-bg: #0F172A;
+            --sidebar-hover: #1E293B;
+            --sidebar-active: #0891B2;
+            --sidebar-text: #94A3B8;
+            --sidebar-text-active: #FFFFFF;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            --radius: 6px;
+            --transition: all 0.2s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Fira Sans', sans-serif;
+            background-color: var(--background);
+            color: var(--foreground);
+            line-height: 1.5;
+            min-height: 100vh;
+        }
+
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 260px;
+            background: var(--sidebar-bg);
+            color: var(--sidebar-text);
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 100;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .sidebar-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .sidebar-logo svg {
+            width: 32px;
+            height: 32px;
+            color: var(--primary);
+        }
+
+        .sidebar-logo span {
+            font-size: 18px;
+            font-weight: 600;
+            color: white;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            padding: 16px 0;
+        }
+
+        .nav-section {
+            margin-bottom: 24px;
+        }
+
+        .nav-section-title {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--gray);
+            padding: 0 20px;
+            margin-bottom: 8px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 20px;
+            color: var(--sidebar-text);
+            text-decoration: none;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 14px;
+        }
+
+        .nav-item:hover {
+            background: var(--sidebar-hover);
+            color: white;
+        }
+
+        .nav-item.active {
+            background: var(--sidebar-active);
+            color: var(--sidebar-text-active);
+        }
+
+        .nav-item svg {
+            width: 20px;
+            height: 20px;
+            flex-shrink: 0;
+        }
+
+        .nav-item .badge {
+            margin-left: auto;
+            background: var(--destructive);
+            color: white;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 2px 6px;
+            border-radius: 10px;
+        }
+
+        .nav-item.active .badge {
+            background: white;
+            color: var(--primary);
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: 260px;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* Top Bar */
+        .topbar {
+            background: white;
+            border-bottom: 1px solid var(--border);
+            padding: 12px 24px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: var(--muted-foreground);
+        }
+
+        .breadcrumb a {
+            color: var(--muted-foreground);
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        .breadcrumb a:hover {
+            color: var(--primary);
+        }
+
+        .breadcrumb-separator {
+            color: var(--gray);
+        }
+
+        .breadcrumb-current {
+            color: var(--foreground);
+            font-weight: 500;
+        }
+
+        /* Page Content */
+        .page-content {
+            flex: 1;
+            padding: 24px;
+        }
+
+        .page-header {
+            margin-bottom: 24px;
+        }
+
+        .page-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--foreground);
+            margin-bottom: 8px;
+        }
+
+        .page-desc {
+            color: var(--muted-foreground);
+            font-size: 14px;
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: var(--radius);
+            padding: 20px;
+            border: 1px solid var(--border);
+            transition: var(--transition);
+        }
+
+        .stat-card:hover {
+            box-shadow: var(--shadow-md);
+        }
+
+        .stat-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .stat-card-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .stat-card-icon.primary {
+            background: rgba(8, 145, 178, 0.1);
+            color: var(--primary);
+        }
+
+        .stat-card-icon.accent {
+            background: rgba(5, 150, 105, 0.1);
+            color: var(--accent);
+        }
+
+        .stat-card-icon.warning {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning);
+        }
+
+        .stat-card-icon.destructive {
+            background: rgba(220, 38, 38, 0.1);
+            color: var(--destructive);
+        }
+
+        .stat-card-icon svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .stat-card-value {
+            font-family: 'Fira Code', monospace;
+            font-size: 28px;
+            font-weight: 600;
+            color: var(--foreground);
+            margin-bottom: 4px;
+        }
+
+        .stat-card-label {
+            font-size: 14px;
+            color: var(--muted-foreground);
+        }
+
+        .stat-card-trend {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 12px;
+            margin-top: 8px;
+        }
+
+        .stat-card-trend.up {
+            color: var(--accent);
+        }
+
+        .stat-card-trend.down {
+            color: var(--destructive);
+        }
+
+        /* Toolbar */
+        .toolbar {
+            background: white;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            padding: 16px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 16px;
+            border-radius: var(--radius);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            border: none;
+            font-family: inherit;
+        }
+
+        .btn svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: var(--on-primary);
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-hover);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: var(--foreground);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--muted);
+        }
+
+        .toolbar-separator {
+            width: 1px;
+            height: 32px;
+            background: var(--border);
+            margin: 0 4px;
+        }
+
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .filter-label {
+            font-size: 14px;
+            color: var(--muted-foreground);
+        }
+
+        .select-wrapper {
+            position: relative;
+        }
+
+        .select-wrapper select {
+            appearance: none;
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 8px 36px 8px 12px;
+            font-size: 14px;
+            color: var(--foreground);
+            cursor: pointer;
+            font-family: inherit;
+            min-width: 140px;
+            transition: var(--transition);
+        }
+
+        .select-wrapper select:hover {
+            border-color: var(--primary);
+        }
+
+        .select-wrapper select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(8, 145, 178, 0.1);
+        }
+
+        .select-wrapper::after {
+            content: '';
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 0;
+            height: 0;
+            border-left: 5px solid transparent;
+            border-right: 5px solid transparent;
+            border-top: 5px solid var(--gray);
+            pointer-events: none;
+        }
+
+        .search-box {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-left: auto;
+        }
+
+        .search-box input {
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 8px 12px 8px 36px;
+            font-size: 14px;
+            width: 240px;
+            font-family: inherit;
+            transition: var(--transition);
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(8, 145, 178, 0.1);
+        }
+
+        .search-box {
+            position: relative;
+        }
+
+        .search-box svg {
+            position: absolute;
+            left: 12px;
+            width: 16px;
+            height: 16px;
+            color: var(--gray);
+        }
+
+        /* Table */
+        .table-container {
+            background: white;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            overflow: hidden;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .table th {
+            background: var(--muted);
+            padding: 12px 16px;
+            text-align: left;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--foreground);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .table td {
+            padding: 14px 16px;
+            font-size: 14px;
+            border-bottom: 1px solid var(--border);
+            vertical-align: middle;
+        }
+
+        .table tbody tr {
+            transition: var(--transition);
+            cursor: pointer;
+        }
+
+        .table tbody tr:hover {
+            background: rgba(8, 145, 178, 0.04);
+        }
+
+        .table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .smo-name {
+            font-weight: 600;
+            color: var(--foreground);
+        }
+
+        .smo-company {
+            font-size: 13px;
+            color: var(--muted-foreground);
+            margin-top: 2px;
+        }
+
+        .stars {
+            color: #F59E0B;
+            letter-spacing: 1px;
+        }
+
+        .stars-empty {
+            color: var(--border);
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-badge.active {
+            background: var(--accent-light);
+            color: var(--accent);
+        }
+
+        .status-badge.inactive {
+            background: var(--gray-light);
+            color: var(--gray);
+        }
+
+        .status-badge.blacklist {
+            background: var(--destructive-light);
+            color: var(--destructive);
+        }
+
+        .action-link {
+            color: var(--primary);
+            text-decoration: none;
+            font-size: 14px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .action-link:hover {
+            text-decoration: underline;
+        }
+
+        /* Pagination */
+        .pagination {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px;
+            border-top: 1px solid var(--border);
+        }
+
+        .pagination-info {
+            font-size: 14px;
+            color: var(--muted-foreground);
+        }
+
+        .pagination-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .pagination-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            background: white;
+            color: var(--foreground);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .pagination-btn:hover:not(:disabled) {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .pagination-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .pagination-btn.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+        }
+
+        .pagination-btn svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        .page-info {
+            font-size: 14px;
+            color: var(--muted-foreground);
+            margin: 0 12px;
+        }
+
+        /* Modal Overlay */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: var(--transition);
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 8px;
+            box-shadow: var(--shadow-lg);
+            width: 90%;
+            max-width: 640px;
+            max-height: 90vh;
+            overflow: hidden;
+            transform: scale(0.95) translateY(10px);
+            transition: var(--transition);
+        }
+
+        .modal-overlay.active .modal {
+            transform: scale(1) translateY(0);
+        }
+
+        .modal.large {
+            max-width: 900px;
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--foreground);
+        }
+
+        .modal-close {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: none;
+            color: var(--gray);
+            cursor: pointer;
+            border-radius: var(--radius);
+            transition: var(--transition);
+        }
+
+        .modal-close:hover {
+            background: var(--muted);
+            color: var(--foreground);
+        }
+
+        .modal-close svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .modal-body {
+            padding: 24px;
+            overflow-y: auto;
+            max-height: calc(90vh - 140px);
+        }
+
+        .modal-footer {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 12px;
+            padding: 16px 24px;
+            border-top: 1px solid var(--border);
+            background: var(--gray-light);
+        }
+
+        /* Form Styles */
+        .form-section {
+            margin-bottom: 24px;
+        }
+
+        .form-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .form-section-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--foreground);
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .form-group.full-width {
+            grid-column: span 2;
+        }
+
+        .form-label {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--foreground);
+        }
+
+        .form-label .required {
+            color: var(--destructive);
+            margin-left: 2px;
+        }
+
+        .form-input {
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 10px 12px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: var(--transition);
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(8, 145, 178, 0.1);
+        }
+
+        .form-input::placeholder {
+            color: var(--gray);
+        }
+
+        textarea.form-input {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            accent-color: var(--primary);
+            cursor: pointer;
+        }
+
+        .checkbox-item span {
+            font-size: 14px;
+            color: var(--foreground);
+        }
+
+        .star-rating {
+            display: flex;
+            gap: 4px;
+        }
+
+        .star-rating .star {
+            width: 24px;
+            height: 24px;
+            color: var(--border);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .star-rating .star.filled {
+            color: #F59E0B;
+        }
+
+        .star-rating .star:hover {
+            color: #F59E0B;
+            transform: scale(1.1);
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            padding: 12px 20px;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--muted-foreground);
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: var(--transition);
+        }
+
+        .tab:hover {
+            color: var(--primary);
+        }
+
+        .tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Detail Info */
+        .detail-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+
+        .detail-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .detail-label {
+            font-size: 13px;
+            color: var(--muted-foreground);
+        }
+
+        .detail-value {
+            font-size: 14px;
+            color: var(--foreground);
+            font-weight: 500;
+        }
+
+        .detail-value.with-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Sub Table */
+        .sub-table-container {
+            margin-top: 16px;
+        }
+
+        .sub-table-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--foreground);
+            margin-bottom: 12px;
+        }
+
+        .sub-table {
+            width: 100%;
+            border-collapse: collapse;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+        }
+
+        .sub-table th {
+            background: var(--muted);
+            padding: 10px 12px;
+            text-align: left;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--foreground);
+        }
+
+        .sub-table td {
+            padding: 10px 12px;
+            font-size: 13px;
+            border-top: 1px solid var(--border);
+        }
+
+        .file-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        .file-status.valid {
+            background: var(--accent-light);
+            color: var(--accent);
+        }
+
+        .file-status.warning {
+            background: var(--warning-light);
+            color: var(--warning);
+        }
+
+        .file-status.expiring {
+            background: var(--destructive-light);
+            color: var(--destructive);
+        }
+
+        /* Alert Banner */
+        .alert-banner {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            background: var(--warning-light);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            border-radius: var(--radius);
+            margin-bottom: 20px;
+        }
+
+        .alert-banner svg {
+            width: 20px;
+            height: 20px;
+            color: var(--warning);
+            flex-shrink: 0;
+        }
+
+        .alert-banner-text {
+            font-size: 14px;
+            color: var(--gray-dark);
+        }
+
+        .alert-banner-text strong {
+            font-weight: 600;
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Tooltip */
+        [data-tooltip] {
+            position: relative;
+        }
+
+        [data-tooltip]:hover::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 6px 10px;
+            background: var(--gray-dark);
+            color: white;
+            font-size: 12px;
+            border-radius: 4px;
+            white-space: nowrap;
+            z-index: 10;
+            margin-bottom: 4px;
+        }
+
+        /* Responsive */
+        @media (max-width: 1440px) {
+            .stats-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+
+        @media (max-width: 1200px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .form-group.full-width {
+                grid-column: span 1;
+            }
+
+            .detail-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .toolbar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .toolbar-separator {
+                display: none;
+            }
+
+            .search-box {
+                margin-left: 0;
+            }
+
+            .search-box input {
+                width: 100%;
+            }
+        }
+
+        /* Reduced Motion */
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                    </svg>
+                    <span>研发平台</span>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <div class="nav-section-title">研发平台</div>
+                    <a class="nav-item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+                            <polyline points="9,22 9,12 15,12 15,22"/>
+                        </svg>
+                        <span>项目中心</span>
+                    </a>
+                    <a class="nav-item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/>
+                            <circle cx="12" cy="10" r="3"/>
+                        </svg>
+                        <span>中心管理</span>
+                    </a>
+                    <a class="nav-item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+                            <polyline points="14,2 14,8 20,8"/>
+                            <line x1="16" y1="13" x2="8" y2="13"/>
+                            <line x1="16" y1="17" x2="8" y2="17"/>
+                            <polyline points="10,9 9,9 8,9"/>
+                        </svg>
+                        <span>合同管理</span>
+                    </a>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">综合管理</div>
+                    <a class="nav-item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+                            <circle cx="9" cy="7" r="4"/>
+                            <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>
+                        </svg>
+                        <span>申办方</span>
+                    </a>
+                    <a class="nav-item active">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0H5m14 0h2m-16 0h2M7 11h2m8-6h2"/>
+                            <rect x="7" y="7" width="10" height="8" rx="1"/>
+                        </svg>
+                        <span>SMO管理</span>
+                    </a>
+                    <a class="nav-item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="1" y="3" width="15" height="13" rx="2" ry="2"/>
+                            <path d="M16 8h2a2 2 0 012 2v8a2 2 0 01-2 2H6a2 2 0 01-2-2v-1"/>
+                        </svg>
+                        <span>供应商</span>
+                        <span class="badge">3</span>
+                    </a>
+                    <a class="nav-item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+                            <circle cx="12" cy="7" r="4"/>
+                        </svg>
+                        <span>人员管理</span>
+                    </a>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">财务</div>
+                    <a class="nav-item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="12" y1="1" x2="12" y2="23"/>
+                            <path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>
+                        </svg>
+                        <span>预算及执行</span>
+                    </a>
+                    <a class="nav-item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
+                            <line x1="1" y1="10" x2="23" y2="10"/>
+                        </svg>
+                        <span>费用管理</span>
+                    </a>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Top Bar -->
+            <header class="topbar">
+                <nav class="breadcrumb">
+                    <a href="#">综合管理</a>
+                    <span class="breadcrumb-separator">/</span>
+                    <a href="#">合作主体</a>
+                    <span class="breadcrumb-separator">/</span>
+                    <span class="breadcrumb-current">SMO管理</span>
+                </nav>
+            </header>
+
+            <!-- Page Content -->
+            <div class="page-content">
+                <div class="page-header">
+                    <h1 class="page-title">SMO主档管理</h1>
+                    <p class="page-desc">管理SMO合作主体信息、资质文件及合作历史</p>
+                </div>
+
+                <!-- Stats Cards -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-card-header">
+                            <div class="stat-card-icon primary">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0H5m14 0h2m-16 0h2M7 11h2m8-6h2"/>
+                                    <rect x="7" y="7" width="10" height="8" rx="1"/>
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="stat-card-value">12</div>
+                        <div class="stat-card-label">合作SMO总数</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-header">
+                            <div class="stat-card-icon accent">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/>
+                                    <polyline points="22,4 12,14.01 9,11.01"/>
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="stat-card-value">9</div>
+                        <div class="stat-card-label">活跃SMO</div>
+                        <div class="stat-card-trend up">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                                <polyline points="23,6 13.5,15.5 8.5,10.5 1,18"/>
+                                <polyline points="17,6 23,6 23,12"/>
+                            </svg>
+                            本月新增1家
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-header">
+                            <div class="stat-card-icon warning">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+                                    <circle cx="9" cy="7" r="4"/>
+                                    <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="stat-card-value">186</div>
+                        <div class="stat-card-label">CRC总人数</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-header">
+                            <div class="stat-card-icon destructive">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+                                    <line x1="12" y1="9" x2="12" y2="13"/>
+                                    <line x1="12" y1="17" x2="12.01" y2="17"/>
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="stat-card-value">1</div>
+                        <div class="stat-card-label">资质预警</div>
+                    </div>
+                </div>
+
+                <!-- Toolbar -->
+                <div class="toolbar">
+                    <button class="btn btn-primary" onclick="openAddModal()">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="12" y1="5" x2="12" y2="19"/>
+                            <line x1="5" y1="12" x2="19" y2="12"/>
+                        </svg>
+                        新增SMO
+                    </button>
+                    <div class="toolbar-separator"></div>
+                    <div class="filter-group">
+                        <span class="filter-label">评级筛选</span>
+                        <div class="select-wrapper">
+                            <select id="ratingFilter">
+                                <option value="">全部</option>
+                                <option value="5">五星</option>
+                                <option value="4">四星</option>
+                                <option value="3">三星</option>
+                                <option value="2">二星</option>
+                                <option value="1">一星</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="filter-group">
+                        <span class="filter-label">状态筛选</span>
+                        <div class="select-wrapper">
+                            <select id="statusFilter">
+                                <option value="">全部</option>
+                                <option value="active">合作中</option>
+                                <option value="inactive">已停用</option>
+                                <option value="blacklist">黑名单</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="search-box">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="11" cy="11" r="8"/>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                        </svg>
+                        <input type="text" placeholder="搜索SMO名称或公司名...">
+                    </div>
+                </div>
+
+                <!-- Table -->
+                <div class="table-container">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>SMO主体</th>
+                                <th>服务区域</th>
+                                <th>CRC人数</th>
+                                <th>覆盖中心</th>
+                                <th>SMO评级</th>
+                                <th>资质数量</th>
+                                <th>状态</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr onclick="openDetailModal(0)">
+                                <td>
+                                    <div class="smo-name">恒瑞SMO</div>
+                                    <div class="smo-company">恒瑞医药SMO有限公司</div>
+                                </td>
+                                <td>北京/上海</td>
+                                <td>25人</td>
+                                <td>8家</td>
+                                <td><span class="stars">★★★★<span class="stars-empty">☆</span></span></td>
+                                <td>3个</td>
+                                <td><span class="status-badge active">合作中</span></td>
+                                <td><a class="action-link" onclick="event.stopPropagation(); openDetailModal(0)">详情</a></td>
+                            </tr>
+                            <tr onclick="openDetailModal(1)">
+                                <td>
+                                    <div class="smo-name">普蕊斯</div>
+                                    <div class="smo-company">普蕊斯医药科技开发有限公司</div>
+                                </td>
+                                <td>全国</td>
+                                <td>40人</td>
+                                <td>15家</td>
+                                <td><span class="stars">★★★★★</span></td>
+                                <td>5个</td>
+                                <td><span class="status-badge active">合作中</span></td>
+                                <td><a class="action-link" onclick="event.stopPropagation(); openDetailModal(1)">详情</a></td>
+                            </tr>
+                            <tr onclick="openDetailModal(2)">
+                                <td>
+                                    <div class="smo-name">泰格SMO</div>
+                                    <div class="smo-company">泰格医药科技股份有限公司</div>
+                                </td>
+                                <td>全国</td>
+                                <td>60人</td>
+                                <td>20家</td>
+                                <td><span class="stars">★★★★<span class="stars-empty">☆</span></span></td>
+                                <td>8个</td>
+                                <td><span class="status-badge active">合作中</span></td>
+                                <td><a class="action-link" onclick="event.stopPropagation(); openDetailModal(2)">详情</a></td>
+                            </tr>
+                            <tr onclick="openDetailModal(3)">
+                                <td>
+                                    <div class="smo-name">药明康德SMO</div>
+                                    <div class="smo-company">上海药明康德医学研究有限公司</div>
+                                </td>
+                                <td>上海/江苏</td>
+                                <td>35人</td>
+                                <td>12家</td>
+                                <td><span class="stars">★★★<span class="stars-empty">☆☆</span></span></td>
+                                <td>2个</td>
+                                <td><span class="status-badge active">合作中</span></td>
+                                <td><a class="action-link" onclick="event.stopPropagation(); openDetailModal(3)">详情</a></td>
+                            </tr>
+                            <tr onclick="openDetailModal(4)">
+                                <td>
+                                    <div class="smo-name">思默SMO</div>
+                                    <div class="smo-company">杭州思默医药科技有限公司</div>
+                                </td>
+                                <td>浙江/上海</td>
+                                <td>18人</td>
+                                <td>6家</td>
+                                <td><span class="stars">★★★★<span class="stars-empty">☆</span></span></td>
+                                <td>1个</td>
+                                <td><span class="status-badge inactive">已停用</span></td>
+                                <td><a class="action-link" onclick="event.stopPropagation(); openDetailModal(4)">详情</a></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="pagination">
+                        <div class="pagination-info">共12条</div>
+                        <div class="pagination-controls">
+                            <button class="pagination-btn" disabled>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="15,18 9,12 15,6"/>
+                                </svg>
+                            </button>
+                            <button class="pagination-btn active">1</button>
+                            <button class="pagination-btn">2</button>
+                            <button class="pagination-btn">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="9,18 15,12 9,6"/>
+                                </svg>
+                            </button>
+                            <span class="page-info">第1/2页</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Add Modal -->
+    <div class="modal-overlay" id="addModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title">新增SMO</h2>
+                <button class="modal-close" onclick="closeAddModal()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-section">
+                    <h3 class="form-section-title">基本信息</h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">SMO全称<span class="required">*</span></label>
+                            <input type="text" class="form-input" placeholder="请输入SMO全称">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">简称<span class="required">*</span></label>
+                            <input type="text" class="form-input" placeholder="请输入简称">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">统一社会信用代码</label>
+                            <input type="text" class="form-input" placeholder="请输入信用代码">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">法人代表</label>
+                            <input type="text" class="form-input" placeholder="请输入法人代表">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">注册地址</label>
+                            <input type="text" class="form-input" placeholder="请输入注册地址">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">办公地址</label>
+                            <input type="text" class="form-input" placeholder="请输入办公地址">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">联系电话</label>
+                            <input type="tel" class="form-input" placeholder="请输入联系电话">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">联系邮箱</label>
+                            <input type="email" class="form-input" placeholder="请输入邮箱">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3 class="form-section-title">SMO扩展信息</h3>
+                    <div class="form-grid">
+                        <div class="form-group full-width">
+                            <label class="form-label">服务区域</label>
+                            <div class="checkbox-group">
+                                <label class="checkbox-item">
+                                    <input type="checkbox" name="region" value="beijing">
+                                    <span>北京</span>
+                                </label>
+                                <label class="checkbox-item">
+                                    <input type="checkbox" name="region" value="shanghai">
+                                    <span>上海</span>
+                                </label>
+                                <label class="checkbox-item">
+                                    <input type="checkbox" name="region" value="guangzhou">
+                                    <span>广州</span>
+                                </label>
+                                <label class="checkbox-item">
+                                    <input type="checkbox" name="region" value="shenzhen">
+                                    <span>深圳</span>
+                                </label>
+                                <label class="checkbox-item">
+                                    <input type="checkbox" name="region" value="nationwide">
+                                    <span>全国</span>
+                                </label>
+                                <label class="checkbox-item">
+                                    <input type="checkbox" name="region" value="other">
+                                    <span>其他</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">CRC人数</label>
+                            <input type="number" class="form-input" placeholder="请输入CRC人数" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">SMO评级</label>
+                            <div class="star-rating" id="ratingStars">
+                                <svg class="star" data-value="1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/>
+                                </svg>
+                                <svg class="star" data-value="2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/>
+                                </svg>
+                                <svg class="star" data-value="3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/>
+                                </svg>
+                                <svg class="star" data-value="4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/>
+                                </svg>
+                                <svg class="star" data-value="5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/>
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">标准报价（元/小时）</label>
+                            <input type="number" class="form-input" placeholder="请输入报价" min="0">
+                        </div>
+                        <div class="form-group full-width">
+                            <label class="form-label">合作条件</label>
+                            <textarea class="form-input" placeholder="请输入合作条件"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeAddModal()">取消</button>
+                <button class="btn btn-primary">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detail Modal -->
+    <div class="modal-overlay" id="detailModal">
+        <div class="modal large">
+            <div class="modal-header">
+                <h2 class="modal-title">SMO详情</h2>
+                <button class="modal-close" onclick="closeDetailModal()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <!-- Tabs -->
+                <div class="tabs">
+                    <div class="tab active" data-tab="basic">基本信息</div>
+                    <div class="tab" data-tab="contact">联系人</div>
+                    <div class="tab" data-tab="documents">资质文件</div>
+                    <div class="tab" data-tab="history">合作历史</div>
+                    <div class="tab" data-tab="performance">绩效评价</div>
+                </div>
+
+                <!-- Alert Banner -->
+                <div class="alert-banner" id="alertBanner">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+                        <line x1="12" y1="9" x2="12" y2="13"/>
+                        <line x1="12" y1="17" x2="12.01" y2="17"/>
+                    </svg>
+                    <div class="alert-banner-text">
+                        <strong>资质预警：</strong>SMO资质将于30天后（2027-01-14）到期
+                    </div>
+                </div>
+
+                <!-- Basic Info Tab -->
+                <div class="tab-content active" id="tab-basic">
+                    <div class="detail-grid">
+                        <div class="detail-item">
+                            <span class="detail-label">SMO全称</span>
+                            <span class="detail-value" id="detail-name">恒瑞医药SMO有限公司</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">简称</span>
+                            <span class="detail-value" id="detail-shortname">恒瑞SMO</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">状态</span>
+                            <span class="detail-value with-status">
+                                <span class="status-badge active" id="detail-status">合作中</span>
+                            </span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">统一社会信用代码</span>
+                            <span class="detail-value" id="detail-code">91310000MA1K4BCN35</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">法人代表</span>
+                            <span class="detail-value" id="detail-legal">张明华</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">CRC人数</span>
+                            <span class="detail-value" id="detail-crc">25人</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">注册地址</span>
+                            <span class="detail-value" id="detail-regaddr">上海市浦东新区张江高科技园区</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">办公地址</span>
+                            <span class="detail-value" id="detail-offaddr">北京市朝阳区建国路88号</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">服务区域</span>
+                            <span class="detail-value" id="detail-region">北京/上海</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">覆盖中心</span>
+                            <span class="detail-value" id="detail-center">8家</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">SMO评级</span>
+                            <span class="detail-value" id="detail-rating"><span class="stars">★★★★<span class="stars-empty">☆</span></span></span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">标准报价</span>
+                            <span class="detail-value" id="detail-price">¥180/小时</span>
+                        </div>
+                        <div class="detail-item full-width">
+                            <span class="detail-label">合作条件</span>
+                            <span class="detail-value" id="detail-terms">标准SMO服务协议，覆盖临床试验全流程，含CRC派驻、现场管理、数据录入等</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contact Tab -->
+                <div class="tab-content" id="tab-contact">
+                    <div class="sub-table-container">
+                        <h4 class="sub-table-title">联系人列表</h4>
+                        <table class="sub-table">
+                            <thead>
+                                <tr>
+                                    <th>姓名</th>
+                                    <th>部门</th>
+                                    <th>职位</th>
+                                    <th>联系电话</th>
+                                    <th>邮箱</th>
+                                    <th>类型</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>王建国</td>
+                                    <td>商务部</td>
+                                    <td>总监</td>
+                                    <td>139****5678</td>
+                                    <td>wangjg@hengruismo.com</td>
+                                    <td><span class="status-badge active">主联系人</span></td>
+                                </tr>
+                                <tr>
+                                    <td>李晓燕</td>
+                                    <td>运营部</td>
+                                    <td>经理</td>
+                                    <td>138****4321</td>
+                                    <td>lixy@hengruismo.com</td>
+                                    <td></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Documents Tab -->
+                <div class="tab-content" id="tab-documents">
+                    <div class="sub-table-container">
+                        <h4 class="sub-table-title">资质文件列表</h4>
+                        <table class="sub-table">
+                            <thead>
+                                <tr>
+                                    <th>文件类型</th>
+                                    <th>文件名称</th>
+                                    <th>上传时间</th>
+                                    <th>有效期</th>
+                                    <th>状态</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>营业执照</td>
+                                    <td>营业执照_恒瑞SMO.pdf</td>
+                                    <td>2024-03-15</td>
+                                    <td>2034-03-15</td>
+                                    <td><span class="file-status valid">有效</span></td>
+                                    <td><a class="action-link">下载</a></td>
+                                </tr>
+                                <tr>
+                                    <td>SMO资质</td>
+                                    <td>SMO资质证书.pdf</td>
+                                    <td>2024-01-20</td>
+                                    <td>2027-01-14</td>
+                                    <td><span class="file-status warning">即将到期</span></td>
+                                    <td><a class="action-link">下载</a></td>
+                                </tr>
+                                <tr>
+                                    <td>CRC证书</td>
+                                    <td>CRC资质证书集.pdf</td>
+                                    <td>2024-02-28</td>
+                                    <td>2026-02-28</td>
+                                    <td><span class="file-status valid">有效</span></td>
+                                    <td><a class="action-link">下载</a></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- History Tab -->
+                <div class="tab-content" id="tab-history">
+                    <div class="sub-table-container">
+                        <h4 class="sub-table-title">合作历史</h4>
+                        <table class="sub-table">
+                            <thead>
+                                <tr>
+                                    <th>项目名称</th>
+                                    <th>申办方</th>
+                                    <th>合作时间</th>
+                                    <th>CRC数量</th>
+                                    <th>项目状态</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>HR001临床试验</td>
+                                    <td>恒瑞医药</td>
+                                    <td>2024.01-2024.12</td>
+                                    <td>5人</td>
+                                    <td><span class="status-badge active">进行中</span></td>
+                                </tr>
+                                <tr>
+                                    <td>HR002国际多中心</td>
+                                    <td>恒瑞医药</td>
+                                    <td>2023.06-2024.06</td>
+                                    <td>8人</td>
+                                    <td><span class="status-badge inactive">已完成</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Performance Tab -->
+                <div class="tab-content" id="tab-performance">
+                    <div class="sub-table-container">
+                        <h4 class="sub-table-title">绩效评价记录</h4>
+                        <table class="sub-table">
+                            <thead>
+                                <tr>
+                                    <th>评价周期</th>
+                                    <th>项目数量</th>
+                                    <th>平均得分</th>
+                                    <th>质量评级</th>
+                                    <th>评价人</th>
+                                    <th>评价时间</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>2024 Q3</td>
+                                    <td>3</td>
+                                    <td>92分</td>
+                                    <td><span class="stars">★★★★★</span></td>
+                                    <td>张经理</td>
+                                    <td>2024-10-01</td>
+                                </tr>
+                                <tr>
+                                    <td>2024 Q2</td>
+                                    <td>2</td>
+                                    <td>88分</td>
+                                    <td><span class="stars">★★★★☆</span></td>
+                                    <td>李总监</td>
+                                    <td>2024-07-01</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeDetailModal()">关闭</button>
+                <button class="btn btn-primary">编辑</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // SMO Data
+        const smoData = [
+            {
+                name: '恒瑞SMO',
+                fullName: '恒瑞医药SMO有限公司',
+                shortName: '恒瑞SMO',
+                region: '北京/上海',
+                crcCount: 25,
+                centerCount: 8,
+                rating: 4,
+                certCount: 3,
+                status: 'active',
+                statusText: '合作中',
+                code: '91310000MA1K4BCN35',
+                legal: '张明华',
+                regAddr: '上海市浦东新区张江高科技园区',
+                offAddr: '北京市朝阳区建国路88号',
+                price: '¥180/小时',
+                terms: '标准SMO服务协议，覆盖临床试验全流程，含CRC派驻、现场管理、数据录入等',
+                alert: true,
+                alertDate: '2027-01-14'
+            },
+            {
+                name: '普蕊斯',
+                fullName: '普蕊斯医药科技开发有限公司',
+                shortName: '普蕊斯',
+                region: '全国',
+                crcCount: 40,
+                centerCount: 15,
+                rating: 5,
+                certCount: 5,
+                status: 'active',
+                statusText: '合作中',
+                code: '91310000MA1K5CDN42',
+                legal: '李建国',
+                regAddr: '北京市海淀区中关村大街1号',
+                offAddr: '北京市海淀区中关村大街1号',
+                price: '¥200/小时',
+                terms: '全方位SMO服务解决方案，专业CRC团队覆盖全国',
+                alert: false
+            },
+            {
+                name: '泰格SMO',
+                fullName: '泰格医药科技股份有限公司',
+                shortName: '泰格SMO',
+                region: '全国',
+                crcCount: 60,
+                centerCount: 20,
+                rating: 4,
+                certCount: 8,
+                status: 'active',
+                statusText: '合作中',
+                code: '91330000MA2B3KLN56',
+                legal: '王伟',
+                regAddr: '杭州市滨江区长河街道',
+                offAddr: '杭州市滨江区长河街道',
+                price: '¥220/小时',
+                terms: '国际化SMO服务，与泰格医药共享资源',
+                alert: false
+            },
+            {
+                name: '药明康德SMO',
+                fullName: '上海药明康德医学研究有限公司',
+                shortName: '药明康德SMO',
+                region: '上海/江苏',
+                crcCount: 35,
+                centerCount: 12,
+                rating: 3,
+                certCount: 2,
+                status: 'active',
+                statusText: '合作中',
+                code: '91310000MA1K7RFG89',
+                legal: '陈明',
+                regAddr: '上海市浦东新区外高桥保税区',
+                offAddr: '上海市浦东新区外高桥保税区',
+                price: '¥170/小时',
+                terms: '专注长三角地区，实验室配套服务',
+                alert: false
+            },
+            {
+                name: '思默SMO',
+                fullName: '杭州思默医药科技有限公司',
+                shortName: '思默SMO',
+                region: '浙江/上海',
+                crcCount: 18,
+                centerCount: 6,
+                rating: 4,
+                certCount: 1,
+                status: 'inactive',
+                statusText: '已停用',
+                code: '91330000MA28YKL012',
+                legal: '刘芳',
+                regAddr: '杭州市西湖区文三路',
+                offAddr: '杭州市西湖区文三路',
+                price: '¥160/小时',
+                terms: '区域型SMO服务商',
+                alert: false
+            }
+        ];
+
+        // Modal Functions
+        function openAddModal() {
+            document.getElementById('addModal').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeAddModal() {
+            document.getElementById('addModal').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        function openDetailModal(index) {
+            const data = smoData[index];
+            
+            // Update detail info
+            document.getElementById('detail-name').textContent = data.fullName;
+            document.getElementById('detail-shortname').textContent = data.shortName;
+            
+            const statusBadge = document.getElementById('detail-status');
+            statusBadge.textContent = data.statusText;
+            statusBadge.className = 'status-badge ' + (data.status === 'active' ? 'active' : 'inactive');
+            
+            document.getElementById('detail-code').textContent = data.code;
+            document.getElementById('detail-legal').textContent = data.legal;
+            document.getElementById('detail-crc').textContent = data.crcCount + '人';
+            document.getElementById('detail-regaddr').textContent = data.regAddr;
+            document.getElementById('detail-offaddr').textContent = data.offAddr;
+            document.getElementById('detail-region').textContent = data.region;
+            document.getElementById('detail-center').textContent = data.centerCount + '家';
+            
+            const stars = '★'.repeat(data.rating) + '☆'.repeat(5 - data.rating);
+            document.getElementById('detail-rating').innerHTML = '<span class="stars">' + stars + '</span>';
+            
+            document.getElementById('detail-price').textContent = data.price;
+            document.getElementById('detail-terms').textContent = data.terms;
+            
+            // Show/hide alert
+            const alertBanner = document.getElementById('alertBanner');
+            if (data.alert) {
+                alertBanner.style.display = 'flex';
+            } else {
+                alertBanner.style.display = 'none';
+            }
+            
+            document.getElementById('detailModal').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeDetailModal() {
+            document.getElementById('detailModal').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        // Tab Functions
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                const tabName = this.dataset.tab;
+                
+                // Update tab active state
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                
+                // Update tab content
+                document.querySelectorAll('.tab-content').forEach(content => {
+                    content.classList.remove('active');
+                });
+                document.getElementById('tab-' + tabName).classList.add('active');
+            });
+        });
+
+        // Star Rating
+        let currentRating = 0;
+        
+        document.querySelectorAll('#ratingStars .star').forEach(star => {
+            star.addEventListener('click', function() {
+                currentRating = parseInt(this.dataset.value);
+                updateStars();
+            });
+            
+            star.addEventListener('mouseenter', function() {
+                const value = parseInt(this.dataset.value);
+                highlightStars(value);
+            });
+        });
+
+        document.getElementById('ratingStars').addEventListener('mouseleave', function() {
+            updateStars();
+        });
+
+        function highlightStars(count) {
+            document.querySelectorAll('#ratingStars .star').forEach((star, index) => {
+                if (index < count) {
+                    star.classList.add('filled');
+                    star.style.fill = '#F59E0B';
+                } else {
+                    star.classList.remove('filled');
+                    star.style.fill = 'none';
+                }
+            });
+        }
+
+        function updateStars() {
+            highlightStars(currentRating);
+        }
+
+        // Close modal on overlay click
+        document.querySelectorAll('.modal-overlay').forEach(overlay => {
+            overlay.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    this.classList.remove('active');
+                    document.body.style.overflow = '';
+                }
+            });
+        });
+
+        // Close modal on Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.modal-overlay.active').forEach(modal => {
+                    modal.classList.remove('active');
+                });
+                document.body.style.overflow = '';
+            }
+        });
+    </script>
+</body>
+</html>

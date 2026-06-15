@@ -1,0 +1,1824 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>项目其他合作方 - CRO临床研究SaaS平台</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #0891B2;
+            --primary-light: #22D3EE;
+            --primary-dark: #0E7490;
+            --accent: #059669;
+            --accent-light: #10B981;
+            --bg: #ECFEFF;
+            --bg-alt: #F0FDFA;
+            --foreground: #164E63;
+            --foreground-light: #155E75;
+            --muted: #E8F1F6;
+            --muted-dark: #CBD5E1;
+            --border: #A5F3FC;
+            --border-light: #CFFAFE;
+            --destructive: #DC2626;
+            --destructive-light: #FEE2E2;
+            --warning: #F59E0B;
+            --warning-light: #FEF3C7;
+            --success: #059669;
+            --success-light: #D1FAE5;
+            --shadow-sm: 0 1px 2px rgba(22, 78, 99, 0.05);
+            --shadow: 0 4px 6px -1px rgba(22, 78, 99, 0.1), 0 2px 4px -1px rgba(22, 78, 99, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(22, 78, 99, 0.1), 0 4px 6px -2px rgba(22, 78, 99, 0.05);
+            --radius: 12px;
+            --radius-sm: 8px;
+            --radius-lg: 16px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Fira Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, var(--bg) 0%, #E0F7FA 50%, var(--bg-alt) 100%);
+            min-height: 100vh;
+            color: var(--foreground);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1440px;
+            margin: 0 auto;
+            padding: 24px 32px;
+        }
+
+        /* Drawer Overlay */
+        .drawer-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.3);
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        .drawer-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        .drawer {
+            position: fixed;
+            top: 0;
+            right: -560px;
+            bottom: 0;
+            width: 560px;
+            background: #fff;
+            box-shadow: -4px 0 16px rgba(0,0,0,0.1);
+            transition: right 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            z-index: 1001;
+        }
+        .drawer-overlay.active .drawer {
+            right: 0;
+        }
+        .drawer-header {
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--border-light);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: linear-gradient(90deg, var(--bg) 0%, white 100%);
+        }
+        .drawer-header-left {
+            display: flex;
+            flex-direction: column;
+        }
+        .drawer-breadcrumb {
+            font-size: 12px;
+            color: #6B7280;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .drawer-breadcrumb span {
+            color: var(--primary);
+            cursor: pointer;
+        }
+        .drawer-breadcrumb span:hover {
+            text-decoration: underline;
+        }
+        .drawer-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--foreground);
+        }
+        .drawer-close {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+            background: var(--muted);
+            color: var(--foreground-light);
+            font-size: 20px;
+        }
+        .drawer-close:hover {
+            background: var(--destructive-light);
+            color: var(--destructive);
+        }
+        .drawer-tabs {
+            padding: 0 24px;
+            border-bottom: 2px solid var(--muted);
+            display: flex;
+            gap: 0;
+        }
+        .drawer-tab {
+            padding: 12px 16px;
+            font-size: 14px;
+            color: #6B7280;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
+            transition: all 0.2s;
+        }
+        .drawer-tab:hover {
+            color: var(--primary);
+        }
+        .drawer-tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+            font-weight: 500;
+        }
+        .drawer-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px;
+        }
+        .drawer-back {
+            font-size: 13px;
+            color: var(--primary);
+            cursor: pointer;
+            margin-bottom: 12px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .drawer-back:hover {
+            text-decoration: underline;
+        }
+        .drawer-footer {
+            padding: 16px 24px;
+            border-top: 1px solid var(--border-light);
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            background: var(--bg);
+        }
+
+        /* Breadcrumb */
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: var(--foreground-light);
+            margin-bottom: 20px;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-light);
+        }
+
+        .breadcrumb a {
+            color: var(--primary);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .breadcrumb a:hover {
+            color: var(--primary-dark);
+        }
+
+        .breadcrumb span {
+            color: var(--muted-dark);
+        }
+
+        .breadcrumb .current {
+            color: var(--foreground);
+            font-weight: 500;
+        }
+
+        /* Project Header */
+        .project-header {
+            background: linear-gradient(145deg, #ffffff 0%, rgba(255,255,255,0.95) 100%);
+            border-radius: var(--radius);
+            padding: 24px 28px;
+            border: 1px solid var(--border-light);
+            box-shadow: var(--shadow);
+            margin-bottom: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .project-header::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 5px;
+            background: linear-gradient(180deg, var(--primary), var(--accent));
+        }
+
+        .project-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .project-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: var(--radius);
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            box-shadow: 0 4px 12px rgba(8, 145, 178, 0.3);
+        }
+
+        .project-details h1 {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--foreground);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .project-code {
+            font-family: 'Fira Code', monospace;
+            font-size: 14px;
+            color: var(--primary);
+            background: rgba(8, 145, 178, 0.1);
+            padding: 4px 10px;
+            border-radius: 4px;
+        }
+
+        .project-meta {
+            display: flex;
+            gap: 24px;
+            margin-top: 8px;
+        }
+
+        .project-meta-item {
+            font-size: 13px;
+            color: var(--foreground-light);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .project-status-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-badge {
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .status-badge.ongoing {
+            background: var(--success-light);
+            color: var(--success);
+        }
+
+        .status-badge.preparing {
+            background: var(--warning-light);
+            color: var(--warning);
+        }
+
+        .status-badge::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+
+        /* Action buttons */
+        .header-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            font-weight: 500;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            box-shadow: 0 2px 8px rgba(8, 145, 178, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(8, 145, 178, 0.4);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: var(--foreground);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg);
+            border-color: var(--primary);
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--primary);
+            border: 1px solid var(--primary);
+        }
+
+        .btn-outline:hover {
+            background: rgba(8, 145, 178, 0.05);
+        }
+
+        /* Stats row */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .mini-stat {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: var(--radius-sm);
+            padding: 16px 20px;
+            border: 1px solid var(--border-light);
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .mini-stat-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .mini-stat-icon.cyan { background: rgba(8, 145, 178, 0.1); color: var(--primary); }
+        .mini-stat-icon.purple { background: rgba(139, 92, 246, 0.1); color: #7C3AED; }
+        .mini-stat-icon.green { background: rgba(5, 150, 105, 0.1); color: var(--accent); }
+        .mini-stat-icon.orange { background: rgba(245, 158, 11, 0.1); color: var(--warning); }
+
+        .mini-stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--foreground);
+            font-family: 'Fira Code', monospace;
+        }
+
+        .mini-stat-label {
+            font-size: 12px;
+            color: var(--foreground-light);
+            margin-top: 2px;
+        }
+
+        /* Table Container */
+        .table-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: var(--radius);
+            border: 1px solid var(--border-light);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        .table-header {
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--border-light);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(90deg, rgba(232, 254, 255, 0.5) 0%, transparent 100%);
+        }
+
+        .table-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--foreground);
+        }
+
+        .table-info {
+            font-size: 13px;
+            color: var(--foreground-light);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: var(--muted);
+        }
+
+        th {
+            padding: 14px 20px;
+            text-align: left;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--foreground-light);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        td {
+            padding: 16px 20px;
+            font-size: 14px;
+            border-bottom: 1px solid var(--border-light);
+            transition: background 0.2s;
+        }
+
+        tbody tr {
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        tbody tr:hover {
+            background: linear-gradient(90deg, rgba(232, 254, 255, 0.4) 0%, rgba(255, 255, 255, 0.4) 100%);
+        }
+
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .company-name {
+            font-weight: 600;
+            color: var(--foreground);
+        }
+
+        /* Type Tags */
+        .tag {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+
+        .tag-lab {
+            background: linear-gradient(135deg, #DBEAFE 0%, #BFDBFE 100%);
+            color: #1D4ED8;
+        }
+
+        .tag-irc {
+            background: linear-gradient(135deg, #F3E8FF 0%, #E9D5FF 100%);
+            color: #7C3AED;
+        }
+
+        .tag-data {
+            background: linear-gradient(135deg, #CFFAFE 0%, #A5F3FC 100%);
+            color: #0891B2;
+        }
+
+        .tag-stat {
+            background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%);
+            color: #B45309;
+        }
+
+        .tag-other {
+            background: linear-gradient(135deg, #F1F5F9 0%, #E2E8F0 100%);
+            color: #64748B;
+        }
+
+        /* Role Tags */
+        .role-tag {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .role-tag.primary {
+            background: linear-gradient(135deg, #DCFCE7 0%, #BBF7D0 100%);
+            color: #166534;
+        }
+
+        .role-tag.backup {
+            background: linear-gradient(135deg, #FEF9C3 0%, #FEF08A 100%);
+            color: #854D0E;
+        }
+
+        .role-tag.consultant {
+            background: linear-gradient(135deg, #E0E7FF 0%, #C7D2FE 100%);
+            color: #3730A3;
+        }
+
+        /* Contract Status Tag */
+        .contract-status-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .contract-status-tag:hover {
+            filter: brightness(0.95);
+        }
+
+        .contract-status-tag.valid {
+            background: #D1FAE5;
+            color: #059669;
+        }
+
+        .contract-status-tag.expiring {
+            background: #FEF3C7;
+            color: #D97706;
+        }
+
+        .contract-status-tag.expired {
+            background: #FEE2E2;
+            color: #DC2626;
+        }
+
+        .contract-status-tag.pending {
+            background: #F3F4F6;
+            color: #6B7280;
+        }
+
+        .contract-status-tag::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-badge.active {
+            background: var(--success-light);
+            color: var(--success);
+        }
+
+        .status-badge.inactive {
+            background: var(--muted);
+            color: #64748B;
+        }
+
+        .status-badge::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+
+        /* Clickable number */
+        .clickable-number {
+            color: var(--primary);
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .clickable-number:hover {
+            text-decoration: underline;
+        }
+
+        /* Action Buttons */
+        .action-btns {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid var(--border);
+            background: white;
+            color: var(--foreground-light);
+        }
+
+        .btn-icon:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            background: rgba(8, 145, 178, 0.05);
+        }
+
+        .btn-icon.danger:hover {
+            border-color: var(--destructive);
+            color: var(--destructive);
+            background: var(--destructive-light);
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(22, 78, 99, 0.5);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal {
+            background: white;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            max-width: 700px;
+            width: 90%;
+            max-height: 90vh;
+            overflow: hidden;
+            transform: scale(0.9) translateY(20px);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .modal-overlay.active .modal {
+            transform: scale(1) translateY(0);
+        }
+
+        .modal-header {
+            padding: 20px 28px;
+            border-bottom: 1px solid var(--border-light);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(90deg, var(--bg) 0%, white 100%);
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--foreground);
+        }
+
+        .modal-close {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+            background: var(--muted);
+            color: var(--foreground-light);
+            font-size: 20px;
+        }
+
+        .modal-close:hover {
+            background: var(--destructive-light);
+            color: var(--destructive);
+        }
+
+        .modal-body {
+            padding: 28px;
+            overflow-y: auto;
+            max-height: calc(90vh - 140px);
+        }
+
+        .modal-footer {
+            padding: 16px 28px;
+            border-top: 1px solid var(--border-light);
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            background: var(--bg);
+        }
+
+        /* Progress Bar */
+        .progress-bar {
+            width: 100px;
+            height: 8px;
+            background: #E8F1F6;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: #059669;
+            border-radius: 4px;
+            transition: width 0.3s;
+        }
+
+        /* Form */
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--foreground);
+        }
+
+        .form-label .required {
+            color: var(--destructive);
+            margin-left: 2px;
+        }
+
+        .form-input, .form-select {
+            padding: 12px 14px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            font-family: inherit;
+            transition: all 0.2s;
+        }
+
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(8, 145, 178, 0.1);
+        }
+
+        textarea.form-input {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        /* Partner Search */
+        .partner-search {
+            position: relative;
+        }
+
+        .partner-search input {
+            width: 100%;
+            padding: 12px 14px 12px 40px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            font-family: inherit;
+            transition: all 0.2s;
+        }
+
+        .partner-search input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(8, 145, 178, 0.1);
+        }
+
+        .partner-search::before {
+            content: '🔍';
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 14px;
+        }
+
+        /* Partner dropdown */
+        .partner-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            box-shadow: var(--shadow-lg);
+            max-height: 240px;
+            overflow-y: auto;
+            z-index: 100;
+            display: none;
+        }
+
+        .partner-dropdown.show {
+            display: block;
+        }
+
+        .partner-option {
+            padding: 12px 14px;
+            cursor: pointer;
+            transition: background 0.2s;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .partner-option:last-child {
+            border-bottom: none;
+        }
+
+        .partner-option:hover {
+            background: rgba(8, 145, 178, 0.05);
+        }
+
+        .partner-option-name {
+            font-weight: 500;
+            color: var(--foreground);
+            font-size: 14px;
+        }
+
+        .partner-option-meta {
+            font-size: 12px;
+            color: var(--foreground-light);
+            margin-top: 2px;
+        }
+
+        /* Selected partner */
+        .selected-partner {
+            display: flex;
+            align-items: center;
+            padding: 12px 14px;
+            background: rgba(8, 145, 178, 0.05);
+            border: 1px solid var(--primary);
+            border-radius: var(--radius-sm);
+            margin-top: 8px;
+        }
+
+        .selected-partner-name {
+            flex: 1;
+            font-weight: 500;
+            color: var(--foreground);
+        }
+
+        .selected-partner-type {
+            margin-right: 12px;
+        }
+
+        .selected-partner-remove {
+            cursor: pointer;
+            color: var(--foreground-light);
+            font-size: 18px;
+            transition: color 0.2s;
+        }
+
+        .selected-partner-remove:hover {
+            color: var(--destructive);
+        }
+
+        /* Drawer Content Styles */
+        .drawer-section {
+            margin-bottom: 24px;
+        }
+
+        .drawer-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .drawer-section-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--foreground);
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .drawer-row {
+            display: flex;
+            padding: 8px 0;
+            font-size: 14px;
+        }
+
+        .drawer-label {
+            width: 100px;
+            color: var(--foreground-light);
+            flex-shrink: 0;
+        }
+
+        .drawer-value {
+            color: var(--foreground);
+            font-weight: 500;
+            flex: 1;
+        }
+
+        /* Contract Preview in Drawer */
+        .contract-preview {
+            background: rgba(8, 145, 178, 0.05);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 16px;
+        }
+
+        .contract-preview-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .contract-preview-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--foreground);
+        }
+
+        .contract-preview-row {
+            display: flex;
+            padding: 6px 0;
+            font-size: 13px;
+        }
+
+        .contract-preview-label {
+            width: 80px;
+            color: var(--foreground-light);
+        }
+
+        .contract-preview-value {
+            color: var(--foreground);
+            font-weight: 500;
+        }
+
+        /* Center List in Drawer */
+        .center-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            margin-bottom: 8px;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .center-item:hover {
+            border-color: var(--primary);
+            background: rgba(8, 145, 178, 0.05);
+        }
+
+        .center-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .center-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 18px;
+            margin-right: 12px;
+        }
+
+        .center-info {
+            flex: 1;
+        }
+
+        .center-name {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--foreground);
+        }
+
+        .center-meta {
+            font-size: 12px;
+            color: var(--foreground-light);
+            margin-top: 2px;
+        }
+
+        /* Mini Table in Drawer */
+        .mini-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        .mini-table th {
+            padding: 10px 12px;
+            text-align: left;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--foreground-light);
+            text-transform: uppercase;
+            background: var(--muted);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .mini-table td {
+            padding: 12px;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .mini-table tr:hover td {
+            background: rgba(8, 145, 178, 0.03);
+            cursor: pointer;
+        }
+
+        /* Tab content */
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Center count badge */
+        .center-count-badge {
+            background: rgba(8, 145, 178, 0.1);
+            color: var(--primary);
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 500;
+            margin-left: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Breadcrumb -->
+        <div class="breadcrumb">
+            <a href="#">首页</a>
+            <span>/</span>
+            <a href="#">项目列表</a>
+            <span>/</span>
+            <span class="current">项目其他合作方</span>
+        </div>
+
+        <!-- Project Header -->
+        <div class="project-header">
+            <div class="project-info">
+                <div class="project-icon">💊</div>
+                <div class="project-details">
+                    <h1>
+                        某抗肿瘤药物III期临床研究
+                        <span class="project-code">PD-001</span>
+                    </h1>
+                    <div class="project-meta">
+                        <div class="project-meta-item">
+                            <span>📍</span> 12家研究中心
+                        </div>
+                        <div class="project-meta-item">
+                            <span>👥</span> 156例入组
+                        </div>
+                        <div class="project-meta-item">
+                            <span>📅</span> 2024-01-15 启动
+                        </div>
+                        <div class="project-meta-item">
+                            <span>⏱️</span> 预计36个月
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="project-status-badge">
+                <span class="status-badge ongoing">进行中</span>
+                <div class="header-actions">
+                    <button class="btn btn-secondary">返回项目</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Row -->
+        <div class="stats-row">
+            <div class="mini-stat">
+                <div class="mini-stat-icon cyan">🏢</div>
+                <div>
+                    <div class="mini-stat-value">6</div>
+                    <div class="mini-stat-label">关联合作方</div>
+                </div>
+            </div>
+            <div class="mini-stat">
+                <div class="mini-stat-icon purple">🔬</div>
+                <div>
+                    <div class="mini-stat-value">2</div>
+                    <div class="mini-stat-label">检测公司</div>
+                </div>
+            </div>
+            <div class="mini-stat">
+                <div class="mini-stat-icon orange">📋</div>
+                <div>
+                    <div class="mini-stat-value">1</div>
+                    <div class="mini-stat-label">IRC</div>
+                </div>
+            </div>
+            <div class="mini-stat">
+                <div class="mini-stat-icon green">📄</div>
+                <div>
+                    <div class="mini-stat-value">5</div>
+                    <div class="mini-stat-label">已签合同</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Table -->
+        <div class="table-container">
+            <div class="table-header">
+                <span class="table-title">关联合作方列表</span>
+                <button class="btn btn-primary" onclick="openAddModal()">
+                    <span>＋</span> 关联合作方
+                </button>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>合作方名称</th>
+                        <th>类型</th>
+                        <th>角色</th>
+                        <th style="text-align:center">覆盖中心</th>
+                        <th>合同状态</th>
+                        <th>状态</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Drawer Overlay -->
+    <div class="drawer-overlay" id="drawerOverlay">
+        <div class="drawer">
+            <div class="drawer-header">
+                <div class="drawer-header-left">
+                    <div class="drawer-breadcrumb" id="drawerBreadcrumb">
+                        合作方详情
+                    </div>
+                    <div class="drawer-title" id="drawerTitle">合作方详情</div>
+                </div>
+                <button class="drawer-close" onclick="closeDrawer()">×</button>
+            </div>
+            <div class="drawer-tabs" id="drawerTabs">
+                <div class="drawer-tab active" onclick="switchDrawerTab('basic')">基本信息</div>
+                <div class="drawer-tab" onclick="switchDrawerTab('centers')">覆盖中心</div>
+                <div class="drawer-tab" onclick="switchDrawerTab('fees')">费用</div>
+                <div class="drawer-tab" onclick="switchDrawerTab('contracts')">合同信息</div>
+            </div>
+            <div class="drawer-body" id="drawerBody">
+                <!-- Dynamic content will be inserted here -->
+            </div>
+            <div class="drawer-footer">
+                <button class="btn btn-secondary" onclick="closeDrawer()">关闭</button>
+                <button class="btn btn-primary" id="drawerEditBtn" onclick="editFromDrawer()">编辑</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Modal -->
+    <div class="modal-overlay" id="addModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">关联合作方</h3>
+                <button class="modal-close" onclick="closeModal('addModal')">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">搜索合作方<span class="required">*</span></label>
+                    <div class="partner-search" id="partnerSearch">
+                        <input type="text" placeholder="输入合作方名称搜索..." id="partnerInput" oninput="searchPartners()" onfocus="showPartnerDropdown()">
+                        <div class="partner-dropdown" id="partnerDropdown">
+                        </div>
+                    </div>
+                    <div class="selected-partner" id="selectedPartner" style="display:none;">
+                        <span class="selected-partner-name" id="selectedPartnerName"></span>
+                        <span class="selected-partner-type tag" id="selectedPartnerType"></span>
+                        <span class="selected-partner-remove" onclick="removeSelectedPartner()">×</span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">合作角色<span class="required">*</span></label>
+                    <select class="form-select" id="partnerRole">
+                        <option value="">请选择角色</option>
+                        <option value="PRIMARY">主检测 / 主服务</option>
+                        <option value="BACKUP">备份</option>
+                        <option value="CONSULTANT">顾问</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">备注</label>
+                    <textarea class="form-input" placeholder="请输入备注信息..." id="partnerRemark"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('addModal')">取消</button>
+                <button class="btn btn-primary" onclick="savePartnerRelation()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Mock Data
+        const partners = [
+            { id: 1, name: '金域检测', shortName: '金域', type: 'LAB', typeText: '检测公司', phone: '020-88888888', address: '广州市海珠区国际生物岛', contractStatus: 'valid', contractId: 'CT-2024-001', contractAmount: 5000000, contractExecuted: 3200000, status: 'active', role: 'PRIMARY', roleText: '主检测', linkDate: '2024-01-20', contact: '张经理 138-0000-1234', remark: '提供中心实验室检测服务', centers: 8, centerList: [
+                { id: 'C-001', name: '北京协和医院', breadcrumb: 'PD-001 > 中心001' },
+                { id: 'C-002', name: '复旦大学附属中山医院', breadcrumb: 'PD-001 > 中心002' },
+                { id: 'C-003', name: '华西医院', breadcrumb: 'PD-001 > 中心003' },
+                { id: 'C-004', name: '广东省人民医院', breadcrumb: 'PD-001 > 中心004' },
+                { id: 'C-005', name: '武汉同济医院', breadcrumb: 'PD-001 > 中心005' }
+            ]},
+            { id: 2, name: '迪安诊断', shortName: '迪安', type: 'LAB', typeText: '检测公司', phone: '0571-88888888', address: '杭州市西湖区文三路', contractStatus: 'valid', contractId: 'CT-2024-002', contractAmount: 3000000, contractExecuted: 1500000, status: 'active', role: 'BACKUP', roleText: '备份', linkDate: '2024-01-20', contact: '李经理 139-0000-5678', remark: '备用检测服务商', centers: 5, centerList: [
+                { id: 'C-006', name: '浙江省人民医院', breadcrumb: 'PD-001 > 中心006' },
+                { id: 'C-007', name: '南京鼓楼医院', breadcrumb: 'PD-001 > 中心007' }
+            ]},
+            { id: 3, name: 'IRC-A', shortName: 'IRC-A', type: 'IRC', typeText: 'IRC', phone: '010-66666666', address: '北京市朝阳区建国路', contractStatus: 'expiring', contractId: 'CT-IRC-001', contractAmount: 1500000, contractExecuted: 750000, status: 'active', role: 'CONSULTANT', roleText: '顾问', linkDate: '2024-02-15', contact: '王主任 137-0000-9012', remark: '独立影像评审', centers: 3, centerList: [
+                { id: 'C-001', name: '北京协和医院', breadcrumb: 'PD-001 > IRC-A > 中心001' },
+                { id: 'C-006', name: '浙江省人民医院', breadcrumb: 'PD-001 > IRC-A > 中心006' }
+            ]},
+            { id: 4, name: 'Medidata中国', shortName: 'Medidata', type: 'DATA_MANAGER', typeText: '数据管理', phone: '021-55555555', address: '上海市浦东新区张江', contractStatus: 'valid', contractId: 'CT-DM-001', contractAmount: 2000000, contractExecuted: 1200000, status: 'active', role: 'PRIMARY', roleText: '主服务', linkDate: '2024-01-25', contact: '陈经理 136-0000-3456', remark: 'EDC系统服务', centers: 6, centerList: [
+                { id: 'C-001', name: '北京协和医院', breadcrumb: 'PD-001 > Medidata > 中心001' },
+                { id: 'C-003', name: '华西医院', breadcrumb: 'PD-001 > Medidata > 中心003' }
+            ]},
+            { id: 5, name: '百洋智能', shortName: '百洋', type: 'DATA_MANAGER', typeText: '数据管理', phone: '0532-44444444', address: '青岛市崂山区海尔路', contractStatus: 'pending', contractId: 'CT-DM-002', contractAmount: 1000000, contractExecuted: 0, status: 'active', role: 'BACKUP', roleText: '备份', linkDate: '2024-03-01', contact: '赵经理 135-0000-7890', remark: '数据管理备选', centers: 2, centerList: []},
+            { id: 6, name: '赛仕统计', shortName: '赛仕', type: 'STAT_ANALYST', typeText: '统计分析', phone: '010-33333333', address: '北京市海淀区中关村', contractStatus: 'valid', contractId: 'CT-STAT-001', contractAmount: 1500000, contractExecuted: 900000, status: 'active', role: 'CONSULTANT', roleText: '顾问', linkDate: '2024-02-20', contact: '刘经理 134-0000-2345', remark: '统计分析服务', centers: 4, centerList: []},
+        ];
+
+        const allPartners = [
+            { id: 7, name: '艾迪康', shortName: '艾迪康', type: 'LAB', typeText: '检测公司' },
+            { id: 8, name: 'IRC-B', shortName: 'IRC-B', type: 'IRC', typeText: 'IRC' },
+            { id: 9, name: '泰格医药', shortName: '泰格', type: 'OTHER', typeText: '其他' },
+            { id: 10, name: '昆皓睿智', shortName: '昆皓', type: 'OTHER', typeText: '其他' },
+        ];
+
+        const typeTags = {
+            'LAB': 'tag-lab',
+            'IRC': 'tag-irc',
+            'DATA_MANAGER': 'tag-data',
+            'STAT_ANALYST': 'tag-stat',
+            'OTHER': 'tag-other'
+        };
+
+        const roleTags = {
+            'PRIMARY': 'primary',
+            'BACKUP': 'backup',
+            'CONSULTANT': 'consultant'
+        };
+
+        const contractStatusLabels = {
+            'valid': { text: '有效', class: 'valid' },
+            'expiring': { text: '即将到期', class: 'expiring' },
+            'expired': { text: '已到期', class: 'expired' },
+            'pending': { text: '待签署', class: 'pending' }
+        };
+
+        let currentPartner = null;
+        let selectedPartnerData = null;
+        let drawerStack = [];
+        let currentDrawerTab = 'basic';
+
+        // Render table
+        function renderTable() {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = partners.map(p => `
+                <tr onclick="viewDetail(${p.id})">
+                    <td><div class="company-name">${p.name}</div></td>
+                    <td><span class="tag ${typeTags[p.type]}">${p.typeText}</span></td>
+                    <td><span class="role-tag ${roleTags[p.role]}">${p.roleText}</span></td>
+                    <td style="text-align:center"><span class="clickable-number" onclick="event.stopPropagation(); openCentersInDrawer(${p.id})">${p.centers}</span></td>
+                    <td><span class="contract-status-tag ${contractStatusLabels[p.contractStatus].class}" data-contract-id="${p.contractId}" onclick="event.stopPropagation(); openContractInDrawer('${p.contractId}')">${contractStatusLabels[p.contractStatus].text}</span></td>
+                    <td><span class="status-badge ${p.status}">${p.status === 'active' ? '合作中' : '已结束'}</span></td>
+                    <td>
+                        <div class="action-btns" onclick="event.stopPropagation()">
+                            <button class="btn-icon" title="编辑" onclick="editRelation(${p.id})">✏️</button>
+                            <button class="btn-icon danger" title="解除关联" onclick="removeRelation(${p.id})">🔗</button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Search partners
+        function searchPartners() {
+            const query = document.getElementById('partnerInput').value.toLowerCase();
+            const dropdown = document.getElementById('partnerDropdown');
+            
+            if (query.length < 1) {
+                dropdown.classList.remove('show');
+                return;
+            }
+
+            const availablePartners = allPartners.filter(p => 
+                p.name.toLowerCase().includes(query) || p.shortName.toLowerCase().includes(query)
+            );
+
+            if (availablePartners.length > 0) {
+                dropdown.innerHTML = availablePartners.map(p => `
+                    <div class="partner-option" onclick="selectPartner(${p.id})">
+                        <div class="partner-option-name">${p.name}</div>
+                        <div class="partner-option-meta">${p.typeText}</div>
+                    </div>
+                `).join('');
+                dropdown.classList.add('show');
+            } else {
+                dropdown.innerHTML = '<div class="partner-option"><div class="partner-option-name">未找到匹配的合作方</div></div>';
+                dropdown.classList.add('show');
+            }
+        }
+
+        function showPartnerDropdown() {
+            const query = document.getElementById('partnerInput').value;
+            if (query.length >= 1) {
+                searchPartners();
+            }
+        }
+
+        function selectPartner(id) {
+            const partner = allPartners.find(p => p.id === id);
+            if (partner) {
+                selectedPartnerData = partner;
+                document.getElementById('partnerInput').value = partner.name;
+                document.getElementById('selectedPartner').style.display = 'flex';
+                document.getElementById('selectedPartnerName').textContent = partner.name;
+                document.getElementById('selectedPartnerType').textContent = partner.typeText;
+                document.getElementById('selectedPartnerType').className = `selected-partner-type tag ${typeTags[partner.type]}`;
+                document.getElementById('partnerDropdown').classList.remove('show');
+            }
+        }
+
+        function removeSelectedPartner() {
+            selectedPartnerData = null;
+            document.getElementById('partnerInput').value = '';
+            document.getElementById('selectedPartner').style.display = 'none';
+        }
+
+        function openAddModal() {
+            selectedPartnerData = null;
+            document.getElementById('partnerInput').value = '';
+            document.getElementById('selectedPartner').style.display = 'none';
+            document.getElementById('partnerRole').value = '';
+            document.getElementById('partnerRemark').value = '';
+            document.getElementById('addModal').classList.add('active');
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('active');
+        }
+
+        function savePartnerRelation() {
+            if (!selectedPartnerData) {
+                alert('请选择合作方');
+                return;
+            }
+            if (!document.getElementById('partnerRole').value) {
+                alert('请选择合作角色');
+                return;
+            }
+            closeModal('addModal');
+        }
+
+        function editRelation(id) {
+            currentPartner = partners.find(p => p.id === id);
+            openAddModal();
+        }
+
+        function removeRelation(id) {
+            if (confirm('确定要解除该合作方关联吗？')) {
+                console.log('Removed relation:', id);
+            }
+        }
+
+        // Drawer functions
+        function openDrawer() {
+            document.getElementById('drawerOverlay').classList.add('active');
+        }
+
+        function closeDrawer() {
+            if (drawerStack.length > 0) {
+                drawerStackPop();
+            } else {
+                document.getElementById('drawerOverlay').classList.remove('active');
+                currentPartner = null;
+            }
+        }
+
+        function drawerStackPush(view, data, title) {
+            drawerStack.push({
+                view: view,
+                data: data,
+                title: title,
+                tab: currentDrawerTab
+            });
+            updateDrawerBreadcrumb();
+            renderDrawerContent(view, data);
+        }
+
+        function drawerStackPop() {
+            if (drawerStack.length > 1) {
+                drawerStack.pop();
+                const prev = drawerStack[drawerStack.length - 1];
+                currentDrawerTab = prev.tab;
+                updateDrawerBreadcrumb();
+                renderDrawerContent(prev.view, prev.data);
+            } else {
+                drawerStack = [];
+                document.getElementById('drawerOverlay').classList.remove('active');
+                currentPartner = null;
+            }
+        }
+
+        function updateDrawerBreadcrumb() {
+            const breadcrumb = document.getElementById('drawerBreadcrumb');
+            const title = document.getElementById('drawerTitle');
+            
+            if (drawerStack.length <= 1) {
+                breadcrumb.innerHTML = '合作方详情';
+                title.textContent = currentPartner ? currentPartner.name : '详情';
+                document.getElementById('drawerEditBtn').style.display = 'inline-flex';
+            } else {
+                const current = drawerStack[drawerStack.length - 1];
+                breadcrumb.innerHTML = `<span onclick="drawerGoBack()">合作方详情</span> > ${current.title}`;
+                title.textContent = current.title;
+                document.getElementById('drawerEditBtn').style.display = 'none';
+            }
+            
+            // Update tabs visibility
+            const tabs = document.getElementById('drawerTabs');
+            if (drawerStack.length <= 1) {
+                tabs.style.display = 'flex';
+            } else {
+                tabs.style.display = 'none';
+            }
+        }
+
+        function drawerGoBack() {
+            drawerStackPop();
+        }
+
+        function renderDrawerContent(view, data) {
+            const body = document.getElementById('drawerBody');
+            
+            switch(view) {
+                case 'partner-detail':
+                    renderPartnerDetail(data);
+                    break;
+                case 'partner-centers':
+                    renderPartnerCenters(data);
+                    break;
+                case 'center-detail':
+                    renderCenterDetail(data);
+                    break;
+                case 'contract-preview':
+                    renderContractPreview(data);
+                    break;
+            }
+        }
+
+        function renderPartnerDetail(partner) {
+            const progress = Math.round((partner.contractExecuted / partner.contractAmount) * 100);
+            const body = document.getElementById('drawerBody');
+            body.innerHTML = `
+                <div class="tab-content active" id="basicTab">
+                    <div class="drawer-section">
+                        <div class="drawer-section-title">基本信息</div>
+                        <div class="drawer-row">
+                            <div class="drawer-label">合作方名称</div>
+                            <div class="drawer-value">${partner.name}</div>
+                        </div>
+                        <div class="drawer-row">
+                            <div class="drawer-label">合作方类型</div>
+                            <div class="drawer-value"><span class="tag ${typeTags[partner.type]}">${partner.typeText}</span></div>
+                        </div>
+                        <div class="drawer-row">
+                            <div class="drawer-label">合作角色</div>
+                            <div class="drawer-value"><span class="role-tag ${roleTags[partner.role]}">${partner.roleText}</span></div>
+                        </div>
+                        <div class="drawer-row">
+                            <div class="drawer-label">联系电话</div>
+                            <div class="drawer-value">${partner.phone}</div>
+                        </div>
+                        <div class="drawer-row">
+                            <div class="drawer-label">联系地址</div>
+                            <div class="drawer-value">${partner.address}</div>
+                        </div>
+                    </div>
+                    <div class="drawer-section">
+                        <div class="drawer-section-title">项目合作信息</div>
+                        <div class="drawer-row">
+                            <div class="drawer-label">关联日期</div>
+                            <div class="drawer-value">${partner.linkDate}</div>
+                        </div>
+                        <div class="drawer-row">
+                            <div class="drawer-label">覆盖中心</div>
+                            <div class="drawer-value"><span class="clickable-link" onclick="openCentersInDrawer(${partner.id})">${partner.centers}家<span class="center-count-badge">查看</span></span></div>
+                        </div>
+                        <div class="drawer-row">
+                            <div class="drawer-label">项目联系人</div>
+                            <div class="drawer-value">${partner.contact}</div>
+                        </div>
+                        <div class="drawer-row">
+                            <div class="drawer-label">备注</div>
+                            <div class="drawer-value">${partner.remark || '-'}</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-content" id="centersTab">
+                    <div class="drawer-section">
+                        <div class="drawer-section-title">覆盖中心 (${partner.centers}家)</div>
+                        ${partner.centerList.length > 0 ? partner.centerList.map(center => `
+                            <div class="center-item" onclick="drawerStackPush('center-detail', center, center.name)">
+                                <div class="center-icon">🏥</div>
+                                <div class="center-info">
+                                    <div class="center-name">${center.name}</div>
+                                    <div class="center-meta">${center.id} · ${center.breadcrumb}</div>
+                                </div>
+                            </div>
+                        `).join('') : '<div style="text-align:center;padding:40px;color:#64748B;">暂无中心数据</div>'}
+                    </div>
+                </div>
+                <div class="tab-content" id="feesTab">
+                    <div class="drawer-section">
+                        <div class="drawer-section-title">费用信息</div>
+                        <div class="drawer-row">
+                            <div class="drawer-label">合同金额</div>
+                            <div class="drawer-value">¥${partner.contractAmount.toLocaleString()}</div>
+                        </div>
+                        <div class="drawer-row">
+                            <div class="drawer-label">已执行</div>
+                            <div class="drawer-value">¥${partner.contractExecuted.toLocaleString()}</div>
+                        </div>
+                        <div class="drawer-row">
+                            <div class="drawer-label">剩余</div>
+                            <div class="drawer-value">¥${(partner.contractAmount - partner.contractExecuted).toLocaleString()}</div>
+                        </div>
+                        <div class="drawer-row">
+                            <div class="drawer-label">履行进度</div>
+                            <div class="drawer-value">
+                                <div style="display:flex;align-items:center;gap:8px;">
+                                    <div class="progress-bar">
+                                        <div class="progress-bar-fill" style="width:${progress}%"></div>
+                                    </div>
+                                    <span style="font-size:12px;color:#64748B;">${progress}%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-content" id="contractsTab">
+                    <div class="contract-preview">
+                        <div class="contract-preview-header">
+                            <div class="contract-preview-title">合同详情</div>
+                            <span class="contract-status-tag ${contractStatusLabels[partner.contractStatus].class}">${contractStatusLabels[partner.contractStatus].text}</span>
+                        </div>
+                        <div class="contract-preview-row">
+                            <div class="contract-preview-label">合同编号</div>
+                            <div class="contract-preview-value" style="font-family:'Fira Code',monospace;">${partner.contractId}</div>
+                        </div>
+                        <div class="contract-preview-row">
+                            <div class="contract-preview-label">合同金额</div>
+                            <div class="contract-preview-value">¥${partner.contractAmount.toLocaleString()}</div>
+                        </div>
+                        <div class="contract-preview-row">
+                            <div class="contract-preview-label">已执行</div>
+                            <div class="contract-preview-value">¥${partner.contractExecuted.toLocaleString()}</div>
+                        </div>
+                        <div class="contract-preview-row">
+                            <div class="contract-preview-label">履行进度</div>
+                            <div class="contract-preview-value">
+                                <div style="display:flex;align-items:center;gap:8px;">
+                                    <div class="progress-bar">
+                                        <div class="progress-bar-fill" style="width:${progress}%"></div>
+                                    </div>
+                                    <span style="font-size:12px;color:#64748B;">${progress}%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 16px;">
+                        <span class="clickable-link" onclick="openContractInDrawer('${partner.contractId}')" style="color: var(--primary);">
+                            📄 查看完整合同信息 →
+                        </span>
+                    </div>
+                </div>
+            `;
+            switchDrawerTab(currentDrawerTab);
+        }
+
+        function renderPartnerCenters(partner) {
+            const body = document.getElementById('drawerBody');
+            body.innerHTML = `
+                <div class="drawer-back" onclick="drawerGoBack()">← 返回合作方详情</div>
+                <div class="drawer-section">
+                    <div class="drawer-section-title">覆盖中心 (${partner.centers}家)</div>
+                    ${partner.centerList.length > 0 ? partner.centerList.map(center => `
+                        <div class="center-item" onclick="drawerStackPush('center-detail', center, center.name)">
+                            <div class="center-icon">🏥</div>
+                            <div class="center-info">
+                                <div class="center-name">${center.name}</div>
+                                <div class="center-meta">${center.id} · ${center.breadcrumb}</div>
+                            </div>
+                        </div>
+                    `).join('') : '<div style="text-align:center;padding:40px;color:#64748B;">暂无中心数据</div>'}
+                </div>
+            `;
+        }
+
+        function renderCenterDetail(center) {
+            const body = document.getElementById('drawerBody');
+            body.innerHTML = `
+                <div class="drawer-back" onclick="drawerGoBack()">← 返回覆盖中心</div>
+                <div class="drawer-section">
+                    <div class="drawer-section-title">中心信息</div>
+                    <div class="drawer-row">
+                        <div class="drawer-label">中心编号</div>
+                        <div class="drawer-value" style="font-family:'Fira Code',monospace;">${center.id}</div>
+                    </div>
+                    <div class="drawer-row">
+                        <div class="drawer-label">中心名称</div>
+                        <div class="drawer-value">${center.name}</div>
+                    </div>
+                    <div class="drawer-row">
+                        <div class="drawer-label">所属项目</div>
+                        <div class="drawer-value">${center.breadcrumb.split(' > ')[0]}</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderContractPreview(contractId) {
+            // Find the contract from partners data
+            const partner = partners.find(p => p.contractId === contractId);
+            if (!partner) return;
+
+            const progress = Math.round((partner.contractExecuted / partner.contractAmount) * 100);
+            const body = document.getElementById('drawerBody');
+            body.innerHTML = `
+                <div class="drawer-back" onclick="drawerGoBack()">← 返回合作方详情</div>
+                <div class="contract-preview">
+                    <div class="contract-preview-header">
+                        <div class="contract-preview-title">合同详情</div>
+                        <span class="contract-status-tag ${contractStatusLabels[partner.contractStatus].class}">${contractStatusLabels[partner.contractStatus].text}</span>
+                    </div>
+                    <div class="contract-preview-row">
+                        <div class="contract-preview-label">合同编号</div>
+                        <div class="contract-preview-value" style="font-family:'Fira Code',monospace;">${partner.contractId}</div>
+                    </div>
+                    <div class="contract-preview-row">
+                        <div class="contract-preview-label">合作方</div>
+                        <div class="contract-preview-value">${partner.name}</div>
+                    </div>
+                    <div class="contract-preview-row">
+                        <div class="contract-preview-label">合同金额</div>
+                        <div class="contract-preview-value">¥${partner.contractAmount.toLocaleString()}</div>
+                    </div>
+                    <div class="contract-preview-row">
+                        <div class="contract-preview-label">已执行</div>
+                        <div class="contract-preview-value">¥${partner.contractExecuted.toLocaleString()}</div>
+                    </div>
+                    <div class="contract-preview-row">
+                        <div class="contract-preview-label">履行进度</div>
+                        <div class="contract-preview-value">
+                            <div style="display:flex;align-items:center;gap:8px;">
+                                <div class="progress-bar">
+                                    <div class="progress-bar-fill" style="width:${progress}%"></div>
+                                </div>
+                                <span style="font-size:12px;color:#64748B;">${progress}%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function switchDrawerTab(tab) {
+            currentDrawerTab = tab;
+            document.querySelectorAll('.drawer-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            
+            document.querySelector(`.drawer-tab:nth-child(${
+                tab === 'basic' ? 1 : 
+                tab === 'centers' ? 2 : 
+                tab === 'fees' ? 3 : 4
+            })`).classList.add('active');
+            
+            const contentEl = document.getElementById(tab + 'Tab');
+            if (contentEl) {
+                contentEl.classList.add('active');
+            }
+        }
+
+        // View detail
+        function viewDetail(id) {
+            currentPartner = partners.find(p => p.id === id);
+            if (!currentPartner) return;
+
+            drawerStack = [{ view: 'partner-detail', data: currentPartner, title: currentPartner.name, tab: 'basic' }];
+            updateDrawerBreadcrumb();
+            openDrawer();
+            renderDrawerContent('partner-detail', currentPartner);
+        }
+
+        function openCentersInDrawer(partnerId) {
+            const partner = partners.find(p => p.id === partnerId);
+            if (!partner) return;
+
+            drawerStackPush('partner-centers', partner, `覆盖中心 (${partner.centers}家)`);
+        }
+
+        function openContractInDrawer(contractId) {
+            drawerStackPush('contract-preview', contractId, `合同详情 - ${contractId}`);
+            renderContractPreview(contractId);
+        }
+
+        function editFromDrawer() {
+            if (currentPartner) {
+                closeDrawer();
+                setTimeout(() => {
+                    editRelation(currentPartner.id);
+                }, 300);
+            }
+        }
+
+        // Close dropdown on outside click
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.partner-search')) {
+                document.getElementById('partnerDropdown').classList.remove('show');
+            }
+        });
+
+        // Close drawer on overlay click
+        document.getElementById('drawerOverlay').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('drawerOverlay')) {
+                closeDrawer();
+            }
+        });
+
+        // Close modal on overlay click
+        document.querySelectorAll('.modal-overlay').forEach(overlay => {
+            overlay.addEventListener('click', (e) => {
+                if (e.target === overlay) {
+                    overlay.classList.remove('active');
+                }
+            });
+        });
+
+        // Initialize
+        renderTable();
+    </script>
+</body>
+</html>
