@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>培训管理 - 中心驾驶舱 - 药物研发全流程智能平台</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #0891B2;
+            --primary-light: #22D3EE;
+            --primary-dark: #0E7490;
+            --cta-color: #059669;
+            --bg-light: #ECFEFF;
+            --bg-white: #FFFFFF;
+            --bg-body: #F0FDFA;
+            --text-dark: #164E63;
+            --text-light: #64748B;
+            --text-muted: #94A3B8;
+            --border-color: #A5F3FC;
+            --border-light: rgba(165,243,252,0.3);
+            --shadow-xs: 0 1px 2px rgba(8,145,178,0.04);
+            --shadow: 0 2px 8px rgba(8,145,178,0.06), 0 1px 2px rgba(8,145,178,0.04);
+            --shadow-md: 0 4px 16px rgba(8,145,178,0.08), 0 2px 4px rgba(8,145,178,0.04);
+            --shadow-hover: 0 8px 24px rgba(8,145,178,0.12), 0 2px 8px rgba(8,145,178,0.06);
+            --radius-sm: 6px;
+            --radius-md: 10px;
+            --radius-lg: 14px;
+            --success-color: #059669;
+            --warning-color: #D97706;
+            --danger-color: #DC2626;
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'PingFang SC', 'Microsoft YaHei', -apple-system, sans-serif;
+            background: var(--bg-body);
+            background-image:
+                radial-gradient(ellipse at 15% 50%, rgba(8,145,178,0.04) 0%, transparent 50%),
+                radial-gradient(ellipse at 85% 20%, rgba(5,150,105,0.04) 0%, transparent 50%);
+            color: var(--text-dark);
+            line-height: 1.6;
+        }
+        
+        .page-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+        
+        /* 面包屑 */
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: var(--text-light);
+            margin-bottom: 20px;
+        }
+        .breadcrumb a {
+            color: var(--text-light);
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .breadcrumb a:hover { color: var(--primary-color); }
+        .breadcrumb .current { color: var(--primary-color); font-weight: 500; }
+        
+        /* 中心选择器 */
+        .site-selector {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding: 12px 16px;
+            background: var(--bg-white);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-xs);
+        }
+        .site-selector label {
+            font-size: 13px;
+            color: var(--text-light);
+        }
+        .site-select {
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            background: white;
+            color: var(--text-dark);
+            cursor: pointer;
+            min-width: 200px;
+        }
+        .site-select:focus { outline: none; border-color: var(--primary-color); }
+        
+        /* 页面标题 */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+        .page-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+        
+        /* 只读提示 */
+        .readonly-tip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background: #FEF3C7;
+            border: 1px solid #FCD34D;
+            border-radius: var(--radius-sm);
+            font-size: 12px;
+            color: #92400E;
+        }
+        
+        /* KPI卡片 */
+        .kpi-cards {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .kpi-box {
+            flex: 1;
+            min-width: 120px;
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 10px 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .kpi-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+        .kpi-icon.blue { background: linear-gradient(135deg, #0891B2, #22D3EE); color: white; }
+        .kpi-icon.green { background: linear-gradient(135deg, #059669, #34D399); color: white; }
+        .kpi-icon.orange { background: linear-gradient(135deg, #D97706, #FBBF24); color: white; }
+        .kpi-icon.purple { background: linear-gradient(135deg, #7C3AED, #A78BFA); color: white; }
+        .kpi-val { font-size: 18px; font-weight: 700; line-height: 1; }
+        .kpi-label { font-size: 12px; color: var(--text-light); }
+        
+        /* 主内容区 */
+        .main-content {
+            background: var(--bg-white);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+        
+        /* 标签页 */
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border-light);
+            padding: 0 24px;
+        }
+        .tab {
+            padding: 16px 24px;
+            font-size: 14px;
+            color: var(--text-light);
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -1px;
+            transition: all 0.2s;
+        }
+        .tab:hover { color: var(--primary-color); }
+        .tab.active {
+            color: var(--primary-color);
+            border-bottom-color: var(--primary-color);
+            font-weight: 500;
+        }
+        .tab .badge {
+            background: var(--bg-light);
+            color: var(--primary-color);
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 12px;
+            margin-left: 6px;
+        }
+        
+        /* 工具栏 - 只读版本 */
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--border-light);
+            background: #F8FAFC;
+        }
+        .toolbar-left { display: flex; align-items: center; gap: 12px; }
+        .toolbar-right { display: flex; align-items: center; gap: 12px; }
+        
+        .select {
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            background: white;
+            color: var(--text-dark);
+            cursor: pointer;
+            min-width: 120px;
+        }
+        .select:focus { outline: none; border-color: var(--primary-color); }
+        
+        .search-box {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--bg-light);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-sm);
+            padding: 8px 12px;
+            width: 240px;
+        }
+        .search-box input {
+            border: none;
+            background: transparent;
+            outline: none;
+            font-size: 13px;
+            width: 100%;
+            color: var(--text-dark);
+        }
+        .search-box input::placeholder { color: var(--text-muted); }
+        .search-box i { color: var(--text-muted); font-size: 13px; }
+        
+        /* 数据表格 */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .data-table th {
+            background: var(--bg-light);
+            padding: 12px 16px;
+            text-align: left;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-light);
+            border-bottom: 1px solid var(--border-light);
+        }
+        .data-table td {
+            padding: 14px 16px;
+            font-size: 13px;
+            color: var(--text-dark);
+            border-bottom: 1px solid var(--border-light);
+        }
+        .data-table tr:hover { background: rgba(8,145,178,0.02); }
+        .data-table tr:last-child td { border-bottom: none; }
+        
+        /* 状态标签 */
+        .status-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .status-draft { background: #F1F5F9; color: #64748B; }
+        .status-published { background: #DBEAFE; color: #1D4ED8; }
+        .status-progress { background: #DCFCE7; color: #15803D; }
+        .status-completed { background: #DCFCE7; color: #15803D; }
+        .status-cancelled { background: #FEE2E2; color: #DC2626; }
+        .status-valid { background: #DCFCE7; color: #15803D; }
+        .status-expiring { background: #FEF3C7; color: #D97706; }
+        .status-expired { background: #FEE2E2; color: #DC2626; }
+        
+        /* 操作按钮 - 只读版本 */
+        .action-btns {
+            display: flex;
+            gap: 8px;
+        }
+        .action-btn {
+            width: 28px;
+            height: 28px;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+            background: transparent;
+        }
+        .action-btn:hover { background: var(--bg-light); }
+        .action-btn i { font-size: 13px; color: var(--text-light); }
+        .action-btn:hover i { color: var(--primary-color); }
+        
+        /* 类型标签 */
+        .type-tag {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .type-gcp { background: #EDE9FE; color: #7C3AED; }
+        .type-plan { background: #DBEAFE; color: #2563EB; }
+        .type-edc { background: #FEF3C7; color: #D97706; }
+        .type-sop { background: #FCE7F3; color: #DB2777; }
+        
+        /* 证书状态卡片 */
+        .cert-status-card {
+            background: var(--bg-white);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-md);
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+        .cert-status-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+        .cert-status-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .cert-status-content {
+            padding-left: 24px;
+        }
+        .cert-status-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: var(--text-dark);
+            margin-bottom: 8px;
+        }
+        .cert-status-item i {
+            color: var(--success-color);
+        }
+        .cert-status-item.warning i {
+            color: var(--warning-color);
+        }
+        .cert-expiry {
+            font-size: 12px;
+            color: var(--text-light);
+            margin-left: 4px;
+        }
+        
+        /* 待完成培训 */
+        .pending-training {
+            background: #FEF3C7;
+            border: 1px solid #FCD34D;
+            border-radius: var(--radius-md);
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 12px;
+        }
+        .pending-training i {
+            color: #D97706;
+        }
+        .pending-training-content {
+            flex: 1;
+        }
+        .pending-training-title {
+            font-size: 13px;
+            font-weight: 500;
+            color: #92400E;
+        }
+        .pending-training-desc {
+            font-size: 12px;
+            color: #B45309;
+        }
+        
+        /* 快捷链接 */
+        .quick-links {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+        }
+        .quick-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            background: var(--bg-light);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            color: var(--primary-color);
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        .quick-link:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+        .quick-link i {
+            font-size: 12px;
+        }
+        
+        /* 进度条 */
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: var(--bg-light);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-color), var(--primary-light));
+            border-radius: 3px;
+            transition: width 0.3s;
+        }
+        
+        /* 工具提示 */
+        .tooltip {
+            position: relative;
+        }
+        .tooltip::after {
+            content: attr(data-tip);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 6px 10px;
+            background: #1F2937;
+            color: white;
+            font-size: 12px;
+            border-radius: 4px;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.2s;
+        }
+        .tooltip:hover::after {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        /* 动画 */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in { animation: fadeIn 0.3s ease-out; }
+        
+        /* 响应式 */
+        @media (max-width: 1024px) {
+            .kpi-cards { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 768px) {
+            .kpi-cards { grid-template-columns: 1fr; }
+            .toolbar { flex-direction: column; gap: 12px; align-items: stretch; }
+            .toolbar-left, .toolbar-right { flex-wrap: wrap; }
+            .search-box { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+    <div class="page-container">
+        <!-- 面包屑 -->
+        <div class="breadcrumb">
+            <a href="#">中心驾驶舱</a>
+            <i class="fas fa-chevron-right" style="font-size:10px;color:#CBD5E1"></i>
+            <span class="current-site">中心A</span>
+            <i class="fas fa-chevron-right" style="font-size:10px;color:#CBD5E1"></i>
+            <span class="current">培训管理</span>
+        </div>
+        
+        <!-- 中心选择器 -->
+        <div class="site-selector">
+            <label><i class="fas fa-hospital" style="color:#0891B2;margin-right:4px"></i> 选择中心：</label>
+            <select class="site-select" id="siteSelect" onchange="switchSite()">
+                <option value="site-a" selected>中心A - 上海市第一人民医院</option>
+                <option value="site-b">中心B - 北京协和医院</option>
+                <option value="site-c">中心C - 广州中山大学附属医院</option>
+            </select>
+            <span class="readonly-tip">
+                <i class="fas fa-eye"></i>
+                只读视图
+            </span>
+        </div>
+        
+        <!-- 页面标题 -->
+        <div class="page-header">
+            <h1 class="page-title">中心培训信息</h1>
+        </div>
+        
+        <!-- KPI卡片 -->
+        <div class="kpi-cards">
+            <div class="kpi-box">
+                <div class="kpi-icon blue">
+                    <i class="fas fa-chalkboard-teacher"></i>
+                </div>
+                <div>
+                    <div class="kpi-val">8</div>
+                    <div class="kpi-label">参与培训</div>
+                </div>
+            </div>
+            <div class="kpi-box">
+                <div class="kpi-icon green">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div>
+                    <div class="kpi-val">7</div>
+                    <div class="kpi-label">已完成</div>
+                </div>
+            </div>
+            <div class="kpi-box">
+                <div class="kpi-icon orange">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div>
+                    <div class="kpi-val">1</div>
+                    <div class="kpi-label">进行中</div>
+                </div>
+            </div>
+            <div class="kpi-box">
+                <div class="kpi-icon purple">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <div>
+                    <div class="kpi-val">87.5%</div>
+                    <div class="kpi-label">完成率</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 主内容区 -->
+        <div class="main-content fade-in">
+            <!-- 内容标签页 -->
+            <div class="tabs">
+                <div class="tab active" data-tab="overview">
+                    培训概览
+                </div>
+                <div class="tab" data-tab="records">
+                    培训记录
+                    <span class="badge">7</span>
+                </div>
+                <div class="tab" data-tab="certificates">
+                    证书状态
+                    <span class="badge">5</span>
+                </div>
+            </div>
+            
+            <!-- 培训概览 -->
+            <div id="overviewTab">
+                <div style="padding:24px">
+                    <!-- 培训参与 -->
+                    <div style="margin-bottom:24px">
+                        <h3 style="font-size:14px;font-weight:500;color:var(--text-dark);margin-bottom:12px">
+                            <i class="fas fa-users" style="color:var(--primary-color);margin-right:6px"></i>
+                            培训参与
+                        </h3>
+                        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px">
+                            <div style="background:#ECFEFF;padding:16px;border-radius:8px;text-align:center">
+                                <div style="font-size:28px;font-weight:700;color:#0891B2">8</div>
+                                <div style="font-size:13px;color:#64748B">参与培训</div>
+                            </div>
+                            <div style="background:#DCFCE7;padding:16px;border-radius:8px;text-align:center">
+                                <div style="font-size:28px;font-weight:700;color:#059669">7</div>
+                                <div style="font-size:13px;color:#64748B">已完成</div>
+                            </div>
+                            <div style="background:#FEF3C7;padding:16px;border-radius:8px;text-align:center">
+                                <div style="font-size:28px;font-weight:700;color:#D97706">1</div>
+                                <div style="font-size:13px;color:#64748B">进行中</div>
+                            </div>
+                        </div>
+                        <div style="margin-top:12px">
+                            <div style="display:flex;justify-content:space-between;font-size:12px;color:#64748B;margin-bottom:4px">
+                                <span>整体完成率</span>
+                                <span>87.5%</span>
+                            </div>
+                            <div class="progress-bar" style="height:8px">
+                                <div class="progress-fill" style="width:87.5%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 证书状态 -->
+                    <div style="margin-bottom:24px">
+                        <h3 style="font-size:14px;font-weight:500;color:var(--text-dark);margin-bottom:12px">
+                            <i class="fas fa-certificate" style="color:var(--primary-color);margin-right:6px"></i>
+                            证书状态
+                        </h3>
+                        
+                        <div class="cert-status-card">
+                            <div class="cert-status-header">
+                                <div class="cert-status-title">
+                                    <i class="fas fa-shield-alt" style="color:#059669"></i>
+                                    GCP证书
+                                </div>
+                                <span class="status-tag status-valid">● 有效</span>
+                            </div>
+                            <div class="cert-status-content">
+                                <div class="cert-status-item">
+                                    <i class="fas fa-check"></i>
+                                    有效期至 2027-01-15
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="cert-status-card">
+                            <div class="cert-status-header">
+                                <div class="cert-status-title">
+                                    <i class="fas fa-file-alt" style="color:#059669"></i>
+                                    方案培训
+                                </div>
+                                <span class="status-tag status-completed">✓ 已完成</span>
+                            </div>
+                            <div class="cert-status-content">
+                                <div class="cert-status-item">
+                                    <i class="fas fa-check"></i>
+                                    PD-001方案培训-2024
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="cert-status-card">
+                            <div class="cert-status-header">
+                                <div class="cert-status-title">
+                                    <i class="fas fa-laptop" style="color:#059669"></i>
+                                    EDC培训
+                                </div>
+                                <span class="status-tag status-completed">✓ 已完成</span>
+                            </div>
+                            <div class="cert-status-content">
+                                <div class="cert-status-item">
+                                    <i class="fas fa-check"></i>
+                                    EDC系统培训-2024
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 待完成培训 -->
+                    <div class="pending-training">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <div class="pending-training-content">
+                            <div class="pending-training-title">待完成培训</div>
+                            <div class="pending-training-desc">SOP更新培训 - 待完成（截止日期：2024-07-15）</div>
+                        </div>
+                    </div>
+                    
+                    <!-- 快捷链接 -->
+                    <div class="quick-links">
+                        <a href="training-L2-project.html" class="quick-link">
+                            <i class="fas fa-arrow-right"></i>
+                            查看全部培训
+                        </a>
+                        <a href="training-L2-project.html" class="quick-link">
+                            <i class="fas fa-arrow-right"></i>
+                            证书管理
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 培训记录标签页 -->
+            <div id="recordsTab" style="display:none">
+                <div class="toolbar">
+                    <div class="toolbar-left">
+                        <select class="select">
+                            <option value="">全部类型</option>
+                            <option value="GCP">GCP</option>
+                            <option value="方案">方案</option>
+                            <option value="EDC">EDC</option>
+                        </select>
+                    </div>
+                    <div class="toolbar-right">
+                        <div class="search-box">
+                            <i class="fas fa-search"></i>
+                            <input type="text" placeholder="搜索培训名称...">
+                        </div>
+                    </div>
+                </div>
+                
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th style="width:120px">培训名称</th>
+                            <th style="width:100px">培训类型</th>
+                            <th style="width:100px">培训日期</th>
+                            <th style="width:80px">参与人数</th>
+                            <th style="width:120px">完成率</th>
+                            <th style="width:90px">状态</th>
+                            <th style="width:80px">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>GCP年度复训</td>
+                            <td><span class="type-tag type-gcp">GCP</span></td>
+                            <td>2024-06-10</td>
+                            <td>3人</td>
+                            <td>
+                                <div style="display:flex;align-items:center;gap:8px">
+                                    <div class="progress-bar" style="width:60px">
+                                        <div class="progress-fill" style="width:100%"></div>
+                                    </div>
+                                    <span style="font-size:12px;color:#64748B">100%</span>
+                                </div>
+                            </td>
+                            <td><span class="status-tag status-completed">已完成</span></td>
+                            <td>
+                                <div class="action-btns">
+                                    <button class="action-btn tooltip" data-tip="查看"><i class="fas fa-eye"></i></button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>PD-001启动会培训</td>
+                            <td><span class="type-tag type-plan">方案</span></td>
+                            <td>2024-06-15</td>
+                            <td>4人</td>
+                            <td>
+                                <div style="display:flex;align-items:center;gap:8px">
+                                    <div class="progress-bar" style="width:60px">
+                                        <div class="progress-fill" style="width:100%"></div>
+                                    </div>
+                                    <span style="font-size:12px;color:#64748B">100%</span>
+                                </div>
+                            </td>
+                            <td><span class="status-tag status-completed">已完成</span></td>
+                            <td>
+                                <div class="action-btns">
+                                    <button class="action-btn tooltip" data-tip="查看"><i class="fas fa-eye"></i></button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>EDC系统操作培训</td>
+                            <td><span class="type-tag type-edc">EDC</span></td>
+                            <td>2024-06-20</td>
+                            <td>3人</td>
+                            <td>
+                                <div style="display:flex;align-items:center;gap:8px">
+                                    <div class="progress-bar" style="width:60px">
+                                        <div class="progress-fill" style="width:75%"></div>
+                                    </div>
+                                    <span style="font-size:12px;color:#64748B">75%</span>
+                                </div>
+                            </td>
+                            <td><span class="status-tag status-progress">进行中</span></td>
+                            <td>
+                                <div class="action-btns">
+                                    <button class="action-btn tooltip" data-tip="查看"><i class="fas fa-eye"></i></button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>SOP更新培训</td>
+                            <td><span class="type-tag type-sop">SOP</span></td>
+                            <td>—</td>
+                            <td>3人</td>
+                            <td>
+                                <div style="display:flex;align-items:center;gap:8px">
+                                    <div class="progress-bar" style="width:60px">
+                                        <div class="progress-fill" style="width:0%"></div>
+                                    </div>
+                                    <span style="font-size:12px;color:#64748B">0%</span>
+                                </div>
+                            </td>
+                            <td><span class="status-tag status-published">待开始</span></td>
+                            <td>
+                                <div class="action-btns">
+                                    <button class="action-btn tooltip" data-tip="查看"><i class="fas fa-eye"></i></button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <div class="pagination" style="justify-content:center;border-top:1px solid var(--border-light)">
+                    <div class="pagination-info">共 <strong>7</strong> 条记录</div>
+                </div>
+            </div>
+            
+            <!-- 证书状态标签页 -->
+            <div id="certificatesTab" style="display:none">
+                <div class="toolbar">
+                    <div class="toolbar-left">
+                        <select class="select">
+                            <option value="">全部类型</option>
+                            <option value="GCP">GCP</option>
+                            <option value="方案">方案</option>
+                            <option value="EDC">EDC</option>
+                        </select>
+                        <select class="select">
+                            <option value="">全部状态</option>
+                            <option value="VALID">有效</option>
+                            <option value="EXPIRING">即将到期</option>
+                            <option value="EXPIRED">已过期</option>
+                        </select>
+                    </div>
+                    <div class="toolbar-right">
+                        <div class="search-box">
+                            <i class="fas fa-search"></i>
+                            <input type="text" placeholder="搜索人员姓名...">
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="padding:16px 24px;background:#F8FAFC;border-bottom:1px solid #E2E8F0">
+                    <div style="display:flex;gap:24px;font-size:13px">
+                        <span>中心证书: <strong>5</strong> 张</span>
+                        <span style="color:#059669">有效: <strong>4</strong> 张</span>
+                        <span style="color:#D97706">30天内到期: <strong>1</strong> 张</span>
+                    </div>
+                </div>
+                
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>姓名</th>
+                            <th>角色</th>
+                            <th>证书类型</th>
+                            <th>证书编号</th>
+                            <th>有效期至</th>
+                            <th>状态</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>张三</td>
+                            <td>CRC</td>
+                            <td><span class="type-tag type-gcp">GCP</span></td>
+                            <td>GCP-2024-00001</td>
+                            <td>2027-01-15</td>
+                            <td><span class="status-tag status-valid">● 有效</span></td>
+                            <td>
+                                <div class="action-btns">
+                                    <button class="action-btn tooltip" data-tip="查看"><i class="fas fa-eye"></i></button>
+                                    <button class="action-btn tooltip" data-tip="下载"><i class="fas fa-download"></i></button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>李四</td>
+                            <td>CRA</td>
+                            <td><span class="type-tag type-gcp">GCP</span></td>
+                            <td>GCP-2024-00002</td>
+                            <td>2024-07-15</td>
+                            <td><span class="status-tag status-expiring">⚠️ 30天到期</span></td>
+                            <td>
+                                <div class="action-btns">
+                                    <button class="action-btn tooltip" data-tip="查看"><i class="fas fa-eye"></i></button>
+                                    <button class="action-btn tooltip" data-tip="下载"><i class="fas fa-download"></i></button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>王五</td>
+                            <td>Sub-I</td>
+                            <td><span class="type-tag type-gcp">GCP</span></td>
+                            <td>GCP-2024-00003</td>
+                            <td>2026-06-20</td>
+                            <td><span class="status-tag status-valid">● 有效</span></td>
+                            <td>
+                                <div class="action-btns">
+                                    <button class="action-btn tooltip" data-tip="查看"><i class="fas fa-eye"></i></button>
+                                    <button class="action-btn tooltip" data-tip="下载"><i class="fas fa-download"></i></button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>赵六</td>
+                            <td>CRC</td>
+                            <td><span class="type-tag type-plan">方案</span></td>
+                            <td>PLAN-2024-00001</td>
+                            <td>项目结束</td>
+                            <td><span class="status-tag status-valid">● 有效</span></td>
+                            <td>
+                                <div class="action-btns">
+                                    <button class="action-btn tooltip" data-tip="查看"><i class="fas fa-eye"></i></button>
+                                    <button class="action-btn tooltip" data-tip="下载"><i class="fas fa-download"></i></button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>孙七</td>
+                            <td>CRA</td>
+                            <td><span class="type-tag type-edc">EDC</span></td>
+                            <td>EDC-2024-00005</td>
+                            <td>长期有效</td>
+                            <td><span class="status-tag status-valid">● 有效</span></td>
+                            <td>
+                                <div class="action-btns">
+                                    <button class="action-btn tooltip" data-tip="查看"><i class="fas fa-eye"></i></button>
+                                    <button class="action-btn tooltip" data-tip="下载"><i class="fas fa-download"></i></button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <div class="pagination" style="justify-content:center;border-top:1px solid var(--border-light)">
+                    <div class="pagination-info">共 <strong>5</strong> 条记录</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // 切换中心
+        function switchSite() {
+            const siteSelect = document.getElementById('siteSelect');
+            const currentSite = siteSelect.options[siteSelect.selectedIndex].text;
+            document.querySelector('.current-site').textContent = siteSelect.value;
+            // 实际应用中应调用API加载新中心数据
+        }
+        
+        // 标签页切换
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                
+                const tabName = this.dataset.tab;
+                
+                // 隐藏所有标签内容
+                document.getElementById('overviewTab').style.display = 'none';
+                document.getElementById('recordsTab').style.display = 'none';
+                document.getElementById('certificatesTab').style.display = 'none';
+                
+                if (tabName === 'overview') {
+                    document.getElementById('overviewTab').style.display = 'block';
+                } else if (tabName === 'records') {
+                    document.getElementById('recordsTab').style.display = 'block';
+                } else if (tabName === 'certificates') {
+                    document.getElementById('certificatesTab').style.display = 'block';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
