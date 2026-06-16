@@ -1,0 +1,1083 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>合同管理 - L1综合管理</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;background:#f5f6fa;color:#1f2937;font-size:14px;line-height:1.5}
+
+/* 主容器 */
+.contract-container{max-width:1400px;margin:0 auto;padding:20px}
+
+/* 页面标题 */
+.page-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+.page-title{font-size:18px;font-weight:600;color:#1f2937;display:flex;align-items:center;gap:8px}
+.page-title i{color:#0369a1}
+.breadcrumb{font-size:13px;color:#6b7280;margin-top:4px}
+.breadcrumb span{color:#0369a1}
+
+/* KPI卡片区 */
+.kpi-row{display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap}
+.kpi-box{flex:1;min-width:180px;background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:16px;display:flex;align-items:center;gap:14px}
+.kpi-icon{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.kpi-val{font-size:24px;font-weight:700;line-height:1}
+.kpi-label{font-size:12px;color:#6b7280;margin-top:4px}
+.kpi-blue .kpi-icon{background:#e0f2fe;color:#0369a1}
+.kpi-blue .kpi-val{color:#0369a1}
+.kpi-green .kpi-icon{background:#ecfdf5;color:#059669}
+.kpi-green .kpi-val{color:#059669}
+.kpi-orange .kpi-icon{background:#fff7ed;color:#ea580c}
+.kpi-orange .kpi-val{color:#ea580c}
+.kpi-yellow .kpi-icon{background:#fef3c7;color:#d97706}
+.kpi-yellow .kpi-val{color:#d97706}
+.kpi-red .kpi-icon{background:#fef2f2;color:#dc2626}
+.kpi-red .kpi-val{color:#dc2626}
+
+/* 主卡片 */
+.main-card{background:#fff;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden}
+
+/* 工具栏 */
+.toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px}
+.toolbar-left{display:flex;gap:8px;flex-wrap:wrap}
+.toolbar-right{display:flex;gap:8px;align-items:center}
+
+/* 按钮 */
+.btn{padding:8px 16px;border-radius:8px;font-size:13px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;border:none;transition:all 0.2s}
+.btn-primary{background:#0369a1;color:#fff}
+.btn-primary:hover{background:#024e75}
+.btn-success{background:#059669;color:#fff}
+.btn-success:hover{background:#047857}
+.btn-outline{background:#fff;color:#374151;border:1px solid #e5e7eb}
+.btn-outline:hover{background:#f9fafb}
+.btn-warning{background:#fef3c7;color:#d97706;border:1px solid #fcd34d}
+.btn-warning:hover{background:#fde68a}
+.btn-danger{background:#fef2f2;color:#dc2626;border:1px solid #fecaca}
+.btn-danger:hover{background:#fee2e2}
+.btn-sm{padding:6px 10px;font-size:12px}
+.btn-icon{background:none;border:none;color:#6b7280;cursor:pointer;padding:4px;font-size:13px}
+.btn-icon:hover{color:#374151}
+
+/* 筛选器 */
+.filter-group{display:flex;gap:8px;align-items:center}
+.filter-select{padding:8px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:13px;color:#374151;background:#fff;min-width:120px}
+.search-box{display:flex;align-items:center;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden}
+.search-box input{border:none;padding:8px 12px;font-size:13px;width:200px;outline:none}
+.search-box button{background:none;border:none;padding:8px 12px;color:#6b7280;cursor:pointer}
+
+/* 表格 */
+.table-wrap{overflow-x:auto;border:1px solid #e5e7eb;border-radius:10px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead{background:#f8fafc}
+th{padding:12px 14px;text-align:left;font-weight:600;color:#6b7280;font-size:12px;border-bottom:1px solid #e5e7eb;white-space:nowrap}
+td{padding:12px 14px;border-bottom:1px solid #f3f4f6;vertical-align:middle}
+tbody tr:hover{background:#fafafa}
+tbody tr:last-child td{border-bottom:none}
+
+/* Badge标签 */
+.badge{padding:3px 10px;border-radius:10px;font-size:12px;font-weight:500;display:inline-block;white-space:nowrap}
+.badge-green{background:#ecfdf5;color:#059669}
+.badge-blue{background:#e0f2fe;color:#0369a1}
+.badge-orange{background:#fff7ed;color:#ea580c}
+.badge-yellow{background:#fef3c7;color:#d97706}
+.badge-red{background:#fef2f2;color:#dc2626}
+.badge-gray{background:#f3f4f6;color:#6b7280}
+.badge-purple{background:#f5f3ff;color:#7c3aed}
+
+/* 同步状态指示器 */
+.sync-indicator{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;font-size:12px}
+.sync-synced{color:#059669}
+.sync-pending{color:#d97706}
+.sync-conflict{color:#dc2626}
+
+/* 操作按钮 */
+.action-btns{display:flex;gap:4px}
+.action-btn{background:none;border:none;color:#6b7280;cursor:pointer;padding:4px 6px;font-size:12px;border-radius:4px}
+.action-btn:hover{background:#f3f4f6;color:#374151}
+.action-btn.danger:hover{background:#fef2f2;color:#dc2626}
+
+/* 进度条 */
+.progress-bar{width:100%;height:8px;background:#e5e7eb;border-radius:4px;overflow:hidden}
+.progress-fill{height:100%;background:#0369a1;border-radius:4px;transition:width 0.3s}
+.progress-text{font-size:12px;color:#6b7280;margin-top:4px}
+
+/* 收款进度区 */
+.collection-section{margin-top:20px;padding:20px;background:#fff;border:1px solid #e5e7eb;border-radius:12px}
+.collection-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.collection-title{font-size:14px;font-weight:600;color:#374151}
+.collection-stats{display:flex;gap:24px}
+.collection-stat{text-align:center}
+.collection-stat-val{font-size:20px;font-weight:700;color:#0369a1}
+.collection-stat-label{font-size:12px;color:#6b7280}
+
+/* 模态框 */
+.modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:10000;display:none;align-items:center;justify-content:center}
+.modal-overlay.show{display:flex}
+.modal{background:#fff;border-radius:14px;width:720px;max-width:90vw;max-height:90vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 25px 50px -12px rgba(0,0,0,0.25)}
+.modal-lg{width:900px}
+.modal-header{display:flex;justify-content:space-between;align-items:center;padding:18px 24px;border-bottom:1px solid #e5e7eb}
+.modal-title{font-size:16px;font-weight:600;display:flex;align-items:center;gap:10px}
+.modal-title i{color:#0369a1}
+.modal-close{background:none;border:none;font-size:24px;color:#9ca3af;cursor:pointer;line-height:1}
+.modal-close:hover{color:#374151}
+.modal-body{padding:24px;overflow-y:auto;flex:1}
+.modal-footer{display:flex;justify-content:flex-end;gap:10px;padding:16px 24px;border-top:1px solid #e5e7eb;background:#fafafa}
+
+/* 表单 */
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.form-group{margin-bottom:16px}
+.form-label{display:block;font-size:13px;color:#374151;font-weight:500;margin-bottom:6px}
+.form-label .required{color:#dc2626;margin-left:2px}
+.form-input{width:100%;padding:10px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:13px;transition:border-color 0.2s}
+.form-input:focus{outline:none;border-color:#0369a1}
+.form-select{width:100%;padding:10px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:13px;background:#fff}
+.form-textarea{width:100%;padding:10px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:13px;resize:vertical;min-height:80px}
+.form-hint{font-size:12px;color:#6b7280;margin-top:4px}
+
+/* 详情标签页 */
+.detail-tabs{display:flex;border-bottom:1px solid #e5e7eb;margin-bottom:16px;gap:4px}
+.detail-tab{padding:10px 16px;font-size:13px;color:#6b7280;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px}
+.detail-tab:hover{color:#374151}
+.detail-tab.active{color:#0369a1;border-bottom-color:#0369a1}
+
+/* 明细表格 */
+.detail-table{width:100%;border:1px solid #e5e7eb;border-radius:8px;margin:12px 0}
+.detail-table th{background:#f8fafc;padding:10px 12px;font-size:12px;font-weight:600;color:#6b7280}
+.detail-table td{padding:10px 12px;font-size:13px}
+.detail-table input{width:80px;padding:6px 8px;border:1px solid #e5e7eb;border-radius:6px;font-size:12px}
+.add-item-btn{display:flex;align-items:center;gap:6px;color:#0369a1;font-size:13px;cursor:pointer;padding:8px 0}
+.add-item-btn:hover{text-decoration:underline}
+
+/* 信息区块 */
+.info-section{margin-bottom:20px}
+.info-section-title{font-size:13px;font-weight:600;color:#374151;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid #e5e7eb}
+.info-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+.info-item{}
+.info-label{font-size:12px;color:#6b7280;margin-bottom:2px}
+.info-value{font-size:14px;color:#1f2937}
+
+/* Toast提示 */
+.toast{position:fixed;top:20px;right:20px;z-index:99999;padding:12px 20px;border-radius:10px;color:#fff;font-size:13px;display:flex;align-items:center;gap:8px;box-shadow:0 4px 20px rgba(0,0,0,0.15);animation:slideIn 0.3s ease}
+.toast-success{background:#059669}
+.toast-error{background:#dc2626}
+.toast-warning{background:#d97706}
+@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+
+/* 合作方选择 */
+.party-type-tabs{display:flex;gap:8px;margin-bottom:16px;border-bottom:1px solid #e5e7eb;padding-bottom:12px}
+.party-type-tab{padding:8px 16px;border-radius:8px;font-size:13px;cursor:pointer;border:1px solid #e5e7eb;background:#fff;color:#6b7280}
+.party-type-tab:hover{border-color:#0369a1;color:#0369a1}
+.party-type-tab.active{background:#0369a1;color:#fff;border-color:#0369a1}
+
+.party-list{border:1px solid #e5e7eb;border-radius:8px;max-height:200px;overflow-y:auto}
+.party-item{display:flex;align-items:center;gap:10px;padding:10px 12px;cursor:pointer;border-bottom:1px solid #f3f4f6}
+.party-item:last-child{border-bottom:none}
+.party-item:hover{background:#fafafa}
+.party-item.selected{background:#e0f2fe}
+.party-name{font-size:13px;font-weight:500;color:#1f2937}
+.party-type{font-size:12px;color:#6b7280}
+
+/* 响应式 */
+@media(max-width:768px){
+.kpi-row{flex-direction:column}
+.form-row{grid-template-columns:1fr}
+.collection-stats{flex-wrap:wrap}
+}
+</style>
+</head>
+<body>
+
+<div class="contract-container">
+    <!-- 页面标题 -->
+    <div class="page-header">
+        <div>
+            <h1 class="page-title"><i class="fas fa-file-contract"></i> 合同管理</h1>
+            <div class="breadcrumb">综合管理 > <span>合同管理</span></div>
+        </div>
+    </div>
+
+    <!-- KPI卡片 -->
+    <div class="kpi-row">
+        <div class="kpi-box kpi-blue">
+            <div class="kpi-icon"><i class="fas fa-file-alt"></i></div>
+            <div>
+                <div class="kpi-val">45</div>
+                <div class="kpi-label">合同总数</div>
+            </div>
+        </div>
+        <div class="kpi-box kpi-green">
+            <div class="kpi-icon"><i class="fas fa-play-circle"></i></div>
+            <div>
+                <div class="kpi-val">32</div>
+                <div class="kpi-label">执行中</div>
+            </div>
+        </div>
+        <div class="kpi-box kpi-orange">
+            <div class="kpi-icon"><i class="fas fa-clock"></i></div>
+            <div>
+                <div class="kpi-val">8</div>
+                <div class="kpi-label">待签署</div>
+            </div>
+        </div>
+        <div class="kpi-box kpi-yellow">
+            <div class="kpi-icon"><i class="fas fa-calendar-exclamation"></i></div>
+            <div>
+                <div class="kpi-val">5</div>
+                <div class="kpi-label">本月到期</div>
+            </div>
+        </div>
+        <div class="kpi-box kpi-red">
+            <div class="kpi-icon"><i class="fas fa-hourglass-half"></i></div>
+            <div>
+                <div class="kpi-val">¥2.8M</div>
+                <div class="kpi-label">应收未收</div>
+            </div>
+        </div>
+        <div class="kpi-box kpi-blue">
+            <div class="kpi-icon"><i class="fas fa-check-double"></i></div>
+            <div>
+                <div class="kpi-val">¥15.6M</div>
+                <div class="kpi-label">已收总额</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 主卡片 -->
+    <div class="main-card" style="padding:20px">
+        <div class="toolbar">
+            <div class="toolbar-left">
+                <button class="btn btn-primary" onclick="showModal('add-contract')">
+                    <i class="fas fa-plus"></i> 新建合同
+                </button>
+            </div>
+            <div class="toolbar-right">
+                <div class="filter-group">
+                    <select class="filter-select" id="filter-party-type">
+                        <option value="">全部合作方类型</option>
+                        <option value="SPONSOR">申办方</option>
+                        <option value="SMO">SMO</option>
+                        <option value="SITE">中心</option>
+                        <option value="PARTNER">其他合作方</option>
+                    </select>
+                    <select class="filter-select" id="filter-contract-type">
+                        <option value="">全部合同类型</option>
+                        <option value="MAIN">主合同</option>
+                        <option value="SUPPLEMENT">补充协议</option>
+                        <option value="NDA">NDA</option>
+                        <option value="FRAMEWORK">框架协议</option>
+                    </select>
+                    <select class="filter-select" id="filter-status">
+                        <option value="">全部状态</option>
+                        <option value="DRAFT">草稿</option>
+                        <option value="PENDING_APPROVAL">待审批</option>
+                        <option value="PENDING_SIGN">待签署</option>
+                        <option value="ACTIVE">执行中</option>
+                        <option value="CHANGING">变更中</option>
+                        <option value="EXPIRED">已到期</option>
+                        <option value="TERMINATED">已终止</option>
+                    </select>
+                    <select class="filter-select" id="filter-project">
+                        <option value="">全部项目</option>
+                        <option value="P001">PD-001 肿瘤药物试验</option>
+                        <option value="P002">PD-002 糖尿病研究</option>
+                    </select>
+                </div>
+                <div class="search-box">
+                    <input type="text" placeholder="搜索合同编号/名称" id="search-keyword">
+                    <button onclick="searchContracts()"><i class="fas fa-search"></i></button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 合同列表 -->
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>合同编号</th>
+                        <th>合同名称</th>
+                        <th>合作方</th>
+                        <th>合同类型</th>
+                        <th>金额</th>
+                        <th>状态</th>
+                        <th>签署日期</th>
+                        <th>同步状态</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody id="contract-list">
+                    <tr onclick="showContractDetail('HT-2024-00001')" style="cursor:pointer">
+                        <td><span style="font-weight:500;color:#0369a1">HT-2024-00001</span></td>
+                        <td>CRO服务合同</td>
+                        <td><span class="badge badge-blue">申办方</span> 恒瑞医药</td>
+                        <td><span class="badge badge-blue">主合同</span></td>
+                        <td style="color:#059669;font-weight:500">¥5,000,000</td>
+                        <td><span class="badge badge-green">执行中</span></td>
+                        <td>2024-05-15</td>
+                        <td><span class="sync-indicator sync-synced" title="已同步"><i class="fas fa-check-circle"></i></span></td>
+                        <td onclick="event.stopPropagation()">
+                            <div class="action-btns">
+                                <button class="action-btn" onclick="showContractDetail('HT-2024-00001')" title="详情"><i class="fas fa-eye"></i></button>
+                                <button class="action-btn" onclick="editContract('HT-2024-00001')" title="编辑"><i class="fas fa-edit"></i></button>
+                                <button class="action-btn danger" title="删除"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr onclick="showContractDetail('HT-2024-00002')" style="cursor:pointer">
+                        <td><span style="font-weight:500;color:#0369a1">HT-2024-00002</span></td>
+                        <td>补充协议-01</td>
+                        <td><span class="badge badge-blue">申办方</span> 恒瑞医药</td>
+                        <td><span class="badge badge-green">补充协议</span></td>
+                        <td style="color:#059669;font-weight:500">¥500,000</td>
+                        <td><span class="badge badge-green">执行中</span></td>
+                        <td>2024-05-20</td>
+                        <td><span class="sync-indicator sync-synced" title="已同步"><i class="fas fa-check-circle"></i></span></td>
+                        <td onclick="event.stopPropagation()">
+                            <div class="action-btns">
+                                <button class="action-btn" onclick="showContractDetail('HT-2024-00002')" title="详情"><i class="fas fa-eye"></i></button>
+                                <button class="action-btn" onclick="editContract('HT-2024-00002')" title="编辑"><i class="fas fa-edit"></i></button>
+                                <button class="action-btn danger" title="删除"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr onclick="showContractDetail('HT-2024-00003')" style="cursor:pointer">
+                        <td><span style="font-weight:500;color:#0369a1">HT-2024-00003</span></td>
+                        <td>NDA保密协议</td>
+                        <td><span class="badge badge-blue">申办方</span> 百济神州</td>
+                        <td><span class="badge badge-purple">NDA</span></td>
+                        <td>—</td>
+                        <td><span class="badge badge-orange">待签署</span></td>
+                        <td>—</td>
+                        <td><span class="sync-indicator sync-pending" title="待同步"><i class="fas fa-clock"></i></span></td>
+                        <td onclick="event.stopPropagation()">
+                            <div class="action-btns">
+                                <button class="action-btn" onclick="showContractDetail('HT-2024-00003')" title="详情"><i class="fas fa-eye"></i></button>
+                                <button class="action-btn" onclick="editContract('HT-2024-00003')" title="编辑"><i class="fas fa-edit"></i></button>
+                                <button class="action-btn danger" title="删除"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr onclick="showContractDetail('HT-2024-00004')" style="cursor:pointer">
+                        <td><span style="font-weight:500;color:#0369a1">HT-2024-00004</span></td>
+                        <td>SMO服务合同</td>
+                        <td><span class="badge badge-green">SMO</span> 泰和诚医学</td>
+                        <td><span class="badge badge-blue">主合同</span></td>
+                        <td style="color:#059669;font-weight:500">¥800,000</td>
+                        <td><span class="badge badge-green">执行中</span></td>
+                        <td>2024-04-10</td>
+                        <td><span class="sync-indicator sync-synced" title="已同步"><i class="fas fa-check-circle"></i></span></td>
+                        <td onclick="event.stopPropagation()">
+                            <div class="action-btns">
+                                <button class="action-btn" onclick="showContractDetail('HT-2024-00004')" title="详情"><i class="fas fa-eye"></i></button>
+                                <button class="action-btn" onclick="editContract('HT-2024-00004')" title="编辑"><i class="fas fa-edit"></i></button>
+                                <button class="action-btn danger" title="删除"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr onclick="showContractDetail('HT-2024-00005')" style="cursor:pointer">
+                        <td><span style="font-weight:500;color:#0369a1">HT-2024-00005</span></td>
+                        <td>中心执行服务合同</td>
+                        <td><span class="badge badge-yellow">中心</span> 北京协和医院</td>
+                        <td><span class="badge badge-blue">主合同</span></td>
+                        <td style="color:#059669;font-weight:500">¥300,000</td>
+                        <td><span class="badge badge-green">执行中</span></td>
+                        <td>2024-03-15</td>
+                        <td><span class="sync-indicator sync-conflict" title="冲突"><i class="fas fa-exclamation-circle"></i></span></td>
+                        <td onclick="event.stopPropagation()">
+                            <div class="action-btns">
+                                <button class="action-btn" onclick="showContractDetail('HT-2024-00005')" title="详情"><i class="fas fa-eye"></i></button>
+                                <button class="action-btn" onclick="editContract('HT-2024-00005')" title="编辑"><i class="fas fa-edit"></i></button>
+                                <button class="action-btn danger" title="删除"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 收款进度总览 -->
+    <div class="collection-section">
+        <div class="collection-header">
+            <div class="collection-title">收款进度总览</div>
+        </div>
+        <div class="collection-stats">
+            <div class="collection-stat">
+                <div class="collection-stat-val">¥18,400,000</div>
+                <div class="collection-stat-label">总应收</div>
+            </div>
+            <div class="collection-stat">
+                <div class="collection-stat-val">¥15,600,000</div>
+                <div class="collection-stat-label">已收</div>
+            </div>
+            <div class="collection-stat">
+                <div class="collection-stat-val">¥2,800,000</div>
+                <div class="collection-stat-label">待收</div>
+            </div>
+            <div class="collection-stat">
+                <div class="collection-stat-val" style="color:#059669">84.8%</div>
+                <div class="collection-stat-label">收款率</div>
+            </div>
+        </div>
+        <div class="progress-bar" style="margin-top:16px">
+            <div class="progress-fill" style="width:84.8%"></div>
+        </div>
+    </div>
+</div>
+
+<!-- 新建合同弹窗 -->
+<div id="modal-add-contract" class="modal-overlay">
+    <div class="modal modal-lg">
+        <div class="modal-header">
+            <div class="modal-title"><i class="fas fa-file-signature"></i> 新建合同</div>
+            <button class="modal-close" onclick="closeModal('add-contract')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="info-section">
+                <div class="info-section-title">基本信息</div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">合同编号</label>
+                        <input type="text" class="form-input" value="HT-自动生成" readonly style="background:#f3f4f6">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">关联项目 <span class="required">*</span></label>
+                        <select class="form-select" id="contract-project">
+                            <option value="">请选择项目</option>
+                            <option value="P001">PD-001 肿瘤药物试验</option>
+                            <option value="P002">PD-002 糖尿病研究</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">合同名称 <span class="required">*</span></label>
+                        <input type="text" class="form-input" placeholder="请输入合同名称">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">合同类型 <span class="required">*</span></label>
+                        <select class="form-select" id="contract-type">
+                            <option value="">请选择类型</option>
+                            <option value="MAIN">主合同</option>
+                            <option value="SUPPLEMENT">补充协议</option>
+                            <option value="NDA">NDA</option>
+                            <option value="FRAMEWORK">框架协议</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-section">
+                <div class="info-section-title">合同对方</div>
+                <div class="party-type-tabs" id="party-type-tabs">
+                    <div class="party-type-tab active" data-type="SPONSOR" onclick="selectPartyType('SPONSOR')">申办方</div>
+                    <div class="party-type-tab" data-type="SMO" onclick="selectPartyType('SMO')">SMO</div>
+                    <div class="party-type-tab" data-type="SITE" onclick="selectPartyType('SITE')">中心</div>
+                    <div class="party-type-tab" data-type="PARTNER" onclick="selectPartyType('PARTNER')">其他合作方</div>
+                </div>
+                <div class="party-list" id="party-list">
+                    <div class="party-item selected" onclick="selectParty(this, 'SP001')">
+                        <div style="flex:1">
+                            <div class="party-name">恒瑞医药</div>
+                            <div class="party-type">申办方</div>
+                        </div>
+                    </div>
+                    <div class="party-item" onclick="selectParty(this, 'SP002')">
+                        <div style="flex:1">
+                            <div class="party-name">百济神州</div>
+                            <div class="party-type">申办方</div>
+                        </div>
+                    </div>
+                    <div class="party-item" onclick="selectParty(this, 'SP003')">
+                        <div style="flex:1">
+                            <div class="party-name">信达生物</div>
+                            <div class="party-type">申办方</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">合同金额 <span class="required">*</span></label>
+                    <input type="number" class="form-input" placeholder="请输入金额">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">签约日期 <span class="required">*</span></label>
+                    <input type="date" class="form-input">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">生效日期</label>
+                    <input type="date" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">到期日期</label>
+                    <input type="date" class="form-input">
+                </div>
+            </div>
+
+            <div class="info-section">
+                <div class="info-section-title">收款计划</div>
+                <table class="detail-table">
+                    <thead>
+                        <tr>
+                            <th>期次</th>
+                            <th>计划日期</th>
+                            <th>金额</th>
+                            <th>状态</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="payment-schedule">
+                        <tr>
+                            <td>第1期</td>
+                            <td><input type="date" class="form-input" style="width:140px"></td>
+                            <td><input type="number" class="form-input" placeholder="金额" style="width:100px"></td>
+                            <td><span class="badge badge-gray">待收</span></td>
+                            <td><button class="action-btn danger"><i class="fas fa-trash"></i></button></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="add-item-btn" onclick="addPaymentRow()"><i class="fas fa-plus"></i> 添加收款计划</div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">备注</label>
+                <textarea class="form-textarea" placeholder="请输入备注信息"></textarea>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline" onclick="closeModal('add-contract')">取消</button>
+            <button class="btn btn-primary" onclick="saveContract()">保存</button>
+        </div>
+    </div>
+</div>
+
+<!-- 合同详情弹窗 -->
+<div id="modal-contract-detail" class="modal-overlay">
+    <div class="modal modal-lg">
+        <div class="modal-header">
+            <div class="modal-title"><i class="fas fa-file-contract"></i> 合同详情 - HT-2024-00001</div>
+            <button class="modal-close" onclick="closeModal('contract-detail')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div style="display:flex;gap:8px;margin-bottom:16px">
+                <button class="btn btn-primary" onclick="editContract('HT-2024-00001')"><i class="fas fa-edit"></i> 编辑</button>
+                <button class="btn btn-outline"><i class="fas fa-exchange-alt"></i> 变更</button>
+                <button class="btn btn-outline"><i class="fas fa-ban"></i> 终止</button>
+                <button class="btn btn-outline"><i class="fas fa-file-pdf"></i> 导出PDF</button>
+            </div>
+
+            <div class="detail-tabs">
+                <div class="detail-tab active" data-tab="basic" onclick="switchDetailTab('basic')">基本信息</div>
+                <div class="detail-tab" data-tab="payment" onclick="switchDetailTab('payment')">收款计划</div>
+                <div class="detail-tab" data-tab="collection" onclick="switchDetailTab('collection')">收款记录</div>
+                <div class="detail-tab" data-tab="invoice" onclick="switchDetailTab('invoice')">发票记录</div>
+                <div class="detail-tab" data-tab="change" onclick="switchDetailTab('change')">变更记录</div>
+                <div class="detail-tab" data-tab="file" onclick="switchDetailTab('file')">附件</div>
+            </div>
+
+            <!-- 基本信息Tab -->
+            <div id="tab-basic" class="detail-tab-content">
+                <div class="info-section">
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <div class="info-label">合同编号</div>
+                            <div class="info-value" style="font-weight:500;color:#0369a1">HT-2024-00001</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">合同状态</div>
+                            <div class="info-value"><span class="badge badge-green">执行中</span></div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">合同名称</div>
+                            <div class="info-value">CRO服务合同</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">合同类型</div>
+                            <div class="info-value"><span class="badge badge-blue">主合同</span></div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">关联项目</div>
+                            <div class="info-value">PD-001 肿瘤药物试验</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">合作方</div>
+                            <div class="info-value"><span class="badge badge-blue">申办方</span> 恒瑞医药</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">合同金额</div>
+                            <div class="info-value" style="color:#059669;font-weight:600;font-size:16px">¥5,000,000</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">已收款</div>
+                            <div class="info-value" style="color:#0369a1;font-weight:600">¥3,000,000</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">待收款</div>
+                            <div class="info-value" style="color:#ea580c;font-weight:600">¥2,000,000</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">签署日期</div>
+                            <div class="info-value">2024-05-15</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">生效日期</div>
+                            <div class="info-value">2024-05-15</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">到期日期</div>
+                            <div class="info-value">2025-05-14 <span style="color:#6b7280;font-size:12px">（剩余326天）</span></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="info-section">
+                    <div class="info-section-title">合同进度</div>
+                    <div style="display:flex;align-items:center;gap:12px">
+                        <div class="progress-bar" style="flex:1">
+                            <div class="progress-fill" style="width:60%"></div>
+                        </div>
+                        <span style="color:#0369a1;font-weight:600">60%</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 收款计划Tab -->
+            <div id="tab-payment" class="detail-tab-content" style="display:none">
+                <div style="margin-bottom:12px">
+                    <button class="btn btn-primary btn-sm" onclick="showModal('add-payment-plan')"><i class="fas fa-plus"></i> 添加收款计划</button>
+                    <button class="btn btn-outline btn-sm" onclick="showModal('confirm-collection')"><i class="fas fa-check"></i> 收款确认</button>
+                </div>
+                <table class="detail-table">
+                    <thead>
+                        <tr>
+                            <th>期次</th>
+                            <th>计划日期</th>
+                            <th>计划金额</th>
+                            <th>已收金额</th>
+                            <th>收款状态</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>第1期</td>
+                            <td>2024-06-15</td>
+                            <td>¥2,000,000</td>
+                            <td style="color:#059669">¥2,000,000</td>
+                            <td><span class="badge badge-green">已收款</span></td>
+                            <td><button class="action-btn" title="详情"><i class="fas fa-eye"></i></button></td>
+                        </tr>
+                        <tr>
+                            <td>第2期</td>
+                            <td>2024-09-15</td>
+                            <td>¥1,500,000</td>
+                            <td style="color:#d97706">¥1,000,000</td>
+                            <td><span class="badge badge-yellow">部分收款</span></td>
+                            <td><button class="action-btn" title="收款"><i class="fas fa-hand-holding-usd"></i></button></td>
+                        </tr>
+                        <tr>
+                            <td>第3期</td>
+                            <td>2024-12-15</td>
+                            <td>¥1,500,000</td>
+                            <td>—</td>
+                            <td><span class="badge badge-gray">待收款</span></td>
+                            <td><button class="action-btn" title="收款"><i class="fas fa-hand-holding-usd"></i></button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- 收款记录Tab -->
+            <div id="tab-collection" class="detail-tab-content" style="display:none">
+                <div style="margin-bottom:12px">
+                    <button class="btn btn-primary btn-sm" onclick="showModal('confirm-collection')"><i class="fas fa-plus"></i> 收款确认</button>
+                </div>
+                <table class="detail-table">
+                    <thead>
+                        <tr>
+                            <th>收款编号</th>
+                            <th>收款日期</th>
+                            <th>收款金额</th>
+                            <th>收款方式</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><span style="color:#0369a1">SK-2024-00001</span></td>
+                            <td>2024-06-16</td>
+                            <td style="color:#059669;font-weight:500">¥2,000,000</td>
+                            <td>银行转账</td>
+                            <td><button class="action-btn" title="详情"><i class="fas fa-eye"></i></button></td>
+                        </tr>
+                        <tr>
+                            <td><span style="color:#0369a1">SK-2024-00002</span></td>
+                            <td>2024-09-20</td>
+                            <td style="color:#d97706;font-weight:500">¥1,000,000</td>
+                            <td>银行转账</td>
+                            <td><button class="action-btn" title="详情"><i class="fas fa-eye"></i></button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- 发票记录Tab -->
+            <div id="tab-invoice" class="detail-tab-content" style="display:none">
+                <div style="margin-bottom:12px">
+                    <button class="btn btn-primary btn-sm" onclick="showModal('apply-invoice')"><i class="fas fa-plus"></i> 开票申请</button>
+                </div>
+                <table class="detail-table">
+                    <thead>
+                        <tr>
+                            <th>发票号</th>
+                            <th>发票金额</th>
+                            <th>开票日期</th>
+                            <th>发票类型</th>
+                            <th>状态</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><span style="color:#0369a1">FP-2024-00001</span></td>
+                            <td style="color:#059669;font-weight:500">¥2,000,000</td>
+                            <td>2024-06-20</td>
+                            <td>增值税专用发票</td>
+                            <td><span class="badge badge-green">已开具</span></td>
+                            <td><button class="action-btn" title="详情"><i class="fas fa-eye"></i></button></td>
+                        </tr>
+                        <tr>
+                            <td><span style="color:#0369a1">FP-2024-00002</span></td>
+                            <td style="color:#059669;font-weight:500">¥1,000,000</td>
+                            <td>2024-09-25</td>
+                            <td>增值税专用发票</td>
+                            <td><span class="badge badge-green">已开具</span></td>
+                            <td><button class="action-btn" title="详情"><i class="fas fa-eye"></i></button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- 变更记录Tab -->
+            <div id="tab-change" class="detail-tab-content" style="display:none">
+                <table class="detail-table">
+                    <thead>
+                        <tr>
+                            <th>变更编号</th>
+                            <th>变更类型</th>
+                            <th>原值</th>
+                            <th>新值</th>
+                            <th>变更日期</th>
+                            <th>审批状态</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><span style="color:#0369a1">BG-2024-00001</span></td>
+                            <td><span class="badge badge-yellow">金额变更</span></td>
+                            <td>¥5,000,000</td>
+                            <td style="color:#059669">¥5,500,000</td>
+                            <td>2024-05-20</td>
+                            <td><span class="badge badge-green">已审批</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- 附件Tab -->
+            <div id="tab-file" class="detail-tab-content" style="display:none">
+                <div style="margin-bottom:12px">
+                    <button class="btn btn-outline btn-sm"><i class="fas fa-upload"></i> 上传附件</button>
+                </div>
+                <table class="detail-table">
+                    <thead>
+                        <tr>
+                            <th>文件类型</th>
+                            <th>文件名</th>
+                            <th>上传日期</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><span class="badge badge-blue">合同扫描件</span></td>
+                            <td>合同.pdf</td>
+                            <td>2024-05-15</td>
+                            <td><button class="action-btn" title="查看"><i class="fas fa-eye"></i></button> <button class="action-btn" title="下载"><i class="fas fa-download"></i></button></td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge badge-green">补充协议</span></td>
+                            <td>补充协议.pdf</td>
+                            <td>2024-05-20</td>
+                            <td><button class="action-btn" title="查看"><i class="fas fa-eye"></i></button> <button class="action-btn" title="下载"><i class="fas fa-download"></i></button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 收款确认弹窗 -->
+<div id="modal-confirm-collection" class="modal-overlay">
+    <div class="modal">
+        <div class="modal-header">
+            <div class="modal-title"><i class="fas fa-hand-holding-usd"></i> 收款确认</div>
+            <button class="modal-close" onclick="closeModal('confirm-collection')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">收款编号</label>
+                    <input type="text" class="form-input" value="SK-自动生成" readonly style="background:#f3f4f6">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">关联合同</label>
+                    <input type="text" class="form-input" value="HT-2024-00001 CRO服务合同" readonly style="background:#f3f4f6">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">计划收款</label>
+                    <input type="text" class="form-input" value="¥1,500,000" readonly style="background:#f3f4f6">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">实际收款金额 <span class="required">*</span></label>
+                    <input type="number" class="form-input" placeholder="请输入金额">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">收款日期 <span class="required">*</span></label>
+                    <input type="date" class="form-input" value="2024-09-20">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">收款方式 <span class="required">*</span></label>
+                    <select class="form-select">
+                        <option value="">请选择</option>
+                        <option value="BANK_TRANSFER">银行转账</option>
+                        <option value="CHEQUE">支票</option>
+                        <option value="CASH">现金</option>
+                        <option value="OTHER">其他</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">开户银行</label>
+                    <input type="text" class="form-input" placeholder="请输入">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">银行账号</label>
+                    <input type="text" class="form-input" placeholder="请输入">
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">备注</label>
+                <textarea class="form-textarea" placeholder="请输入备注信息"></textarea>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline" onclick="closeModal('confirm-collection')">取消</button>
+            <button class="btn btn-primary" onclick="confirmCollection()">确认收款</button>
+        </div>
+    </div>
+</div>
+
+<!-- 开票申请弹窗 -->
+<div id="modal-apply-invoice" class="modal-overlay">
+    <div class="modal">
+        <div class="modal-header">
+            <div class="modal-title"><i class="fas fa-file-invoice"></i> 开票申请</div>
+            <button class="modal-close" onclick="closeModal('apply-invoice')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">发票编号</label>
+                    <input type="text" class="form-input" value="FP-自动生成" readonly style="background:#f3f4f6">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">关联合同</label>
+                    <input type="text" class="form-input" value="HT-2024-00001" readonly style="background:#f3f4f6">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">发票类型 <span class="required">*</span></label>
+                    <select class="form-select">
+                        <option value="">请选择</option>
+                        <option value="VAT_SPECIAL">增值税专用发票</option>
+                        <option value="VAT_NORMAL">增值税普通发票</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">发票金额 <span class="required">*</span></label>
+                    <input type="number" class="form-input" placeholder="请输入金额">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">开票日期 <span class="required">*</span></label>
+                    <input type="date" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">购买方</label>
+                    <input type="text" class="form-input" value="恒瑞医药" readonly style="background:#f3f4f6">
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">备注</label>
+                <textarea class="form-textarea" placeholder="请输入备注信息"></textarea>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline" onclick="closeModal('apply-invoice')">取消</button>
+            <button class="btn btn-primary" onclick="applyInvoice()">提交申请</button>
+        </div>
+    </div>
+</div>
+
+<script>
+// Tab切换
+function switchDetailTab(tab) {
+    document.querySelectorAll('.detail-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.detail-tab-content').forEach(c => c.style.display = 'none');
+    document.querySelector(`[data-tab="${tab}"]`).classList.add('active');
+    document.getElementById(`tab-${tab}`).style.display = 'block';
+}
+
+// 模态框
+function showModal(type) {
+    const modalMap = {
+        'add-contract': 'modal-add-contract',
+        'contract-detail': 'modal-contract-detail',
+        'confirm-collection': 'modal-confirm-collection',
+        'apply-invoice': 'modal-apply-invoice'
+    };
+    const modalId = modalMap[type];
+    if (modalId) {
+        document.getElementById(modalId).classList.add('show');
+    }
+}
+
+function closeModal(type) {
+    const modalMap = {
+        'add-contract': 'modal-add-contract',
+        'contract-detail': 'modal-contract-detail',
+        'confirm-collection': 'modal-confirm-collection',
+        'apply-invoice': 'modal-apply-invoice'
+    };
+    const modalId = modalMap[type];
+    if (modalId) {
+        document.getElementById(modalId).classList.remove('show');
+    }
+}
+
+// 合同详情
+function showContractDetail(id) {
+    showModal('contract-detail');
+}
+
+// 编辑合同
+function editContract(id) {
+    showToast('编辑合同功能', 'success');
+}
+
+// 保存合同
+function saveContract() {
+    showToast('合同保存成功', 'success');
+    closeModal('add-contract');
+}
+
+// 收款确认
+function confirmCollection() {
+    showToast('收款确认成功', 'success');
+    closeModal('confirm-collection');
+}
+
+// 开票申请
+function applyInvoice() {
+    showToast('开票申请已提交', 'success');
+    closeModal('apply-invoice');
+}
+
+// 搜索
+function searchContracts() {
+    const keyword = document.getElementById('search-keyword').value;
+    console.log('搜索:', keyword);
+    showToast('搜索完成', 'success');
+}
+
+// 合作方类型选择
+function selectPartyType(type) {
+    document.querySelectorAll('.party-type-tab').forEach(t => t.classList.remove('active'));
+    document.querySelector(`[data-type="${type}"]`).classList.add('active');
+    
+    // 模拟切换合作方列表
+    const partyList = document.getElementById('party-list');
+    const partyData = {
+        'SPONSOR': ['恒瑞医药', '百济神州', '信达生物'],
+        'SMO': ['泰和诚医学', '昆泰医药', '科文斯'],
+        'SITE': ['北京协和医院', '北医三院', '上海华山医院'],
+        'PARTNER': ['某某检测中心', '某某物流公司']
+    };
+    
+    partyList.innerHTML = partyData[type].map((name, i) => `
+        <div class="party-item ${i === 0 ? 'selected' : ''}" onclick="selectParty(this, '${type}${i+1}')">
+            <div style="flex:1">
+                <div class="party-name">${name}</div>
+                <div class="party-type">${type === 'SPONSOR' ? '申办方' : type === 'SMO' ? 'SMO' : type === 'SITE' ? '中心' : '合作方'}</div>
+            </div>
+        </div>
+    `).join('');
+}
+
+// 合作方选择
+function selectParty(el, id) {
+    document.querySelectorAll('.party-item').forEach(item => item.classList.remove('selected'));
+    el.classList.add('selected');
+}
+
+// 添加收款计划行
+function addPaymentRow() {
+    const tbody = document.getElementById('payment-schedule');
+    const rows = tbody.querySelectorAll('tr');
+    const nextStage = `第${rows.length + 1}期`;
+    const newRow = document.createElement('tr');
+    newRow.innerHTML = `
+        <td>${nextStage}</td>
+        <td><input type="date" class="form-input" style="width:140px"></td>
+        <td><input type="number" class="form-input" placeholder="金额" style="width:100px"></td>
+        <td><span class="badge badge-gray">待收</span></td>
+        <td><button class="action-btn danger" onclick="this.closest('tr').remove()"><i class="fas fa-trash"></i></button></td>
+    `;
+    tbody.appendChild(newRow);
+}
+
+// Toast提示
+function showToast(message, type) {
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    toast.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'times-circle' : 'info-circle'}"></i> ${message}`;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+}
+
+// 点击模态框外部关闭
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+    overlay.addEventListener('click', function(e) {
+        if (e.target === this) {
+            this.classList.remove('show');
+        }
+    });
+});
+</script>
+
+</body>
+</html>
