@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>物资供应 - L1综合管理</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;background:#f5f6fa;color:#1f2937;font-size:14px;line-height:1.5}
+
+/* 主容器 */
+.supply-container{max-width:1400px;margin:0 auto;padding:20px}
+
+/* 页面标题 */
+.page-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+.page-title{font-size:18px;font-weight:600;color:#1f2937;display:flex;align-items:center;gap:8px}
+.page-title i{color:#ea580c}
+.breadcrumb{font-size:13px;color:#6b7280;margin-top:4px}
+.breadcrumb span{color:#ea580c}
+
+/* KPI卡片区 */
+.kpi-row{display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap}
+.kpi-box{flex:1;min-width:120px;background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:10px 14px;display:flex;align-items:center;gap:10px}
+.kpi-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.kpi-val{font-size:18px;font-weight:700;line-height:1}
+.kpi-label{font-size:12px;color:#6b7280;margin-top:2px}
+.kpi-green .kpi-icon{background:#ecfdf5;color:#059669}
+.kpi-green .kpi-val{color:#059669}
+.kpi-blue .kpi-icon{background:#eff6ff;color:#2563eb}
+.kpi-blue .kpi-val{color:#2563eb}
+.kpi-orange .kpi-icon{background:#fff7ed;color:#ea580c}
+.kpi-orange .kpi-val{color:#ea580c}
+.kpi-yellow .kpi-icon{background:#fef3c7;color:#d97706}
+.kpi-yellow .kpi-val{color:#d97706}
+.kpi-red .kpi-icon{background:#fef2f2;color:#dc2626}
+.kpi-red .kpi-val{color:#dc2626}
+
+/* 主卡片 */
+.main-card{background:#fff;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden}
+
+/* Tab导航 */
+.tab-nav{display:flex;gap:4px;border-bottom:2px solid #e5e7eb;padding:0 20px;background:#fafafa}
+.tab-item{padding:12px 18px;font-size:13px;font-weight:500;color:#6b7280;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all 0.2s;display:flex;align-items:center;gap:8px}
+.tab-item:hover{color:#374151}
+.tab-item.active{color:#ea580c;border-bottom-color:#ea580c}
+.tab-item i{font-size:14px}
+.tab-badge{background:#fee2e2;color:#dc2626;font-size:11px;padding:2px 6px;border-radius:10px;margin-left:4px}
+
+/* Tab内容 */
+.tab-content{padding:20px;display:none}
+.tab-content.active{display:block}
+
+/* 工具栏 */
+.toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px}
+.toolbar-left{display:flex;gap:8px;flex-wrap:wrap}
+.toolbar-right{display:flex;gap:8px;align-items:center}
+
+/* 按钮 */
+.btn{padding:8px 16px;border-radius:8px;font-size:13px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;border:none;transition:all 0.2s}
+.btn-primary{background:#ea580c;color:#fff}
+.btn-primary:hover{background:#c2410c}
+.btn-success{background:#059669;color:#fff}
+.btn-success:hover{background:#047857}
+.btn-outline{background:#fff;color:#374151;border:1px solid #e5e7eb}
+.btn-outline:hover{background:#f9fafb}
+.btn-warning{background:#fef3c7;color:#d97706;border:1px solid #fcd34d}
+.btn-warning:hover{background:#fde68a}
+.btn-danger{background:#fef2f2;color:#dc2626;border:1px solid #fecaca}
+.btn-danger:hover{background:#fee2e2}
+.btn-sm{padding:6px 10px;font-size:12px}
+.btn-icon{background:none;border:none;color:#6b7280;cursor:pointer;padding:4px;font-size:13px}
+.btn-icon:hover{color:#374151}
+
+/* 筛选器 */
+.filter-group{display:flex;gap:8px;align-items:center}
+.filter-select{padding:8px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:13px;color:#374151;background:#fff;min-width:120px}
+.search-box{display:flex;align-items:center;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden}
+.search-box input{border:none;padding:8px 12px;font-size:13px;width:180px;outline:none}
+.search-box button{background:none;border:none;padding:8px 12px;color:#6b7280;cursor:pointer}
+
+/* 表格 */
+.table-wrap{overflow-x:auto;border:1px solid #e5e7eb;border-radius:10px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead{background:#f8fafc}
+th{padding:12px 14px;text-align:left;font-weight:600;color:#6b7280;font-size:12px;border-bottom:1px solid #e5e7eb;white-space:nowrap}
+td{padding:12px 14px;border-bottom:1px solid #f3f4f6;vertical-align:middle}
+tbody tr:hover{background:#fafafa}
+tbody tr:last-child td{border-bottom:none}
+
+/* Badge标签 */
+.badge{padding:3px 10px;border-radius:10px;font-size:12px;font-weight:500;display:inline-block;white-space:nowrap}
+.badge-green{background:#ecfdf5;color:#059669}
+.badge-blue{background:#eff6ff;color:#2563eb}
+.badge-orange{background:#fff7ed;color:#ea580c}
+.badge-yellow{background:#fef3c7;color:#d97706}
+.badge-red{background:#fef2f2;color:#dc2626}
+.badge-gray{background:#f3f4f6;color:#6b7280}
+.badge-purple{background:#f5f3ff;color:#7c3aed}
+
+/* 操作按钮 */
+.action-btns{display:flex;gap:4px}
+.action-btn{background:none;border:none;color:#6b7280;cursor:pointer;padding:4px 6px;font-size:12px;border-radius:4px}
+.action-btn:hover{background:#f3f4f6;color:#374151}
+.action-btn.danger:hover{background:#fef2f2;color:#dc2626}
+
+/* 空状态 */
+.empty-state{text-align:center;padding:60px 20px;color:#9ca3af}
+.empty-state i{font-size:48px;margin-bottom:16px;color:#d1d5db}
+.empty-state p{font-size:14px}
+
+/* 模态框 */
+.modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:10000;display:none;align-items:center;justify-content:center}
+.modal-overlay.show{display:flex}
+.modal{background:#fff;border-radius:14px;width:700px;max-width:90vw;max-height:90vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 25px 50px -12px rgba(0,0,0,0.25)}
+.modal-lg{width:900px}
+.modal-header{display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1px solid #e5e7eb}
+.modal-title{font-size:16px;font-weight:600;display:flex;align-items:center;gap:10px}
+.modal-title i{color:#ea580c}
+.modal-close{background:none;border:none;font-size:24px;color:#9ca3af;cursor:pointer;line-height:1}
+.modal-close:hover{color:#374151}
+.modal-body{padding:20px;overflow-y:auto;flex:1}
+.modal-footer{display:flex;justify-content:flex-end;gap:10px;padding:14px 20px;border-top:1px solid #e5e7eb;background:#fafafa}
+
+/* 表单 */
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.form-group{margin-bottom:14px}
+.form-label{display:block;font-size:13px;color:#374151;font-weight:500;margin-bottom:6px}
+.form-label .required{color:#dc2626;margin-left:2px}
+.form-input{width:100%;padding:9px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:13px;transition:border-color 0.2s}
+.form-input:focus{outline:none;border-color:#ea580c}
+.form-select{width:100%;padding:9px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:13px;background:#fff}
+.form-textarea{width:100%;padding:9px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:13px;resize:vertical;min-height:70px}
+.form-hint{font-size:12px;color:#6b7280;margin-top:4px}
+
+/* 明细表格 */
+.detail-table{width:100%;border:1px solid #e5e7eb;border-radius:8px;margin:12px 0}
+.detail-table th{background:#f8fafc;padding:10px 12px;font-size:12px;font-weight:600;color:#6b7280}
+.detail-table td{padding:10px 12px;font-size:13px}
+.detail-table input{width:80px;padding:6px 8px;border:1px solid #e5e7eb;border-radius:6px;font-size:12px}
+.add-item-btn{display:flex;align-items:center;gap:6px;color:#ea580c;font-size:13px;cursor:pointer;padding:8px 0}
+.add-item-btn:hover{text-decoration:underline}
+
+/* 物资类别图标 */
+.cat-icon{width:28px;height:28px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;font-size:12px}
+.cat-drug{background:#fef2f2;color:#dc2626}
+.cat-device{background:#f5f3ff;color:#7c3aed}
+.cat-consumable{background:#eff6ff;color:#2563eb}
+.cat-office{background:#f3f4f6;color:#6b7280}
+
+/* 状态指示 */
+.status-dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:6px}
+.status-dot.pending{background:#f59e0b}
+.status-dot.approved{background:#10b981}
+.status-dot.rejected{background:#ef4444}
+.status-dot.shipped{background:#3b82f6}
+.status-dot.received{background:#8b5cf6}
+
+/* 统计卡片 */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:16px}
+.stat-card{background:#f8fafc;border-radius:8px;padding:16px;text-align:center}
+.stat-card .val{font-size:24px;font-weight:700;color:#1f2937}
+.stat-card .label{font-size:12px;color:#6b7280;margin-top:4px}
+
+/* 库存预警 */
+.alert-item{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:8px;margin-bottom:8px}
+.alert-item.warning{background:#fef3c7;border:1px solid #fcd34d}
+.alert-item.danger{background:#fef2f2;border:1px solid #fecaca}
+.alert-item .icon{width:32px;height:32px;border-radius:6px;display:flex;align-items:center;justify-content:center}
+.alert-item .icon.warning{background:#fff; color:#d97706}
+.alert-item .icon.danger{background:#fff; color:#dc2626}
+.alert-item .info{flex:1}
+.alert-item .info .name{font-weight:500;font-size:13px}
+.alert-item .info .desc{font-size:12px;color:#6b7280}
+.alert-item .qty{font-weight:600;font-size:14px}
+.alert-item .qty.low{color:#d97706}
+.alert-item .qty.empty{color:#dc2626}
+
+/* 分页 */
+.pagination{display:flex;align-items:center;justify-content:space-between;margin-top:16px}
+.pagination-info{font-size:13px;color:#6b7280}
+.pagination-btns{display:flex;gap:4px}
+.page-btn{padding:6px 12px;border:1px solid #e5e7eb;border-radius:6px;background:#fff;cursor:pointer;font-size:13px;color:#374151}
+.page-btn:hover{background:#f9fafb}
+.page-btn.active{background:#ea580c;color:#fff;border-color:#ea580c}
+.page-btn:disabled{opacity:0.5;cursor:not-allowed}
+
+/* 供应商状态 */
+.supplier-card{display:flex;align-items:center;gap:12px;padding:12px;border:1px solid #e5e7eb;border-radius:10px;margin-bottom:10px;cursor:pointer;transition:all 0.2s}
+.supplier-card:hover{border-color:#ea580c;background:#fffaf5}
+.supplier-card .avatar{width:44px;height:44px;border-radius:8px;background:#f3f4f6;display:flex;align-items:center;justify-content:center;font-size:18px;color:#6b7280}
+.supplier-card .info{flex:1}
+.supplier-card .info .name{font-weight:600;font-size:14px}
+.supplier-card .info .type{font-size:12px;color:#6b7280}
+.supplier-card .status{font-size:12px}
+</style>
+</head>
+<body>
+<div class="supply-container">
+    <!-- 页面标题 -->
+    <div class="page-header">
+        <div>
+            <div class="page-title"><i class="fas fa-boxes-stacked"></i> 物资供应</div>
+            <div class="breadcrumb">综合管理 > <span>物资供应</span></div>
+        </div>
+        <div style="display:flex;gap:8px">
+            <button class="btn btn-outline"><i class="fas fa-download"></i> 导出</button>
+            <button class="btn btn-primary"><i class="fas fa-plus"></i> 新建采购</button>
+        </div>
+    </div>
+
+    <!-- KPI卡片 -->
+    <div class="kpi-row">
+        <div class="kpi-box kpi-orange">
+            <div class="kpi-icon"><i class="fas fa-clock"></i></div>
+            <div>
+                <div class="kpi-val">12</div>
+                <div class="kpi-label">待审批申请</div>
+            </div>
+        </div>
+        <div class="kpi-box kpi-red">
+            <div class="kpi-icon"><i class="fas fa-triangle-exclamation"></i></div>
+            <div>
+                <div class="kpi-val">5</div>
+                <div class="kpi-label">库存预警</div>
+            </div>
+        </div>
+        <div class="kpi-box kpi-blue">
+            <div class="kpi-icon"><i class="fas fa-coins"></i></div>
+            <div>
+                <div class="kpi-val">¥158K</div>
+                <div class="kpi-label">本月采购额</div>
+            </div>
+        </div>
+        <div class="kpi-box kpi-yellow">
+            <div class="kpi-icon"><i class="fas fa-truck-fast"></i></div>
+            <div>
+                <div class="kpi-val">8</div>
+                <div class="kpi-label">在途物资</div>
+            </div>
+        </div>
+        <div class="kpi-box kpi-green">
+            <div class="kpi-icon"><i class="fas fa-chart-line"></i></div>
+            <div>
+                <div class="kpi-val">92.5%</div>
+                <div class="kpi-label">申请满足率</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 主卡片 -->
+    <div class="main-card">
+        <!-- Tab导航 -->
+        <div class="tab-nav">
+            <div class="tab-item active" data-tab="approval"><i class="fas fa-clipboard-check"></i> 申请审批 <span class="tab-badge">12</span></div>
+            <div class="tab-item" data-tab="purchase"><i class="fas fa-cart-shopping"></i> 采购管理</div>
+            <div class="tab-item" data-tab="inventory"><i class="fas fa-warehouse"></i> 库存管理</div>
+            <div class="tab-item" data-tab="supplier"><i class="fas fa-building"></i> 供应商管理</div>
+        </div>
+
+        <!-- 申请审批Tab -->
+        <div class="tab-content active" id="tab-approval">
+            <div class="toolbar">
+                <div class="toolbar-left">
+                    <select class="filter-select">
+                        <option>全部物资类型</option>
+                        <option>临床研究物资</option>
+                        <option>日常办公物资</option>
+                    </select>
+                    <select class="filter-select">
+                        <option>全部紧急程度</option>
+                        <option>普通</option>
+                        <option>紧急</option>
+                        <option>加急</option>
+                    </select>
+                    <select class="filter-select">
+                        <option>全部状态</option>
+                        <option>待审批</option>
+                        <option>已通过</option>
+                        <option>已拒绝</option>
+                    </select>
+                </div>
+                <div class="toolbar-right">
+                    <div class="search-box">
+                        <input type="text" placeholder="搜索申请单号/项目">
+                        <button><i class="fas fa-search"></i></button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th><input type="checkbox"></th>
+                            <th>申请单号</th>
+                            <th>物资类型</th>
+                            <th>项目</th>
+                            <th>申请中心</th>
+                            <th>物资明细</th>
+                            <th>紧急程度</th>
+                            <th>申请金额</th>
+                            <th>申请日期</th>
+                            <th>状态</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><input type="checkbox"></td>
+                            <td><strong>REQ-2024-00089</strong></td>
+                            <td><span class="cat-icon cat-drug"><i class="fas fa-pills"></i></span> 临床物资</td>
+                            <td>PD-001 肿瘤药物试验</td>
+                            <td>北京协和医院</td>
+                            <td>3种物资</td>
+                            <td><span class="badge badge-red"><i class="fas fa-fire"></i> 紧急</span></td>
+                            <td><strong>¥15,800</strong></td>
+                            <td>2024-06-20</td>
+                            <td><span class="badge badge-yellow">待审批</span></td>
+                            <td>
+                                <div class="action-btns">
+                                    <button class="action-btn" onclick="openApproveModal()"><i class="fas fa-check"></i></button>
+                                    <button class="action-btn danger"><i class="fas fa-times"></i></button>
+                                    <button class="action-btn"><i class="fas fa-eye"></i></button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><input type="checkbox"></td>
+                            <td><strong>REQ-2024-00088</strong></td>
+                            <td><span class="cat-icon cat-office"><i class="fas fa-pen"></i></span> 办公物资</td>
+                            <td>PD-002 糖尿病研究</td>
+                            <td>上海华山医院</td>
+                            <td>5种物资</td>
+                            <td><span class="badge badge-gray">普通</span></td>
+                            <td><strong>¥2,350</strong></td>
+                            <td>2024-06-20</td>
+                            <td><span class="badge badge-yellow">待审批</span></td>
+                            <td>
+                                <div class="action-btns">
+                                    <button class="action-btn" onclick="openApproveModal()"><i class="fas fa-check"></i></button>
+                                    <button class="action-btn danger"><i class="fas fa-times"></i></button>
+                                    <button class="action-btn"><i class="fas fa-eye"></i></button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><input type="checkbox"></td>
+                            <td><strong>REQ-2024-00087</strong></td>
+                            <td><span class="cat-icon cat-drug"><i class="fas fa-pills"></i></span> 临床物资</td>
+                            <td>PD-001 肿瘤药物试验</td>
+                            <td>广州中山医院</td>
+                            <td>2种物资</td>
+                            <td><span class="badge badge-orange">加急</span></td>
+                            <td><strong>¥28,600</strong></td>
+                            <td>2024-06-19</td>
+                            <td><span class="badge badge-green">已通过</span></td>
+                            <td>
+                                <div class="action-btns">
+                                    <button class="action-btn"><i class="fas fa-truck"></i></button>
+                                    <button class="action-btn"><i class="fas fa-eye"></i></button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><input type="checkbox"></td>
+                            <td><strong>REQ-2024-00086</strong></td>
+                            <td><span class="cat-icon cat-device"><i class="fas fa-temperature-half"></i></span> 临床物资</td>
+                            <td>PD-003 心血管研究</td>
+                            <td>成都华西医院</td>
+                            <td>1种物资</td>
+                            <td><span class="badge badge-gray">普通</span></td>
+                            <td><strong>¥5,200</strong></td>
+                            <td>2024-06-19</td>
+                            <td><span class="badge badge-red">已拒绝</span></td>
+                            <td>
+                                <div class="action-btns">
+                                    <button class="action-btn"><i class="fas fa-eye"></i></button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="pagination">
+                <div class="pagination-info">共 156 条记录，第 1/16 页</div>
+                <div class="pagination-btns">
+                    <button class="page-btn" disabled>上一页</button>
+                    <button class="page-btn active">1</button>
+                    <button class="page-btn">2</button>
+                    <button class="page-btn">3</button>
+                    <button class="page-btn">...</button>
+                    <button class="page-btn">16</button>
+                    <button class="page-btn">下一页</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 采购管理Tab -->
+        <div class="tab-content" id="tab-purchase">
+            <div class="toolbar">
+                <div class="toolbar-left">
+                    <select class="filter-select">
+                        <option>全部状态</option>
+                        <option>草稿</option>
+                        <option>已提交</option>
+                        <option>已确认</option>
+                        <option>已发货</option>
+                        <option>已入库</option>
+                    </select>
+                    <select class="filter-select">
+                        <option>全部供应商</option>
+                        <option>华润医药集团</option>
+                        <option>国药集团</option>
+                        <option>上药集团</option>
+                    </select>
+                </div>
+                <div class="toolbar-right">
+                    <button class="btn btn-primary"><i class="fas fa-plus"></i> 新建采购订单</button>
+                </div>
+            </div>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>采购单号</th>
+                            <th>供应商</th>
+                            <th>物资数量</th>
+                            <th>采购金额</th>
+                            <th>订单日期</th>
+                            <th>预计到货</th>
+                            <th>实际到货</th>
+                            <th>状态</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>PO-2024-00045</strong></td>
+                            <td>华润医药集团</td>
+                            <td>200件</td>
+                            <td><strong>¥45,600</strong></td>
+                            <td>2024-06-18</td>
+                            <td>2024-06-25</td>
+                            <td>—</td>
+                            <td><span class="badge badge-blue">已提交</span></td>
+                            <td>
+                                <div class="action-btns">
+                                    <button class="action-btn"><i class="fas fa-edit"></i></button>
+                                    <button class="action-btn"><i class="fas fa-truck-loading"></i></button>
+                                    <button class="action-btn"><i class="fas fa-eye"></i></button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>PO-2024-00044</strong></td>
+                            <td>国药集团</td>
+                            <td>500件</td>
+                            <td><strong>¥128,000</strong></td>
+                            <td>2024-06-15</td>
+                            <td>2024-06-22</td>
+                            <td>2024-06-21</td>
+                            <td><span class="badge badge-green">已入库</span></td>
+                            <td>
+                                <div class="action-btns">
+                                    <button class="action-btn"><i class="fas fa-eye"></i></button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>PO-2024-00043</strong></td>
+                            <td>上药集团</td>
+                            <td>150件</td>
+                            <td><strong>¥32,500</strong></td>
+                            <td>2024-06-10</td>
+                            <td>2024-06-17</td>
+                            <td>2024-06-16</td>
+                            <td><span class="badge badge-green">已入库</span></td>
+                            <td>
+                                <div class="action-btns">
+                                    <button class="action-btn"><i class="fas fa-eye"></i></button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 库存管理Tab -->
+        <div class="tab-content" id="tab-inventory">
+            <div class="toolbar">
+                <div class="toolbar-left">
+                    <select class="filter-select">
+                        <option>全部仓库</option>
+                        <option>中央物资仓库</option>
+                        <option>区域分仓-华东</option>
+                        <option>区域分仓-华北</option>
+                    </select>
+                    <select class="filter-select">
+                        <option>全部分类</option>
+                        <option>试验用药</option>
+                        <option>试剂盒/实验室耗材</option>
+                        <option>CRF表/问卷</option>
+                        <option>办公文具</option>
+                        <option>打印耗材</option>
+                    </select>
+                    <select class="filter-select">
+                        <option>全部状态</option>
+                        <option>正常</option>
+                        <option>预警</option>
+                        <option>缺货</option>
+                    </select>
+                </div>
+                <div class="toolbar-right">
+                    <div class="search-box">
+                        <input type="text" placeholder="搜索物资编码/名称">
+                        <button><i class="fas fa-search"></i></button>
+                    </div>
+                    <button class="btn btn-outline"><i class="fas fa-boxes-packing"></i> 库存盘点</button>
+                </div>
+            </div>
+
+            <!-- 预警区 -->
+            <div style="margin-bottom:16px">
+                <h4 style="font-size:13px;color:#374151;margin-bottom:10px;font-weight:600"><i class="fas fa-bell" style="color:#d97706;margin-right:6px"></i> 库存预警</h4>
+                <div class="alert-item danger">
+                    <div class="icon danger"><i class="fas fa-exclamation-circle"></i></div>
+                    <div class="info">
+                        <div class="name">研究药物A (SUPPLY-IP-2024-000001)</div>
+                        <div class="desc">当前库存 23 件，已低于安全库存 100 件</div>
+                    </div>
+                    <div class="qty empty">23件</div>
+                </div>
+                <div class="alert-item warning">
+                    <div class="icon warning"><i class="fas fa-exclamation-triangle"></i></div>
+                    <div class="info">
+                        <div class="name">知情同意书 (SUPPLY-ICF-2024-000015)</div>
+                        <div class="desc">当前库存 45 件，接近再订货点 50 件</div>
+                    </div>
+                    <div class="qty low">45件</div>
+                </div>
+                <div class="alert-item warning">
+                    <div class="icon warning"><i class="fas fa-exclamation-triangle"></i></div>
+                    <div class="info">
+                        <div class="name">打印机硒鼓 (SUPPLY-PRINT-2024-000008)</div>
+                        <div class="desc">当前库存 12 件，低于安全库存 30 件</div>
+                    </div>
+                    <div class="qty low">12件</div>
+                </div>
+            </div>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>物资编码</th>
+                            <th>物资名称</th>
+                            <th>分类</th>
+                            <th>仓库</th>
+                            <th>当前库存</th>
+                            <th>安全库存</th>
+                            <th>可用库存</th>
+                            <th>单位</th>
+                            <th>参考单价</th>
+                            <th>状态</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>SUPPLY-IP-2024-000001</strong></td>
+                            <td>研究药物A 10mg</td>
+                            <td><span class="cat-icon cat-drug"><i class="fas fa-pills"></i></span></td>
+                            <td>中央物资仓库</td>
+                            <td><span style="color:#dc2626;font-weight:600">23</span></td>
+                            <td>100</td>
+                            <td>23</td>
+                            <td>盒</td>
+                            <td>¥500</td>
+                            <td><span class="badge badge-red">缺货</span></td>
+                            <td><button class="btn btn-sm btn-outline"><i class="fas fa-plus"></i> 采购</button></td>
+                        </tr>
+                        <tr>
+                            <td><strong>SUPPLY-REAGENT-2024-000003</strong></td>
+                            <td>血糖检测试剂盒</td>
+                            <td><span class="cat-icon cat-consumable"><i class="fas fa-vial"></i></span></td>
+                            <td>中央物资仓库</td>
+                            <td><span style="color:#059669;font-weight:600">580</span></td>
+                            <td>200</td>
+                            <td>580</td>
+                            <td>套</td>
+                            <td>¥85</td>
+                            <td><span class="badge badge-green">充足</span></td>
+                            <td><button class="btn btn-sm btn-outline"><i class="fas fa-eye"></i></button></td>
+                        </tr>
+                        <tr>
+                            <td><strong>SUPPLY-ICF-2024-000015</strong></td>
+                            <td>知情同意书 v3.0</td>
+                            <td><span class="cat-icon cat-device"><i class="fas fa-file-lines"></i></span></td>
+                            <td>中央物资仓库</td>
+                            <td><span style="color:#d97706;font-weight:600">45</span></td>
+                            <td>100</td>
+                            <td>45</td>
+                            <td>份</td>
+                            <td>¥3</td>
+                            <td><span class="badge badge-yellow">预警</span></td>
+                            <td><button class="btn btn-sm btn-outline"><i class="fas fa-plus"></i> 采购</button></td>
+                        </tr>
+                        <tr>
+                            <td><strong>SUPPLY-PRINT-2024-000008</strong></td>
+                            <td>激光打印机硒鼓</td>
+                            <td><span class="cat-icon cat-office"><i class="fas fa-print"></i></span></td>
+                            <td>区域分仓-华东</td>
+                            <td><span style="color:#d97706;font-weight:600">12</span></td>
+                            <td>30</td>
+                            <td>12</td>
+                            <td>个</td>
+                            <td>¥380</td>
+                            <td><span class="badge badge-yellow">预警</span></td>
+                            <td><button class="btn btn-sm btn-outline"><i class="fas fa-plus"></i> 采购</button></td>
+                        </tr>
+                        <tr>
+                            <td><strong>SUPPLY-STATIONERY-2024-000022</strong></td>
+                            <td>签字笔（黑色）</td>
+                            <td><span class="cat-icon cat-office"><i class="fas fa-pen"></i></span></td>
+                            <td>区域分仓-华北</td>
+                            <td><span style="color:#059669;font-weight:600">1,250</span></td>
+                            <td>200</td>
+                            <td>1,250</td>
+                            <td>支</td>
+                            <td>¥2</td>
+                            <td><span class="badge badge-green">充足</span></td>
+                            <td><button class="btn btn-sm btn-outline"><i class="fas fa-eye"></i></button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 供应商管理Tab -->
+        <div class="tab-content" id="tab-supplier">
+            <div class="toolbar">
+                <div class="toolbar-left">
+                    <select class="filter-select">
+                        <option>全部状态</option>
+                        <option>合作中</option>
+                        <option>已暂停</option>
+                        <option>黑名单</option>
+                    </select>
+                    <div class="search-box">
+                        <input type="text" placeholder="搜索供应商名称">
+                        <button><i class="fas fa-search"></i></button>
+                    </div>
+                </div>
+                <div class="toolbar-right">
+                    <button class="btn btn-primary"><i class="fas fa-plus"></i> 新增供应商</button>
+                </div>
+            </div>
+
+            <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px">
+                <div class="supplier-card">
+                    <div class="avatar"><i class="fas fa-building"></i></div>
+                    <div class="info">
+                        <div class="name">华润医药集团有限公司</div>
+                        <div class="type">医药供应商 | 合作中</div>
+                    </div>
+                    <div class="status">
+                        <span class="badge badge-green">正常</span>
+                    </div>
+                </div>
+                <div class="supplier-card">
+                    <div class="avatar"><i class="fas fa-building"></i></div>
+                    <div class="info">
+                        <div class="name">中国医药集团总公司</div>
+                        <div class="type">医药供应商 | 合作中</div>
+                    </div>
+                    <div class="status">
+                        <span class="badge badge-green">正常</span>
+                    </div>
+                </div>
+                <div class="supplier-card">
+                    <div class="avatar"><i class="fas fa-building"></i></div>
+                    <div class="info">
+                        <div class="name">上海医药集团股份有限公司</div>
+                        <div class="type">医药供应商 | 合作中</div>
+                    </div>
+                    <div class="status">
+                        <span class="badge badge-green">正常</span>
+                    </div>
+                </div>
+                <div class="supplier-card">
+                    <div class="avatar"><i class="fas fa-building"></i></div>
+                    <div class="info">
+                        <div class="name">九州通医药集团</div>
+                        <div class="type">医药供应商 | 合作中</div>
+                    </div>
+                    <div class="status">
+                        <span class="badge badge-yellow">资质将到期</span>
+                    </div>
+                </div>
+                <div class="supplier-card">
+                    <div class="avatar"><i class="fas fa-print"></i></div>
+                    <div class="info">
+                        <div class="name">办公用品供应商A</div>
+                        <div class="type">办公物资供应商 | 合作中</div>
+                    </div>
+                    <div class="status">
+                        <span class="badge badge-green">正常</span>
+                    </div>
+                </div>
+                <div class="supplier-card">
+                    <div class="avatar"><i class="fas fa-truck"></i></div>
+                    <div class="info">
+                        <div class="name">顺丰冷链物流</div>
+                        <div class="type">物流服务商 | 合作中</div>
+                    </div>
+                    <div class="status">
+                        <span class="badge badge-green">正常</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 审批弹窗 -->
+<div class="modal-overlay" id="approveModal">
+    <div class="modal">
+        <div class="modal-header">
+            <div class="modal-title"><i class="fas fa-clipboard-check"></i> 审批物资申请</div>
+            <button class="modal-close" onclick="closeApproveModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div style="background:#f8fafc;padding:16px;border-radius:10px;margin-bottom:20px">
+                <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px">
+                    <div>
+                        <div style="font-size:12px;color:#6b7280">申请单号</div>
+                        <div style="font-weight:600;margin-top:4px">REQ-2024-00089</div>
+                    </div>
+                    <div>
+                        <div style="font-size:12px;color:#6b7280">申请中心</div>
+                        <div style="font-weight:600;margin-top:4px">北京协和医院</div>
+                    </div>
+                    <div>
+                        <div style="font-size:12px;color:#6b7280">紧急程度</div>
+                        <div style="margin-top:4px"><span class="badge badge-red"><i class="fas fa-fire"></i> 紧急</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <h4 style="font-size:14px;font-weight:600;margin-bottom:12px">申请物资明细</h4>
+            <table class="detail-table">
+                <thead>
+                    <tr>
+                        <th>物资名称</th>
+                        <th>规格</th>
+                        <th>申请数量</th>
+                        <th>审批数量</th>
+                        <th>库存可用</th>
+                        <th>状态</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>研究药物A 10mg</td>
+                        <td>10mg×30片/盒</td>
+                        <td>50盒</td>
+                        <td><input type="number" value="50"></td>
+                        <td><span style="color:#dc2626">23</span></td>
+                        <td><span class="badge badge-red">库存不足</span></td>
+                    </tr>
+                    <tr>
+                        <td>知情同意书 v3.0</td>
+                        <td>A4/份</td>
+                        <td>100份</td>
+                        <td><input type="number" value="100"></td>
+                        <td><span style="color:#d97706">45</span></td>
+                        <td><span class="badge badge-yellow">部分不足</span></td>
+                    </tr>
+                    <tr>
+                        <td>患者日记卡</td>
+                        <td>A5/份</td>
+                        <td>200份</td>
+                        <td><input type="number" value="200"></td>
+                        <td><span style="color:#059669">580</span></td>
+                        <td><span class="badge badge-green">充足</span></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="form-group">
+                <label class="form-label">审批意见</label>
+                <textarea class="form-textarea" placeholder="请输入审批意见...">库存部分物资不足，建议分批供货。试验用药需优先采购。</textarea>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline" onclick="closeApproveModal()">取消</button>
+            <button class="btn btn-danger"><i class="fas fa-times"></i> 拒绝</button>
+            <button class="btn btn-success"><i class="fas fa-check"></i> 审批通过</button>
+        </div>
+    </div>
+</div>
+
+<script>
+// Tab切换
+document.querySelectorAll('.tab-item').forEach(tab => {
+    tab.addEventListener('click', function() {
+        document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        this.classList.add('active');
+        document.getElementById('tab-' + this.dataset.tab).classList.add('active');
+    });
+});
+
+// 审批弹窗
+function openApproveModal() {
+    document.getElementById('approveModal').classList.add('show');
+}
+function closeApproveModal() {
+    document.getElementById('approveModal').classList.remove('show');
+}
+</script>
+</body>
+</html>

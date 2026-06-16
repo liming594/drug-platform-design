@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>物资供应 - L2项目中心</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;background:#f5f6fa;color:#1f2937;font-size:14px;line-height:1.5}
+
+/* 主容器 */
+.supply-container{max-width:1400px;margin:0 auto;padding:20px}
+
+/* 页面标题 */
+.page-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+.page-title{font-size:18px;font-weight:600;color:#1f2937;display:flex;align-items:center;gap:8px}
+.page-title i{color:#ea580c}
+.breadcrumb{font-size:13px;color:#6b7280;margin-top:4px}
+.breadcrumb span{color:#ea580c}
+
+/* 项目选择器 */
+.project-selector{display:flex;align-items:center;gap:12px;background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:12px 16px;margin-bottom:20px}
+.project-selector label{font-size:13px;color:#6b7280;font-weight:500}
+.project-selector select{padding:8px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:13px;min-width:240px}
+.project-selector .project-info{margin-left:auto;display:flex;align-items:center;gap:16px}
+.project-selector .info-item{display:flex;align-items:center;gap:6px;font-size:13px}
+.project-selector .info-item .label{color:#6b7280}
+.project-selector .info-item .value{font-weight:600;color:#374151}
+
+/* KPI卡片区 */
+.kpi-row{display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap}
+.kpi-box{flex:1;min-width:120px;background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:10px 14px;display:flex;align-items:center;gap:10px}
+.kpi-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.kpi-val{font-size:18px;font-weight:700;line-height:1}
+.kpi-label{font-size:12px;color:#6b7280;margin-top:2px}
+.kpi-green .kpi-icon{background:#ecfdf5;color:#059669}
+.kpi-green .kpi-val{color:#059669}
+.kpi-blue .kpi-icon{background:#eff6ff;color:#2563eb}
+.kpi-blue .kpi-val{color:#2563eb}
+.kpi-orange .kpi-icon{background:#fff7ed;color:#ea580c}
+.kpi-orange .kpi-val{color:#ea580c}
+.kpi-yellow .kpi-icon{background:#fef3c7;color:#d97706}
+.kpi-yellow .kpi-val{color:#d97706}
+.kpi-red .kpi-icon{background:#fef2f2;color:#dc2626}
+.kpi-red .kpi-val{color:#dc2626}
+
+/* 主卡片 */
+.main-card{background:#fff;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden}
+
+/* Tab导航 */
+.tab-nav{display:flex;gap:4px;border-bottom:2px solid #e5e7eb;padding:0 20px;background:#fafafa}
+.tab-item{padding:12px 18px;font-size:13px;font-weight:500;color:#6b7280;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all 0.2s;display:flex;align-items:center;gap:8px}
+.tab-item:hover{color:#374151}
+.tab-item.active{color:#ea580c;border-bottom-color:#ea580c}
+.tab-item i{font-size:14px}
+.tab-badge{background:#fee2e2;color:#dc2626;font-size:11px;padding:2px 6px;border-radius:10px;margin-left:4px}
+
+/* Tab内容 */
+.tab-content{padding:20px;display:none}
+.tab-content.active{display:block}
+
+/* 工具栏 */
+.toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px}
+.toolbar-left{display:flex;gap:8px;flex-wrap:wrap}
+.toolbar-right{display:flex;gap:8px;align-items:center}
+
+/* 按钮 */
+.btn{padding:8px 16px;border-radius:8px;font-size:13px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;border:none;transition:all 0.2s}
+.btn-primary{background:#ea580c;color:#fff}
+.btn-primary:hover{background:#c2410c}
+.btn-success{background:#059669;color:#fff}
+.btn-success:hover{background:#047857}
+.btn-outline{background:#fff;color:#374151;border:1px solid #e5e7eb}
+.btn-outline:hover{background:#f9fafb}
+.btn-warning{background:#fef3c7;color:#d97706;border:1px solid #fcd34d}
+.btn-warning:hover{background:#fde68a}
+.btn-sm{padding:6px 10px;font-size:12px}
+.btn-icon{background:none;border:none;color:#6b7280;cursor:pointer;padding:4px;font-size:13px}
+.btn-icon:hover{color:#374151}
+
+/* 筛选器 */
+.filter-group{display:flex;gap:8px;align-items:center}
+.filter-select{padding:8px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:13px;color:#374151;background:#fff;min-width:120px}
+.search-box{display:flex;align-items:center;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden}
+.search-box input{border:none;padding:8px 12px;font-size:13px;width:180px;outline:none}
+.search-box button{background:none;border:none;padding:8px 12px;color:#6b7280;cursor:pointer}
+
+/* 表格 */
+.table-wrap{overflow-x:auto;border:1px solid #e5e7eb;border-radius:10px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead{background:#f8fafc}
+th{padding:12px 14px;text-align:left;font-weight:600;color:#6b7280;font-size:12px;border-bottom:1px solid #e5e7eb;white-space:nowrap}
+td{padding:12px 14px;border-bottom:1px solid #f3f4f6;vertical-align:middle}
+tbody tr:hover{background:#fafafa}
+tbody tr:last-child td{border-bottom:none}
+
+/* Badge标签 */
+.badge{padding:3px 10px;border-radius:10px;font-size:12px;font-weight:500;display:inline-block;white-space:nowrap}
+.badge-green{background:#ecfdf5;color:#059669}
+.badge-blue{background:#eff6ff;color:#2563eb}
+.badge-orange{background:#fff7ed;color:#ea580c}
+.badge-yellow{background:#fef3c7;color:#d97706}
+.badge-red{background:#fef2f2;color:#dc2626}
+.badge-gray{background:#f3f4f6;color:#6b7280}
+.badge-purple{background:#f5f3ff;color:#7c3aed}
+
+/* 物资类别图标 */
+.cat-icon{width:28px;height:28px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;font-size:12px}
+.cat-drug{background:#fef2f2;color:#dc2626}
+.cat-device{background:#f5f3ff;color:#7c3aed}
+.cat-consumable{background:#eff6ff;color:#2563eb}
+.cat-office{background:#f3f4f6;color:#6b7280}
+
+/* 中心卡片 */
+.center-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
+.center-card{background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:16px;cursor:pointer;transition:all 0.2s}
+.center-card:hover{border-color:#ea580c;box-shadow:0 2px 8px rgba(234,88,12,0.1)}
+.center-card .header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.center-card .name{font-weight:600;font-size:14px}
+.center-card .stats{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.center-card .stat{text-align:center;padding:8px;background:#f8fafc;border-radius:6px}
+.center-card .stat .val{font-size:18px;font-weight:700;color:#374151}
+.center-card .stat .label{font-size:11px;color:#6b7280;margin-top:2px}
+.center-card .progress-bar{height:6px;background:#e5e7eb;border-radius:3px;margin-top:12px;overflow:hidden}
+.center-card .progress-bar .fill{height:100%;background:#ea580c;border-radius:3px;transition:width 0.3s}
+
+/* 预算卡片 */
+.budget-card{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:20px}
+.budget-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+.budget-title{font-weight:600;font-size:14px}
+.budget-amount{text-align:right}
+.budget-amount .used{font-size:24px;font-weight:700;color:#ea580c}
+.budget-amount .total{font-size:13px;color:#6b7280}
+.budget-bar{height:12px;background:#e5e7eb;border-radius:6px;overflow:hidden;margin-bottom:16px}
+.budget-bar .fill{height:100%;background:linear-gradient(90deg,#ea580c,#f97316);border-radius:6px}
+.budget-detail{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.budget-item{padding:12px;background:#f8fafc;border-radius:8px;text-align:center}
+.budget-item .label{font-size:12px;color:#6b7280}
+.budget-item .val{font-size:16px;font-weight:600;margin-top:4px}
+
+/* 状态追踪 */
+.tracking-list{display:flex;flex-direction:column;gap:0}
+.tracking-item{display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1px dashed #e5e7eb;position:relative}
+.tracking-item:last-child{border-bottom:none}
+.tracking-item .time{width:60px;font-size:12px;color:#6b7280;flex-shrink:0}
+.tracking-item .dot{width:10px;height:10px;border-radius:50%;background:#d1d5db;flex-shrink:0;margin-top:4px;position:relative;z-index:1}
+.tracking-item .dot.active{background:#ea580c}
+.tracking-item .dot.done{background:#059669}
+.tracking-item .content{flex:1}
+.tracking-item .content .title{font-weight:500;font-size:13px}
+.tracking-item .content .desc{font-size:12px;color:#6b7280;margin-top:2px}
+
+/* 进度指示 */
+.progress-cell{display:flex;align-items:center;gap:8px}
+.progress-cell .bar{width:60px;height:6px;background:#e5e7eb;border-radius:3px;overflow:hidden}
+.progress-cell .bar .fill{height:100%;background:#ea580c;border-radius:3px}
+.progress-cell .text{font-size:12px;color:#6b7280}
+
+/* 分页 */
+.pagination{display:flex;align-items:center;justify-content:space-between;margin-top:16px}
+.pagination-info{font-size:13px;color:#6b7280}
+.pagination-btns{display:flex;gap:4px}
+.page-btn{padding:6px 12px;border:1px solid #e5e7eb;border-radius:6px;background:#fff;cursor:pointer;font-size:13px;color:#374151}
+.page-btn:hover{background:#f9fafb}
+.page-btn.active{background:#ea580c;color:#fff;border-color:#ea580c}
+.page-btn:disabled{opacity:0.5;cursor:not-allowed}
+</style>
+</head>
+<body>
+<div class="supply-container">
+    <!-- 页面标题 -->
+    <div class="page-header">
+        <div>
+            <div class="page-title"><i class="fas fa-boxes-stacked"></i> 物资供应</div>
+            <div class="breadcrumb">项目中心 > <span>PD-001 肿瘤药物试验</span> > 物资供应</div>
+        </div>
+    </div>
+
+    <!-- 项目选择器 -->
+    <div class="project-selector">
+        <label>当前项目</label>
+        <select>
+            <option value="PD-001" selected>PD-001 肿瘤药物试验</option>
+            <option value="PD-002">PD-002 糖尿病研究</option>
+            <option value="PD-003">PD-003 心血管研究</option>
+        </select>
+        <div class="project-info">
+            <div class="info-item">
+                <span class="label">研究中心:</span>
+                <span class="value">8家</span>
+            </div>
+            <div class="info-item">
+                <span class="label">物资预算:</span>
+                <span class="value">¥500,000</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- KPI卡片 -->
+    <div class="kpi-row">
+        <div class="kpi-box kpi-orange">
+            <div class="kpi-icon"><i class="fas fa-file-alt"></i></div>
+            <div>
+                <div class="kpi-val">45</div>
+                <div class="kpi-label">项目申请数</div>
+            </div>
+        </div>
+        <div class="kpi-box kpi-yellow">
+            <div class="kpi-icon"><i class="fas fa-clock"></i></div>
+            <div>
+                <div class="kpi-val">8</div>
+                <div class="kpi-label">待审批</div>
+            </div>
+        </div>
+        <div class="kpi-box kpi-blue">
+            <div class="kpi-icon"><i class="fas fa-truck-fast"></i></div>
+            <div>
+                <div class="kpi-val">12</div>
+                <div class="kpi-label">已发放</div>
+            </div>
+        </div>
+        <div class="kpi-box kpi-green">
+            <div class="kpi-icon"><i class="fas fa-check-circle"></i></div>
+            <div>
+                <div class="kpi-val">25</div>
+                <div class="kpi-label">已收货</div>
+            </div>
+        </div>
+        <div class="kpi-box kpi-red">
+            <div class="kpi-icon"><i class="fas fa-coins"></i></div>
+            <div>
+                <div class="kpi-val">68.5%</div>
+                <div class="kpi-label">预算使用率</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 主卡片 -->
+    <div class="main-card">
+        <!-- Tab导航 -->
+        <div class="tab-nav">
+            <div class="tab-item active" data-tab="requests"><i class="fas fa-file-alt"></i> 物资申请</div>
+            <div class="tab-item" data-tab="distribution"><i class="fas fa-layer-group"></i> 物资分配</div>
+            <div class="tab-item" data-tab="budget"><i class="fas fa-chart-pie"></i> 预算统计</div>
+        </div>
+
+        <!-- 物资申请Tab -->
+        <div class="tab-content active" id="tab-requests">
+            <div class="toolbar">
+                <div class="toolbar-left">
+                    <select class="filter-select">
+                        <option>全部中心</option>
+                        <option>北京协和医院</option>
+                        <option>上海华山医院</option>
+                        <option>广州中山医院</option>
+                        <option>成都华西医院</option>
+                    </select>
+                    <select class="filter-select">
+                        <option>全部物资类型</option>
+                        <option>临床研究物资</option>
+                        <option>日常办公物资</option>
+                    </select>
+                    <select class="filter-select">
+                        <option>全部状态</option>
+                        <option>待审批</option>
+                        <option>已通过</option>
+                        <option>已发货</option>
+                        <option>已收货</option>
+                    </select>
+                </div>
+                <div class="toolbar-right">
+                    <div class="search-box">
+                        <input type="text" placeholder="搜索申请单号">
+                        <button><i class="fas fa-search"></i></button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>申请单号</th>
+                            <th>物资类型</th>
+                            <th>申请中心</th>
+                            <th>物资明细</th>
+                            <th>申请金额</th>
+                            <th>申请日期</th>
+                            <th>期望日期</th>
+                            <th>状态</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>REQ-2024-00089</strong></td>
+                            <td><span class="cat-icon cat-drug"><i class="fas fa-pills"></i></span> 临床物资</td>
+                            <td>北京协和医院</td>
+                            <td>研究药物A、知情同意书...</td>
+                            <td><strong>¥15,800</strong></td>
+                            <td>2024-06-20</td>
+                            <td>2024-06-25</td>
+                            <td><span class="badge badge-yellow">待审批</span></td>
+                            <td><button class="btn btn-sm btn-outline"><i class="fas fa-eye"></i> 查看</button></td>
+                        </tr>
+                        <tr>
+                            <td><strong>REQ-2024-00087</strong></td>
+                            <td><span class="cat-icon cat-drug"><i class="fas fa-pills"></i></span> 临床物资</td>
+                            <td>广州中山医院</td>
+                            <td>血糖检测试剂盒、患者日记卡</td>
+                            <td><strong>¥28,600</strong></td>
+                            <td>2024-06-19</td>
+                            <td>2024-06-22</td>
+                            <td><span class="badge badge-blue">已发货</span></td>
+                            <td><button class="btn btn-sm btn-outline"><i class="fas fa-truck"></i> 追踪</button></td>
+                        </tr>
+                        <tr>
+                            <td><strong>REQ-2024-00085</strong></td>
+                            <td><span class="cat-icon cat-office"><i class="fas fa-pen"></i></span> 办公物资</td>
+                            <td>上海华山医院</td>
+                            <td>打印耗材、签字笔</td>
+                            <td><strong>¥3,200</strong></td>
+                            <td>2024-06-18</td>
+                            <td>2024-06-20</td>
+                            <td><span class="badge badge-green">已收货</span></td>
+                            <td><button class="btn btn-sm btn-outline"><i class="fas fa-eye"></i> 查看</button></td>
+                        </tr>
+                        <tr>
+                            <td><strong>REQ-2024-00082</strong></td>
+                            <td><span class="cat-icon cat-device"><i class="fas fa-temperature-half"></i></span> 临床物资</td>
+                            <td>成都华西医院</td>
+                            <td>温度记录仪</td>
+                            <td><strong>¥5,200</strong></td>
+                            <td>2024-06-17</td>
+                            <td>2024-06-19</td>
+                            <td><span class="badge badge-green">已收货</span></td>
+                            <td><button class="btn btn-sm btn-outline"><i class="fas fa-eye"></i> 查看</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="pagination">
+                <div class="pagination-info">共 45 条记录，第 1/5 页</div>
+                <div class="pagination-btns">
+                    <button class="page-btn" disabled>上一页</button>
+                    <button class="page-btn active">1</button>
+                    <button class="page-btn">2</button>
+                    <button class="page-btn">3</button>
+                    <button class="page-btn">...</button>
+                    <button class="page-btn">5</button>
+                    <button class="page-btn">下一页</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 物资分配Tab -->
+        <div class="tab-content" id="tab-distribution">
+            <div class="toolbar">
+                <div class="toolbar-left">
+                    <select class="filter-select">
+                        <option>全部中心</option>
+                        <option>北京协和医院</option>
+                        <option>上海华山医院</option>
+                        <option>广州中山医院</option>
+                        <option>成都华西医院</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="center-grid">
+                <div class="center-card">
+                    <div class="header">
+                        <span class="name">北京协和医院</span>
+                        <span class="badge badge-green">活跃</span>
+                    </div>
+                    <div class="stats">
+                        <div class="stat">
+                            <div class="val">15</div>
+                            <div class="label">申请数</div>
+                        </div>
+                        <div class="stat">
+                            <div class="val">12</div>
+                            <div class="label">已发货</div>
+                        </div>
+                        <div class="stat">
+                            <div class="val">10</div>
+                            <div class="label">已收货</div>
+                        </div>
+                        <div class="stat">
+                            <div class="val">¥45K</div>
+                            <div class="label">消耗金额</div>
+                        </div>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="fill" style="width:66%"></div>
+                    </div>
+                    <div style="font-size:12px;color:#6b7280;text-align:right">收货进度 66%</div>
+                </div>
+
+                <div class="center-card">
+                    <div class="header">
+                        <span class="name">上海华山医院</span>
+                        <span class="badge badge-green">活跃</span>
+                    </div>
+                    <div class="stats">
+                        <div class="stat">
+                            <div class="val">12</div>
+                            <div class="label">申请数</div>
+                        </div>
+                        <div class="stat">
+                            <div class="val">10</div>
+                            <div class="label">已发货</div>
+                        </div>
+                        <div class="stat">
+                            <div class="val">9</div>
+                            <div class="label">已收货</div>
+                        </div>
+                        <div class="stat">
+                            <div class="val">¥32K</div>
+                            <div class="label">消耗金额</div>
+                        </div>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="fill" style="width:75%"></div>
+                    </div>
+                    <div style="font-size:12px;color:#6b7280;text-align:right">收货进度 75%</div>
+                </div>
+
+                <div class="center-card">
+                    <div class="header">
+                        <span class="name">广州中山医院</span>
+                        <span class="badge badge-blue">进行中</span>
+                    </div>
+                    <div class="stats">
+                        <div class="stat">
+                            <div class="val">10</div>
+                            <div class="label">申请数</div>
+                        </div>
+                        <div class="stat">
+                            <div class="val">6</div>
+                            <div class="label">已发货</div>
+                        </div>
+                        <div class="stat">
+                            <div class="val">4</div>
+                            <div class="label">已收货</div>
+                        </div>
+                        <div class="stat">
+                            <div class="val">¥28K</div>
+                            <div class="label">消耗金额</div>
+                        </div>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="fill" style="width:40%"></div>
+                    </div>
+                    <div style="font-size:12px;color:#6b7280;text-align:right">收货进度 40%</div>
+                </div>
+
+                <div class="center-card">
+                    <div class="header">
+                        <span class="name">成都华西医院</span>
+                        <span class="badge badge-blue">进行中</span>
+                    </div>
+                    <div class="stats">
+                        <div class="stat">
+                            <div class="val">8</div>
+                            <div class="label">申请数</div>
+                        </div>
+                        <div class="stat">
+                            <div class="val">5</div>
+                            <div class="label">已发货</div>
+                        </div>
+                        <div class="stat">
+                            <div class="val">2</div>
+                            <div class="label">已收货</div>
+                        </div>
+                        <div class="stat">
+                            <div class="val">¥18K</div>
+                            <div class="label">消耗金额</div>
+                        </div>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="fill" style="width:25%"></div>
+                    </div>
+                    <div style="font-size:12px;color:#6b7280;text-align:right">收货进度 25%</div>
+                </div>
+
+                <div class="center-card">
+                    <div class="header">
+                        <span class="name">武汉同济医院</span>
+                        <span class="badge badge-gray">待启动</span>
+                    </div>
+                    <div class="stats">
+                        <div class="stat">
+                            <div class="val">0</div>
+                            <div class="label">申请数</div>
+                        </div>
+                        <div class="stat">
+                            <div class="val">0</div>
+                            <div class="label">已发货</div>
+                        </div>
+                        <div class="stat">
+                            <div class="val">0</div>
+                            <div class="label">已收货</div>
+                        </div>
+                        <div class="stat">
+                            <div class="val">¥0</div>
+                            <div class="label">消耗金额</div>
+                        </div>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="fill" style="width:0%"></div>
+                    </div>
+                    <div style="font-size:12px;color:#6b7280;text-align:right">收货进度 0%</div>
+                </div>
+
+                <div class="center-card">
+                    <div class="header">
+                        <span class="name">浙江大学附属第一医院</span>
+                        <span class="badge badge-gray">待启动</span>
+                    </div>
+                    <div class="stats">
+                        <div class="stat">
+                            <div class="val">0</div>
+                            <div class="label">申请数</div>
+                        </div>
+                        <div class="stat">
+                            <div class="val">0</div>
+                            <div class="label">已发货</div>
+                        </div>
+                        <div class="stat">
+                            <div class="val">0</div>
+                            <div class="label">已收货</div>
+                        </div>
+                        <div class="stat">
+                            <div class="val">¥0</div>
+                            <div class="label">消耗金额</div>
+                        </div>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="fill" style="width:0%"></div>
+                    </div>
+                    <div style="font-size:12px;color:#6b7280;text-align:right">收货进度 0%</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 预算统计Tab -->
+        <div class="tab-content" id="tab-budget">
+            <div class="budget-card" style="margin-bottom:20px">
+                <div class="budget-header">
+                    <div class="budget-title"><i class="fas fa-coins" style="color:#ea580c;margin-right:8px"></i>项目物资预算</div>
+                    <div class="budget-amount">
+                        <div class="used">¥342,500</div>
+                        <div class="total">总预算 ¥500,000</div>
+                    </div>
+                </div>
+                <div class="budget-bar">
+                    <div class="fill" style="width:68.5%"></div>
+                </div>
+                <div class="budget-detail">
+                    <div class="budget-item">
+                        <div class="label">已使用</div>
+                        <div class="val" style="color:#ea580c">¥342,500</div>
+                    </div>
+                    <div class="budget-item">
+                        <div class="label">审批中</div>
+                        <div class="val" style="color:#f59e0b">¥28,600</div>
+                    </div>
+                    <div class="budget-item">
+                        <div class="label">可用余额</div>
+                        <div class="val" style="color:#059669">¥128,900</div>
+                    </div>
+                    <div class="budget-item">
+                        <div class="label">预算使用率</div>
+                        <div class="val">68.5%</div>
+                    </div>
+                </div>
+            </div>
+
+            <h4 style="font-size:14px;font-weight:600;margin-bottom:12px"><i class="fas fa-chart-bar" style="color:#ea580c;margin-right:6px"></i>分类预算使用</h4>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>物资分类</th>
+                            <th>预算金额</th>
+                            <th>已使用</th>
+                            <th>审批中</th>
+                            <th>可用</th>
+                            <th>使用率</th>
+                            <th>预算余额</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><span class="cat-icon cat-drug"><i class="fas fa-pills"></i></span> 试验用药</td>
+                            <td><strong>¥300,000</strong></td>
+                            <td>¥215,000</td>
+                            <td>¥20,000</td>
+                            <td>¥65,000</td>
+                            <td>
+                                <div class="progress-cell">
+                                    <div class="bar"><div class="fill" style="width:71.7%"></div></div>
+                                    <span class="text">71.7%</span>
+                                </div>
+                            </td>
+                            <td><span style="color:#059669">¥65,000</span></td>
+                        </tr>
+                        <tr>
+                            <td><span class="cat-icon cat-consumable"><i class="fas fa-vial"></i></span> 试剂盒/实验室耗材</td>
+                            <td><strong>¥80,000</strong></td>
+                            <td>¥52,000</td>
+                            <td>¥8,600</td>
+                            <td>¥19,400</td>
+                            <td>
+                                <div class="progress-cell">
+                                    <div class="bar"><div class="fill" style="width:65%"></div></div>
+                                    <span class="text">65%</span>
+                                </div>
+                            </td>
+                            <td><span style="color:#059669">¥19,400</span></td>
+                        </tr>
+                        <tr>
+                            <td><span class="cat-icon cat-device"><i class="fas fa-file-lines"></i></span> CRF/ICF/日记卡</td>
+                            <td><strong>¥50,000</strong></td>
+                            <td>¥38,000</td>
+                            <td>¥0</td>
+                            <td>¥12,000</td>
+                            <td>
+                                <div class="progress-cell">
+                                    <div class="bar"><div class="fill" style="width:76%"></div></div>
+                                    <span class="text">76%</span>
+                                </div>
+                            </td>
+                            <td><span style="color:#d97706">¥12,000</span></td>
+                        </tr>
+                        <tr>
+                            <td><span class="cat-icon cat-device"><i class="fas fa-temperature-half"></i></span> 温度记录设备</td>
+                            <td><strong>¥30,000</strong></td>
+                            <td>¥18,500</td>
+                            <td>¥0</td>
+                            <td>¥11,500</td>
+                            <td>
+                                <div class="progress-cell">
+                                    <div class="bar"><div class="fill" style="width:61.7%"></div></div>
+                                    <span class="text">61.7%</span>
+                                </div>
+                            </td>
+                            <td><span style="color:#059669">¥11,500</span></td>
+                        </tr>
+                        <tr>
+                            <td><span class="cat-icon cat-office"><i class="fas fa-print"></i></span> 办公物资</td>
+                            <td><strong>¥40,000</strong></td>
+                            <td>¥19,000</td>
+                            <td>¥0</td>
+                            <td>¥21,000</td>
+                            <td>
+                                <div class="progress-cell">
+                                    <div class="bar"><div class="fill" style="width:47.5%"></div></div>
+                                    <span class="text">47.5%</span>
+                                </div>
+                            </td>
+                            <td><span style="color:#059669">¥21,000</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h4 style="font-size:14px;font-weight:600;margin:20px 0 12px"><i class="fas fa-fire" style="color:#ea580c;margin-right:6px"></i>预算预警</h4>
+            <div style="background:#fef3c7;border:1px solid #fcd34d;border-radius:10px;padding:16px">
+                <div style="display:flex;align-items:center;gap:10px">
+                    <div style="width:36px;height:36px;border-radius:8px;background:#fff;display:flex;align-items:center;justify-content:center;color:#d97706">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <div>
+                        <div style="font-weight:600;font-size:14px">CRF/ICF/日记卡分类预算使用率已达76%</div>
+                        <div style="font-size:12px;color:#92400e;margin-top:4px">该分类预算即将用完，建议提前申请增加预算或控制消耗</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Tab切换
+document.querySelectorAll('.tab-item').forEach(tab => {
+    tab.addEventListener('click', function() {
+        document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        this.classList.add('active');
+        document.getElementById('tab-' + this.dataset.tab).classList.add('active');
+    });
+});
+</script>
+</body>
+</html>
