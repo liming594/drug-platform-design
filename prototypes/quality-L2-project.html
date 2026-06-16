@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>质量管理 - 项目中心</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;background:#f5f6fa;color:#1f2937;font-size:14px;line-height:1.5}
+
+/* 主容器 */
+.quality-container{max-width:1400px;margin:0 auto;padding:20px}
+
+/* 页面标题 */
+.page-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+.page-title{font-size:18px;font-weight:600;color:#1f2937;display:flex;align-items:center;gap:8px}
+.page-title i{color:#7c3aed}
+.breadcrumb{font-size:13px;color:#6b7280;margin-top:4px}
+.breadcrumb span{color:#7c3aed}
+
+/* KPI卡片区 */
+.kpi-row{display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap}
+.kpi-box{flex:1;min-width:160px;background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:16px;display:flex;align-items:center;gap:14px}
+.kpi-icon{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.kpi-val{font-size:24px;font-weight:700;line-height:1}
+.kpi-label{font-size:12px;color:#6b7280;margin-top:4px}
+.kpi-green .kpi-icon{background:#ecfdf5;color:#059669}
+.kpi-green .kpi-val{color:#059669}
+.kpi-blue .kpi-icon{background:#eff6ff;color:#2563eb}
+.kpi-blue .kpi-val{color:#2563eb}
+.kpi-orange .kpi-icon{background:#fff7ed;color:#ea580c}
+.kpi-orange .kpi-val{color:#ea580c}
+.kpi-red .kpi-icon{background:#fef2f2;color:#dc2626}
+.kpi-red .kpi-val{color:#dc2626}
+.kpi-purple .kpi-icon{background:#f5f3ff;color:#7c3aed}
+.kpi-purple .kpi-val{color:#7c3aed}
+
+/* 主卡片 */
+.main-card{background:#fff;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden}
+
+/* 内容区Tab导航 */
+.content-tabs{display:flex;border-bottom:2px solid #e5e7eb;padding:0 20px}
+.content-tab{padding:14px 20px;font-size:13px;font-weight:500;color:#6b7280;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all 0.2s;display:flex;align-items:center;gap:8px}
+.content-tab:hover{color:#374151}
+.content-tab.active{color:#7c3aed;border-bottom-color:#7c3aed}
+
+/* 内容Tab页面 */
+.tab-page{display:none;padding:20px}
+.tab-page.active{display:block}
+
+/* 工具栏 */
+.toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px}
+.toolbar-left{display:flex;gap:8px;flex-wrap:wrap}
+.toolbar-right{display:flex;gap:8px;align-items:center}
+
+/* 按钮 */
+.btn{padding:8px 16px;border-radius:8px;font-size:13px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;border:none;transition:all 0.2s}
+.btn-primary{background:#7c3aed;color:#fff}
+.btn-primary:hover{background:#6d28d9}
+.btn-success{background:#059669;color:#fff}
+.btn-success:hover{background:#047857}
+.btn-outline{background:#fff;color:#374151;border:1px solid #e5e7eb}
+.btn-outline:hover{background:#f9fafb}
+.btn-sm{padding:6px 10px;font-size:12px}
+
+/* 筛选器 */
+.filter-select{padding:8px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:13px;color:#374151;background:#fff;min-width:120px}
+
+/* 表格 */
+.table-wrap{overflow-x:auto;border:1px solid #e5e7eb;border-radius:10px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead{background:#f8fafc}
+th{padding:12px 14px;text-align:left;font-weight:600;color:#6b7280;font-size:12px;border-bottom:1px solid #e5e7eb;white-space:nowrap}
+td{padding:12px 14px;border-bottom:1px solid #f3f4f6;vertical-align:middle}
+tbody tr:hover{background:#fafafa}
+tbody tr:last-child td{border-bottom:none}
+
+/* Badge标签 */
+.badge{padding:3px 10px;border-radius:10px;font-size:12px;font-weight:500;display:inline-block;white-space:nowrap}
+.badge-green{background:#ecfdf5;color:#059669}
+.badge-blue{background:#eff6ff;color:#2563eb}
+.badge-orange{background:#fff7ed;color:#ea580c}
+.badge-purple{background:#f5f3ff;color:#7c3aed}
+
+/* 严重程度 */
+.severity-critical{background:#fef2f2;color:#dc2626;border:1px solid #fecaca}
+.severity-major{background:#fff7ed;color:#ea580c;border:1px solid #fed7aa}
+.severity-minor{background:#fef3c7;color:#d97706;border:1px solid #fcd34d}
+.severity-observation{background:#f3f4f6;color:#6b7280;border:1px solid #e5e7eb}
+
+/* 状态 */
+.status-open{background:#eff6ff;color:#2563eb}
+.status-inprogress{background:#fff7ed;color:#ea580c}
+.status-pending{background:#fef3c7;color:#d97706}
+.status-verified{background:#ecfdf5;color:#059669}
+.status-closed{background:#dcfce7;color:#16a34a}
+
+/* 操作按钮 */
+.action-btns{display:flex;gap:4px}
+.action-btn{background:none;border:none;color:#6b7280;cursor:pointer;padding:4px 6px;font-size:12px;border-radius:4px}
+.action-btn:hover{background:#f3f4f6;color:#374151}
+
+/* 紧凑卡片 */
+.compact-card{background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:16px}
+.compact-card-title{font-size:13px;font-weight:600;color:#374151;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.compact-card-title i{color:#7c3aed}
+
+/* 中心排名 */
+.center-ranking{display:flex;flex-direction:column;gap:12px}
+.ranking-item{display:flex;align-items:center;gap:12px}
+.ranking-num{width:24px;height:24px;border-radius:50%;background:#f3f4f6;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:#6b7280}
+.ranking-num.top{background:#7c3aed;color:#fff}
+.ranking-name{flex:1;font-size:13px}
+.ranking-bar{flex:2;height:8px;background:#f3f4f6;border-radius:4px;overflow:hidden}
+.ranking-bar-fill{height:100%;border-radius:4px;transition:width 0.3s}
+.ranking-val{font-size:13px;font-weight:600;min-width:50px;text-align:right}
+
+/* 质量指标趋势 */
+.trend-chart{height:200px;display:flex;align-items:flex-end;gap:8px;padding:20px 0}
+.trend-bar{flex:1;display:flex;flex-direction:column;align-items:center;gap:8px}
+.trend-bar-fill{width:100%;max-width:40px;border-radius:4px 4px 0 0;transition:height 0.3s}
+.trend-bar-label{font-size:11px;color:#6b7280}
+
+/* CAPA看板 */
+.capa-board{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.capa-column{background:#f8fafc;border-radius:10px;padding:16px;min-height:400px}
+.capa-col-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding-bottom:12px;border-bottom:2px solid}
+.capa-col-title{font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px}
+.capa-col-count{background:#fff;padding:2px 8px;border-radius:10px;font-size:12px;font-weight:600}
+.capa-col-pending{border-color:#2563eb}
+.capa-col-pending .capa-col-title{color:#2563eb}
+.capa-col-progress{border-color:#ea580c}
+.capa-col-progress .capa-col-title{color:#ea580c}
+.capa-col-verify{border-color:#d97706}
+.capa-col-verify .capa-col-title{color:#d97706}
+.capa-col-done{border-color:#059669}
+.capa-col-done .capa-col-title{color:#059669}
+
+/* CAPA卡片 */
+.capa-card{background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:14px;margin-bottom:12px;cursor:pointer;transition:all 0.2s}
+.capa-card:hover{border-color:#7c3aed;box-shadow:0 2px 8px rgba(124,58,237,0.1)}
+.capa-card-header{display:flex;justify-content:space-between;align-items:start;margin-bottom:8px}
+.capa-card-id{font-size:12px;font-weight:600;color:#7c3aed}
+.capa-card-date{font-size:11px;color:#9ca3af}
+.capa-card-title{font-size:13px;color:#1f2937;margin-bottom:8px;line-height:1.4}
+.capa-card-meta{font-size:12px;color:#6b7280;display:flex;gap:12px}
+
+/* 模态框 */
+.modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:10000;display:none;align-items:center;justify-content:center}
+.modal-overlay.show{display:flex}
+.modal{background:#fff;border-radius:14px;width:700px;max-width:90vw;max-height:90vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 25px 50px -12px rgba(0,0,0,0.25)}
+.modal-lg{width:900px}
+.modal-header{display:flex;justify-content:space-between;align-items:center;padding:18px 24px;border-bottom:1px solid #e5e7eb}
+.modal-title{font-size:16px;font-weight:600;display:flex;align-items:center;gap:10px}
+.modal-title i{color:#7c3aed}
+.modal-close{background:none;border:none;font-size:24px;color:#9ca3af;cursor:pointer;line-height:1}
+.modal-close:hover{color:#374151}
+.modal-body{padding:24px;overflow-y:auto;flex:1}
+.modal-footer{display:flex;justify-content:flex-end;gap:10px;padding:16px 24px;border-top:1px solid #e5e7eb;background:#fafafa}
+
+/* 表单 */
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.form-group{margin-bottom:16px}
+.form-label{display:block;font-size:13px;color:#374151;font-weight:500;margin-bottom:6px}
+.form-label .required{color:#dc2626;margin-left:2px}
+.form-input{width:100%;padding:10px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:13px;transition:border-color 0.2s}
+.form-input:focus{outline:none;border-color:#7c3aed}
+.form-select{width:100%;padding:10px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:13px;background:#fff}
+.form-textarea{width:100%;padding:10px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:13px;resize:vertical;min-height:80px}
+
+/* Toast提示 */
+.toast{position:fixed;top:20px;right:20px;z-index:99999;padding:12px 20px;border-radius:10px;color:#fff;font-size:13px;display:flex;align-items:center;gap:8px;box-shadow:0 4px 20px rgba(0,0,0,0.15);animation:slideIn 0.3s ease}
+.toast-success{background:#059669}
+.toast-error{background:#dc2626}
+@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+
+/* 响应式 */
+@media(max-width:768px){
+.kpi-row{flex-direction:column}
+.form-row{grid-template-columns:1fr}
+.capa-board{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<div class="quality-container">
+    <!-- 页面标题 -->
+    <div class="page-header">
+        <div>
+            <h1 class="page-title"><i class="fas fa-clipboard-check"></i> 质量管理</h1>
+            <div class="breadcrumb" id="breadcrumb">项目中心 > <span>PD-001 肿瘤药物试验</span> > 质量管理</div>
+        </div>
+    </div>
+
+    <!-- 主卡片 -->
+    <div class="main-card">
+        <!-- 项目选择 -->
+        <div style="padding:20px 20px 0">
+            <select class="filter-select" id="l2-project-select" onchange="loadProjectData()" style="min-width:220px">
+                <option value="PD-001">PD-001 肿瘤药物试验</option>
+                <option value="PD-002">PD-002 糖尿病研究</option>
+            </select>
+        </div>
+
+        <!-- KPI卡片 -->
+        <div style="padding:16px 20px 0">
+            <div class="kpi-row">
+                <div class="kpi-box kpi-blue">
+                    <div class="kpi-icon"><i class="fas fa-clock"></i></div>
+                    <div>
+                        <div class="kpi-val">5</div>
+                        <div class="kpi-label">待处理</div>
+                    </div>
+                </div>
+                <div class="kpi-box kpi-orange">
+                    <div class="kpi-icon"><i class="fas fa-spinner"></i></div>
+                    <div>
+                        <div class="kpi-val">3</div>
+                        <div class="kpi-label">进行中</div>
+                    </div>
+                </div>
+                <div class="kpi-box kpi-green">
+                    <div class="kpi-icon"><i class="fas fa-check-circle"></i></div>
+                    <div>
+                        <div class="kpi-val">18</div>
+                        <div class="kpi-label">已闭环</div>
+                    </div>
+                </div>
+                <div class="kpi-box kpi-red">
+                    <div class="kpi-icon"><i class="fas fa-exclamation-triangle"></i></div>
+                    <div>
+                        <div class="kpi-val">2</div>
+                        <div class="kpi-label">超期</div>
+                    </div>
+                </div>
+                <div class="kpi-box kpi-purple">
+                    <div class="kpi-icon"><i class="fas fa-chart-pie"></i></div>
+                    <div>
+                        <div class="kpi-val">75%</div>
+                        <div class="kpi-label">闭环率</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 质量分析区域 -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:20px">
+            <!-- 中心质量排名 -->
+            <div class="compact-card">
+                <div class="compact-card-title"><i class="fas fa-ranking-star"></i> 中心质量排名</div>
+                <div class="center-ranking">
+                    <div class="ranking-item">
+                        <div class="ranking-num top">1</div>
+                        <div class="ranking-name">北京协和医院</div>
+                        <div class="ranking-bar"><div class="ranking-bar-fill" style="width:95%;background:#059669"></div></div>
+                        <div class="ranking-val" style="color:#059669">95%</div>
+                    </div>
+                    <div class="ranking-item">
+                        <div class="ranking-num top">2</div>
+                        <div class="ranking-name">阜外心血管</div>
+                        <div class="ranking-bar"><div class="ranking-bar-fill" style="width:88%;background:#7c3aed"></div></div>
+                        <div class="ranking-val" style="color:#7c3aed">88%</div>
+                    </div>
+                    <div class="ranking-item">
+                        <div class="ranking-num">3</div>
+                        <div class="ranking-name">宣武医院</div>
+                        <div class="ranking-bar"><div class="ranking-bar-fill" style="width:72%;background:#2563eb"></div></div>
+                        <div class="ranking-val" style="color:#2563eb">72%</div>
+                    </div>
+                    <div class="ranking-item">
+                        <div class="ranking-num">4</div>
+                        <div class="ranking-name">北医三院</div>
+                        <div class="ranking-bar"><div class="ranking-bar-fill" style="width:65%;background:#ea580c"></div></div>
+                        <div class="ranking-val" style="color:#ea580c">65%</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 质量指标趋势 -->
+            <div class="compact-card">
+                <div class="compact-card-title"><i class="fas fa-chart-line"></i> 质量指标趋势</div>
+                <div class="trend-chart">
+                    <div class="trend-bar">
+                        <div class="trend-bar-fill" style="height:30%;background:#dc2626"></div>
+                        <div class="trend-bar-label">1月</div>
+                    </div>
+                    <div class="trend-bar">
+                        <div class="trend-bar-fill" style="height:25%;background:#dc2626"></div>
+                        <div class="trend-bar-label">2月</div>
+                    </div>
+                    <div class="trend-bar">
+                        <div class="trend-bar-fill" style="height:20%;background:#ea580c"></div>
+                        <div class="trend-bar-label">3月</div>
+                    </div>
+                    <div class="trend-bar">
+                        <div class="trend-bar-fill" style="height:15%;background:#ea580c"></div>
+                        <div class="trend-bar-label">4月</div>
+                    </div>
+                    <div class="trend-bar">
+                        <div class="trend-bar-fill" style="height:10%;background:#d97706"></div>
+                        <div class="trend-bar-label">5月</div>
+                    </div>
+                    <div class="trend-bar">
+                        <div class="trend-bar-fill" style="height:8%;background:#059669"></div>
+                        <div class="trend-bar-label">6月</div>
+                    </div>
+                </div>
+                <div style="display:flex;justify-content:center;gap:20px;font-size:12px;color:#6b7280;margin-top:8px">
+                    <span><i class="fas fa-circle" style="color:#dc2626;font-size:8px"></i> 偏差率</span>
+                    <span><i class="fas fa-circle" style="color:#7c3aed;font-size:8px"></i> CAPA闭环率</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 内容Tab -->
+        <div class="content-tabs">
+            <div class="content-tab active" data-tab="l2-finding" onclick="switchContentTab('l2-finding')">
+                <i class="fas fa-list"></i> 发现列表
+            </div>
+            <div class="content-tab" data-tab="l2-capa" onclick="switchContentTab('l2-capa')">
+                <i class="fas fa-columns"></i> CAPA看板
+            </div>
+        </div>
+
+        <!-- 发现列表 -->
+        <div id="tab-l2-finding" class="tab-page active">
+            <div class="toolbar">
+                <div class="toolbar-left">
+                    <button class="btn btn-primary" onclick="showModal('new-finding')">
+                        <i class="fas fa-plus"></i> 新建发现
+                    </button>
+                </div>
+                <div class="toolbar-right">
+                    <div class="filter-group">
+                        <select class="filter-select">
+                            <option value="">全部严重程度</option>
+                            <option value="CRITICAL">关键偏差</option>
+                            <option value="MAJOR">主要不符</option>
+                            <option value="MINOR">轻微偏差</option>
+                            <option value="OBSERVATION">观察项</option>
+                        </select>
+                        <select class="filter-select">
+                            <option value="">全部状态</option>
+                            <option value="OPEN">待处理</option>
+                            <option value="IN_PROGRESS">进行中</option>
+                            <option value="VERIFIED">已验证</option>
+                            <option value="CLOSED">已闭环</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>发现编号</th>
+                            <th>发现类型</th>
+                            <th>严重程度</th>
+                            <th>关联中心</th>
+                            <th>发现日期</th>
+                            <th>状态</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr onclick="showFindingDetail('QF-2024-0001')" style="cursor:pointer">
+                            <td><span style="font-weight:500;color:#7c3aed">QF-2024-0001</span></td>
+                            <td><span class="badge badge-purple">内部稽查</span></td>
+                            <td><span class="badge severity-critical">关键偏差</span></td>
+                            <td>北京协和医院</td>
+                            <td>2024-06-15</td>
+                            <td><span class="badge status-pending">待审批</span></td>
+                            <td onclick="event.stopPropagation()">
+                                <div class="action-btns">
+                                    <button class="action-btn" onclick="showFindingDetail('QF-2024-0001')"><i class="fas fa-eye"></i></button>
+                                    <button class="action-btn" onclick="showModal('new-capa')"><i class="fas fa-plus"></i></button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr onclick="showFindingDetail('QF-2024-0002')" style="cursor:pointer">
+                            <td><span style="font-weight:500;color:#7c3aed">QF-2024-0002</span></td>
+                            <td><span class="badge badge-orange">申办方稽查</span></td>
+                            <td><span class="badge severity-major">主要不符</span></td>
+                            <td>北医三院</td>
+                            <td>2024-06-12</td>
+                            <td><span class="badge status-inprogress">进行中</span></td>
+                            <td onclick="event.stopPropagation()">
+                                <div class="action-btns">
+                                    <button class="action-btn" onclick="showFindingDetail('QF-2024-0002')"><i class="fas fa-eye"></i></button>
+                                    <button class="action-btn" onclick="showModal('new-capa')"><i class="fas fa-plus"></i></button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr onclick="showFindingDetail('QF-2024-0004')" style="cursor:pointer">
+                            <td><span style="font-weight:500;color:#7c3aed">QF-2024-0004</span></td>
+                            <td><span class="badge badge-green">方案偏离</span></td>
+                            <td><span class="badge severity-observation">观察项</span></td>
+                            <td>宣武医院</td>
+                            <td>2024-06-08</td>
+                            <td><span class="badge status-verified">已验证</span></td>
+                            <td onclick="event.stopPropagation()">
+                                <div class="action-btns">
+                                    <button class="action-btn" onclick="showFindingDetail('QF-2024-0004')"><i class="fas fa-eye"></i></button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- CAPA看板 -->
+        <div id="tab-l2-capa" class="tab-page">
+            <div class="capa-board">
+                <div class="capa-column capa-col-pending">
+                    <div class="capa-col-header">
+                        <div class="capa-col-title"><i class="fas fa-clock"></i> 待处理</div>
+                        <span class="capa-col-count">2</span>
+                    </div>
+                    <div class="capa-card">
+                        <div class="capa-card-header">
+                            <span class="capa-card-id">CA-QF004-001</span>
+                            <span class="capa-card-date">06-08</span>
+                        </div>
+                        <div class="capa-card-title">更新研究团队培训记录</div>
+                        <div class="capa-card-meta">
+                            <span><i class="fas fa-hospital"></i> 宣武医院</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="capa-column capa-col-progress">
+                    <div class="capa-col-header">
+                        <div class="capa-col-title"><i class="fas fa-spinner"></i> 进行中</div>
+                        <span class="capa-col-count">2</span>
+                    </div>
+                    <div class="capa-card">
+                        <div class="capa-card-header">
+                            <span class="capa-card-id">CA-QF002-001</span>
+                            <span class="capa-card-date">06-12</span>
+                        </div>
+                        <div class="capa-card-title">重新梳理ICF签署流程及质控点</div>
+                        <div class="capa-card-meta">
+                            <span><i class="fas fa-hospital"></i> 北医三院</span>
+                            <span style="color:#ea580c">60%</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="capa-column capa-col-verify">
+                    <div class="capa-col-header">
+                        <div class="capa-col-title"><i class="fas fa-clipboard-check"></i> 待验证</div>
+                        <span class="capa-col-count">1</span>
+                    </div>
+                    <div class="capa-card">
+                        <div class="capa-card-header">
+                            <span class="capa-card-id">CA-QF001-001</span>
+                            <span class="capa-card-date">06-15</span>
+                        </div>
+                        <div class="capa-card-title">整改药物存储温控记录缺失问题</div>
+                        <div class="capa-card-meta">
+                            <span><i class="fas fa-hospital"></i> 北京协和医院</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="capa-column capa-col-done">
+                    <div class="capa-col-header">
+                        <div class="capa-col-title"><i class="fas fa-check-circle"></i> 已闭环</div>
+                        <span class="capa-col-count">3</span>
+                    </div>
+                    <div class="capa-card">
+                        <div class="capa-card-header">
+                            <span class="capa-card-id">CA-QF005-001</span>
+                            <span class="capa-card-date">06-05</span>
+                        </div>
+                        <div class="capa-card-title">完善方案违背报告标准操作规程</div>
+                        <div class="capa-card-meta">
+                            <span><i class="fas fa-hospital"></i> 北京协和医院</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 新建发现弹窗 -->
+<div id="modal-new-finding" class="modal-overlay">
+    <div class="modal modal-lg">
+        <div class="modal-header">
+            <div class="modal-title"><i class="fas fa-search"></i> 新建发现</div>
+            <button class="modal-close" onclick="closeModal('new-finding')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">关联中心 <span class="required">*</span></label>
+                    <select class="form-select" id="finding-center">
+                        <option value="">请选择中心</option>
+                        <option value="C001">北京协和医院</option>
+                        <option value="C002">北医三院</option>
+                        <option value="C003">阜外心血管</option>
+                        <option value="C004">宣武医院</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">发现类型 <span class="required">*</span></label>
+                    <select class="form-select" id="finding-type">
+                        <option value="">请选择类型</option>
+                        <option value="INTERNAL">内部稽查</option>
+                        <option value="SPONSOR">申办方稽查</option>
+                        <option value="REGULATORY">监管检查</option>
+                        <option value="PROTOCOL">方案偏离</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">严重程度 <span class="required">*</span></label>
+                    <select class="form-select" id="finding-severity">
+                        <option value="">请选择程度</option>
+                        <option value="CRITICAL">关键偏差</option>
+                        <option value="MAJOR">主要不符</option>
+                        <option value="MINOR">轻微偏差</option>
+                        <option value="OBSERVATION">观察项</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">发现日期 <span class="required">*</span></label>
+                    <input type="date" class="form-input" id="finding-date" value="2024-06-17">
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">发现描述 <span class="required">*</span></label>
+                <textarea class="form-textarea" id="finding-desc" placeholder="请详细描述发现的问题..."></textarea>
+            </div>
+            <div class="form-group">
+                <label class="form-label">截止日期</label>
+                <input type="date" class="form-input" id="finding-deadline">
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline" onclick="closeModal('new-finding')">取消</button>
+            <button class="btn btn-primary" onclick="saveFinding()">保存</button>
+        </div>
+    </div>
+</div>
+
+<!-- 新增CAPA弹窗 -->
+<div id="modal-new-capa" class="modal-overlay">
+    <div class="modal modal-lg">
+        <div class="modal-header">
+            <div class="modal-title"><i class="fas fa-plus-circle"></i> 新增CAPA措施</div>
+            <button class="modal-close" onclick="closeModal('new-capa')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">CAPA类型 <span class="required">*</span></label>
+                    <select class="form-select" id="capa-type">
+                        <option value="">请选择类型</option>
+                        <option value="CORRECTIVE">纠正措施</option>
+                        <option value="PREVENTIVE">预防措施</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">负责人 <span class="required">*</span></label>
+                    <select class="form-select" id="capa-owner">
+                        <option value="">请选择负责人</option>
+                        <option value="U001">李研究</option>
+                        <option value="U002">王培训</option>
+                        <option value="U003">赵质控</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">CAPA描述 <span class="required">*</span></label>
+                <textarea class="form-textarea" id="capa-desc" placeholder="请详细描述CAPA措施..."></textarea>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">截止日期 <span class="required">*</span></label>
+                    <input type="date" class="form-input" id="capa-deadline" value="2024-06-25">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">优先级</label>
+                    <select class="form-select" id="capa-priority">
+                        <option value="HIGH">高</option>
+                        <option value="MEDIUM" selected>中</option>
+                        <option value="LOW">低</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline" onclick="closeModal('new-capa')">取消</button>
+            <button class="btn btn-primary" onclick="saveCapa()">保存</button>
+        </div>
+    </div>
+</div>
+
+<script>
+// 内容Tab切换
+function switchContentTab(tab) {
+    document.querySelectorAll('.content-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-page').forEach(p => p.classList.remove('active'));
+    document.querySelector(`[data-tab="${tab}"]`).classList.add('active');
+    document.getElementById(`tab-${tab}`).classList.add('active');
+}
+
+// 模态框
+function showModal(type) {
+    const modalMap = {
+        'new-finding': 'modal-new-finding',
+        'new-capa': 'modal-new-capa'
+    };
+    const modalId = modalMap[type];
+    if (modalId) {
+        document.getElementById(modalId).classList.add('show');
+    }
+}
+
+function closeModal(type) {
+    const modalMap = {
+        'new-finding': 'modal-new-finding',
+        'new-capa': 'modal-new-capa'
+    };
+    const modalId = modalMap[type];
+    if (modalId) {
+        document.getElementById(modalId).classList.remove('show');
+    }
+}
+
+// 显示发现详情
+function showFindingDetail(id) {
+    showToast('查看发现详情: ' + id, 'success');
+}
+
+// Toast提示
+function showToast(message, type) {
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    toast.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'times-circle'}"></i> ${message}`;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+}
+
+// 保存发现
+function saveFinding() {
+    showToast('发现保存成功', 'success');
+    closeModal('new-finding');
+}
+
+// 保存CAPA
+function saveCapa() {
+    showToast('CAPA措施保存成功', 'success');
+    closeModal('new-capa');
+}
+
+// 加载项目数据
+function loadProjectData() {
+    const select = document.getElementById('l2-project-select');
+    const project = select.options[select.selectedIndex].text;
+    document.getElementById('breadcrumb').innerHTML = `项目中心 > <span>${project}</span> > 质量管理`;
+    showToast('项目数据加载成功', 'success');
+}
+
+// 点击模态框外部关闭
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+    overlay.addEventListener('click', function(e) {
+        if (e.target === this) {
+            this.classList.remove('show');
+        }
+    });
+});
+</script>
+
+</body>
+</html>
