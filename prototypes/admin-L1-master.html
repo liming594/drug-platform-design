@@ -1,0 +1,1583 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>平台管理 Admin L1 — 三层权限驱动模型</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        sidebar: '#1e293b',
+        'sidebar-hover': '#334155',
+        'sidebar-active': '#3b82f6',
+        'hr-green': '#16a34a',
+        'project-blue': '#2563eb',
+        'admin-amber': '#d97706',
+        'sys-gray': '#6b7280',
+      }
+    }
+  }
+}
+</script>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+  .tab-btn.active { background: #3b82f6; color: #fff; }
+  .tab-btn:not(.active):hover { background: #334155; }
+  /* Modal: only modal-overlay class, NO flex in class. .show controls display */
+  .modal-overlay { display: none; position: fixed; inset: 0; z-index: 1000; align-items: center; justify-content: center; background: rgba(0,0,0,0.45); }
+  .modal-overlay.show { display: flex; }
+  .badge-hr { background: #dcfce7; color: #16a34a; border: 1px solid #bbf7d0; }
+  .badge-project { background: #dbeafe; color: #2563eb; border: 1px solid #bfdbfe; }
+  .badge-admin { background: #fef3c7; color: #d97706; border: 1px solid #fde68a; }
+  .badge-system { background: #f3f4f6; color: #6b7280; border: 1px solid #e5e7eb; }
+  .tree-node { cursor: pointer; padding: 4px 8px; border-radius: 4px; }
+  .tree-node:hover { background: #f1f5f9; }
+  .tree-node.selected { background: #eff6ff; color: #2563eb; font-weight: 600; }
+  .perm-parent { font-weight: 600; }
+  .perm-child { padding-left: 24px; }
+  table th { white-space: nowrap; }
+  .toast { animation: slideIn 0.3s ease; }
+  @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+  .role-item { cursor: pointer; padding: 8px 12px; border-radius: 6px; border: 1px solid transparent; transition: all 0.15s; }
+  .role-item:hover { background: #f8fafc; border-color: #e2e8f0; }
+  .role-item.selected { background: #eff6ff; border-color: #3b82f6; }
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+  .base-perm-tag { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 6px; background: #f0fdf4; border: 1px solid #bbf7d0; color: #16a34a; font-size: 13px; font-weight: 500; }
+  .module-check { display: inline-flex; align-items: center; gap: 2px; padding: 2px 8px; border-radius: 4px; font-size: 12px; }
+  .module-check.full { background: #dcfce7; color: #16a34a; border: 1px solid #bbf7d0; }
+  .module-check.limited { background: #fef3c7; color: #d97706; border: 1px solid #fde68a; }
+  .module-check.readonly { background: #dbeafe; color: #2563eb; border: 1px solid #bfdbfe; }
+  .pkg-type-single { background: #dbeafe; color: #2563eb; border: 1px solid #bfdbfe; }
+  .pkg-type-composite { background: #ede9fe; color: #7c3aed; border: 1px solid #ddd6fe; }
+  .pkg-type-custom { background: #fef3c7; color: #d97706; border: 1px solid #fde68a; }
+  .perm-level-btn { padding: 2px 8px; border-radius: 4px; font-size: 11px; cursor: pointer; border: 1px solid #e5e7eb; background: #fff; transition: all .15s; }
+  .perm-level-btn.active-full { background: #dcfce7; border-color: #16a34a; color: #16a34a; }
+  .perm-level-btn.active-read { background: #dbeafe; border-color: #2563eb; color: #2563eb; }
+  .perm-level-btn.active-none { background: #f3f4f6; border-color: #9ca3af; color: #6b7280; }
+</style>
+</head>
+<body class="bg-gray-100 h-screen overflow-hidden">
+
+<!-- Toast Container -->
+<div id="toastContainer" class="fixed top-4 right-4 z-[9999] space-y-2"></div>
+
+<!-- Main Layout -->
+<div class="flex h-screen">
+  <!-- Sidebar -->
+  <aside class="w-56 bg-sidebar text-gray-300 flex flex-col shrink-0">
+    <div class="p-4 border-b border-gray-700">
+      <div class="flex items-center gap-2">
+        <div class="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
+          <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+          </svg>
+        </div>
+        <div>
+          <div class="text-white font-bold text-sm">平台管理</div>
+          <div class="text-xs text-gray-500">Admin L1</div>
+        </div>
+      </div>
+    </div>
+    <nav class="flex-1 py-2 overflow-y-auto">
+      <div class="px-3 py-2 text-xs text-gray-500 uppercase tracking-wider">权限管理</div>
+      <button onclick="switchTab('users')" data-tab="users" class="tab-btn w-full text-left px-4 py-2.5 text-sm flex items-center gap-3 transition-colors rounded-md mx-1" style="width:calc(100% - 8px)">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"/></svg>
+        用户管理
+      </button>
+      <button onclick="switchTab('roles')" data-tab="roles" class="tab-btn w-full text-left px-4 py-2.5 text-sm flex items-center gap-3 transition-colors rounded-md mx-1" style="width:calc(100% - 8px)">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+        角色管理
+      </button>
+      <button onclick="switchTab('depts')" data-tab="depts" class="tab-btn w-full text-left px-4 py-2.5 text-sm flex items-center gap-3 transition-colors rounded-md mx-1" style="width:calc(100% - 8px)">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+        部门管理
+      </button>
+      <button onclick="switchTab('positionPerm')" data-tab="positionPerm" class="tab-btn w-full text-left px-4 py-2.5 text-sm flex items-center gap-3 transition-colors rounded-md mx-1" style="width:calc(100% - 8px)">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+        岗位权限管理
+      </button>
+      <button onclick="switchTab('projectPerm')" data-tab="projectPerm" class="tab-btn w-full text-left px-4 py-2.5 text-sm flex items-center gap-3 transition-colors rounded-md mx-1" style="width:calc(100% - 8px)">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+        项目岗位权限
+      </button>
+      <button onclick="switchTab('permPkg')" data-tab="permPkg" class="tab-btn w-full text-left px-4 py-2.5 text-sm flex items-center gap-3 transition-colors rounded-md mx-1" style="width:calc(100% - 8px)">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+        权限包
+      </button>
+      <div class="px-3 py-2 mt-2 text-xs text-gray-500 uppercase tracking-wider">系统配置</div>
+      <button onclick="switchTab('dict')" data-tab="dict" class="tab-btn w-full text-left px-4 py-2.5 text-sm flex items-center gap-3 transition-colors rounded-md mx-1" style="width:calc(100% - 8px)">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 18 16.5 18c1.747 0 3.332-.477 4.5-1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332-.477-4.5-1.253"/></svg>
+        数据字典
+      </button>
+      <button onclick="switchTab('config')" data-tab="config" class="tab-btn w-full text-left px-4 py-2.5 text-sm flex items-center gap-3 transition-colors rounded-md mx-1" style="width:calc(100% - 8px)">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        系统配置
+      </button>
+      <button onclick="switchTab('logs')" data-tab="logs" class="tab-btn w-full text-left px-4 py-2.5 text-sm flex items-center gap-3 transition-colors rounded-md mx-1" style="width:calc(100% - 8px)">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+        操作日志
+      </button>
+    </nav>
+    <div class="p-3 border-t border-gray-700">
+      <div class="flex items-center gap-2">
+        <div class="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-xs font-bold">SA</div>
+        <div class="flex-1 min-w-0">
+          <div class="text-sm text-white truncate">admin</div>
+          <div class="text-xs text-gray-500">超级管理员</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="flex-1 overflow-y-auto bg-gray-50">
+
+    <!-- ===================== Tab1 用户管理 ===================== -->
+    <div id="tab-users" class="tab-content p-6">
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <h1 class="text-2xl font-bold text-gray-900">用户管理</h1>
+          <p class="text-sm text-gray-500 mt-1">管理平台用户账号，支持从HR系统同步和手动创建系统账号</p>
+        </div>
+        <div class="flex items-center gap-3">
+          <button onclick="openModal('modalHrAddUser')" class="inline-flex items-center gap-2 px-4 py-2.5 bg-hr-green hover:bg-green-700 text-white rounded-lg text-sm font-medium shadow-sm transition-colors">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/></svg>
+            从HR添加用户
+          </button>
+          <button onclick="openModal('modalSysAddUser')" class="inline-flex items-center gap-2 px-4 py-2.5 bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 rounded-lg text-sm font-medium shadow-sm transition-colors">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            添加系统账号
+          </button>
+        </div>
+      </div>
+
+      <!-- Search Bar -->
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-4">
+        <div class="flex items-center gap-3">
+          <div class="flex-1 relative">
+            <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            <input type="text" placeholder="搜索用户名、姓名、工号…" class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
+          </div>
+          <select class="px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 focus:ring-2 focus:ring-blue-500 outline-none">
+            <option value="">全部来源</option>
+            <option value="hr">🟢 HR入职</option>
+            <option value="project">🔵 项目</option>
+            <option value="admin">🟠 admin手动</option>
+            <option value="system">系统账号</option>
+          </select>
+          <button class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors">搜索</button>
+        </div>
+      </div>
+
+      <!-- User Table -->
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="bg-gray-50 border-b border-gray-200">
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">#</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">用户名</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">姓名</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">部门</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">角色来源</th>
+              <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase">操作</th>
+            </tr>
+          </thead>
+          <tbody id="userTableBody"></tbody>
+        </table>
+      </div>
+
+      <!-- Legend -->
+      <div class="mt-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
+        <div class="text-xs text-gray-500 font-medium mb-2">角色来源说明：</div>
+        <div class="flex items-center gap-6 text-xs">
+          <span class="inline-flex items-center gap-1"><span class="badge-hr px-2 py-0.5 rounded text-xs font-medium">🟢 HR入职</span> HR定岗自动映射角色</span>
+          <span class="inline-flex items-center gap-1"><span class="badge-project px-2 py-0.5 rounded text-xs font-medium">🔵 项目</span> 项目团队分配角色</span>
+          <span class="inline-flex items-center gap-1"><span class="badge-admin px-2 py-0.5 rounded text-xs font-medium">🟠 admin手动</span> 管理员手动分配特殊角色</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===================== Tab2 角色管理 ===================== -->
+    <div id="tab-roles" class="tab-content p-6 hidden">
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <h1 class="text-2xl font-bold text-gray-900">角色管理</h1>
+          <p class="text-sm text-gray-500 mt-1">管理平台角色与权限配置，左侧角色列表，右侧权限树勾选</p>
+        </div>
+        <button onclick="openModal('modalAddRole')" class="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium shadow-sm transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+          新增角色
+        </button>
+      </div>
+
+      <div class="flex gap-4">
+        <!-- Role List -->
+        <div class="w-72 bg-white rounded-xl shadow-sm border border-gray-200 p-3 shrink-0">
+          <div class="text-xs text-gray-500 font-medium mb-2 px-2">角色列表</div>
+          <div id="roleList" class="space-y-1 max-h-[calc(100vh-280px)] overflow-y-auto"></div>
+        </div>
+        <!-- Permission Tree -->
+        <div class="flex-1 bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+          <div id="roleDetailPanel">
+            <div class="text-center text-gray-400 py-12">
+              <svg class="w-12 h-12 mx-auto mb-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+              <div class="text-sm">点击左侧角色查看权限配置</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Role Source Legend -->
+      <div class="mt-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
+        <div class="text-xs text-gray-500 font-medium mb-2">角色来源说明：</div>
+        <div class="flex items-center gap-6 text-xs">
+          <span class="inline-flex items-center gap-1"><span class="badge-hr px-2 py-0.5 rounded text-xs font-medium">🟢 HR映射</span> 由岗位映射自动分配</span>
+          <span class="inline-flex items-center gap-1"><span class="badge-admin px-2 py-0.5 rounded text-xs font-medium">🟠 admin手动</span> 管理员手动创建/分配</span>
+          <span class="inline-flex items-center gap-1"><span class="badge-project px-2 py-0.5 rounded text-xs font-medium">🔵 项目角色</span> 项目团队分配（不在角色管理页管理）</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===================== Tab3 部门管理 ===================== -->
+    <div id="tab-depts" class="tab-content p-6 hidden">
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <h1 class="text-2xl font-bold text-gray-900">部门管理</h1>
+          <p class="text-sm text-gray-500 mt-1">部门数据由HR同步，此处仅配置权限属性</p>
+        </div>
+        <button onclick="showToast('已从HR同步部门数据','success')" class="inline-flex items-center gap-2 px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium shadow-sm transition-colors">
+          🔄 从HR同步
+        </button>
+      </div>
+
+      <div class="flex gap-4">
+        <!-- Department Tree -->
+        <div class="w-72 bg-white rounded-xl shadow-sm border border-gray-200 p-4 shrink-0">
+          <div class="text-xs text-gray-500 font-medium mb-3">组织架构</div>
+          <div id="deptTree" class="text-sm"></div>
+        </div>
+        <!-- Department Detail -->
+        <div class="flex-1 bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+          <div id="deptDetailPanel">
+            <div class="text-center text-gray-400 py-12">
+              <svg class="w-12 h-12 mx-auto mb-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+              <div class="text-sm">点击左侧部门查看详情</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===================== Tab4 岗位权限管理（重点改造） ===================== -->
+    <div id="tab-positionPerm" class="tab-content p-6 hidden">
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <h1 class="text-2xl font-bold text-gray-900">岗位权限管理</h1>
+          <p class="text-sm text-gray-500 mt-1">配置各岗位对应的自动角色与可访问模块，入职即生效，无需手动</p>
+        </div>
+        <button onclick="openModal('modalAddPositionPerm')" class="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium shadow-sm transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+          新增岗位权限
+        </button>
+      </div>
+
+      <!-- 基础权限底座展示区 -->
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-4">
+        <div class="text-xs text-gray-500 font-medium mb-2">基础权限底座（所有员工共享）</div>
+        <div class="flex flex-wrap gap-2">
+          <span class="base-perm-tag">🏠 首页</span>
+          <span class="base-perm-tag">👤 个人中心</span>
+          <span class="base-perm-tag">🔑 修改密码</span>
+          <span class="base-perm-tag">📋 审批中心</span>
+          <span class="base-perm-tag">🔔 通知消息</span>
+        </div>
+        <div class="text-xs text-gray-400 mt-2">以上模块无需配置，所有账号（含新入职员工）自动拥有访问权限</div>
+      </div>
+
+      <!-- 岗位权限表格 -->
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="bg-gray-50 border-b border-gray-200">
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">岗位</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">自动角色</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">可访问模块</th>
+              <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase">操作</th>
+            </tr>
+          </thead>
+          <tbody id="positionPermTableBody"></tbody>
+        </table>
+      </div>
+
+      <!-- 底部提示 -->
+      <div class="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+        <div class="flex items-start gap-2">
+          <span class="text-base">💡</span>
+          <div class="text-xs text-blue-700">
+            <strong>岗位+是否负责人 → 自动角色 → 自动权限。入职即生效，无需手动。</strong><br>
+            部门负责人由HR组织架构决定，自动获得 <code class="bg-blue-100 px-1 rounded">dept_head</code> 角色 + 审批权。
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===================== Tab5 项目岗位权限（新增） ===================== -->
+    <div id="tab-projectPerm" class="tab-content p-6 hidden">
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <h1 class="text-2xl font-bold text-gray-900">项目岗位权限</h1>
+          <p class="text-sm text-gray-500 mt-1">配置项目内岗位权限覆盖规则</p>
+        </div>
+        <button onclick="openModal('modalAddProjectPerm')" class="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium shadow-sm transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+          新增项目岗位权限
+        </button>
+      </div>
+
+      <!-- 说明区 -->
+      <div class="bg-amber-50 rounded-xl border border-amber-200 p-4 mb-4">
+        <div class="flex items-start gap-2">
+          <span class="text-base">📌</span>
+          <div class="text-sm text-amber-800">
+            <strong>场景说明：</strong>入职岗位是 CRA，但在项目内担任 APM → 在项目内获得 PM 权限。<br>
+            项目岗位权限<strong>覆盖</strong>组织岗位权限，离开项目后项目权限自动失效。
+          </div>
+        </div>
+      </div>
+
+      <!-- 项目岗位权限表格 -->
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="bg-gray-50 border-b border-gray-200">
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">项目岗位</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">允许来源岗</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">对应角色</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">项目内可访问模块</th>
+              <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase">操作</th>
+            </tr>
+          </thead>
+          <tbody id="projectPermTableBody"></tbody>
+        </table>
+      </div>
+
+      <!-- 底部提示 -->
+      <div class="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+        <div class="flex items-start gap-2">
+          <span class="text-base">💡</span>
+          <div class="text-xs text-blue-700">
+            <strong>项目团队分配角色时自动查此表，项目内权限覆盖组织岗位权限。</strong>离开项目 → 项目权限自动失效。
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===================== Tab6 权限包（新增） ===================== -->
+    <div id="tab-permPkg" class="tab-content p-6 hidden">
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <h1 class="text-2xl font-bold text-gray-900">权限包</h1>
+          <p class="text-sm text-gray-500 mt-1">预定义权限组合，一键分配给任何人，不受岗位限制</p>
+        </div>
+        <button onclick="openModal('modalAddPermPkg')" class="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium shadow-sm transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+          新增权限包
+        </button>
+      </div>
+
+      <!-- 类型筛选 -->
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-3 mb-4">
+        <div class="flex items-center gap-2">
+          <span class="text-sm text-gray-600 font-medium mr-2">类型：</span>
+          <button onclick="filterPermPkg('all')" class="perm-pkg-filter active px-3 py-1.5 rounded-lg text-sm font-medium bg-blue-600 text-white" data-filter="all">全部</button>
+          <button onclick="filterPermPkg('single')" class="perm-pkg-filter px-3 py-1.5 rounded-lg text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200" data-filter="single">单领域包</button>
+          <button onclick="filterPermPkg('composite')" class="perm-pkg-filter px-3 py-1.5 rounded-lg text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200" data-filter="composite">复合包</button>
+          <button onclick="filterPermPkg('custom')" class="perm-pkg-filter px-3 py-1.5 rounded-lg text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200" data-filter="custom">自定义包</button>
+        </div>
+      </div>
+
+      <!-- 权限包表格 -->
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="bg-gray-50 border-b border-gray-200">
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">权限包</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">类型</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">覆盖模块</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">已分配人数</th>
+              <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase">操作</th>
+            </tr>
+          </thead>
+          <tbody id="permPkgTableBody"></tbody>
+        </table>
+      </div>
+
+      <!-- 底部提示 -->
+      <div class="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+        <div class="flex items-start gap-2">
+          <span class="text-base">💡</span>
+          <div class="text-xs text-blue-700">
+            <strong>单领域包</strong> = 某业务大类的"小超管"；<strong>复合包</strong> = 多领域组合，如"副总裁"=财务+项目+HR；<strong>自定义包</strong> = 完全自由勾选；一键分配给任何人，不受岗位限制。
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===================== Tab7 数据字典 ===================== -->
+    <div id="tab-dict" class="tab-content p-6 hidden">
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <h1 class="text-2xl font-bold text-gray-900">数据字典</h1>
+          <p class="text-sm text-gray-500 mt-1">统一管理平台下拉选项，各业务模块共享</p>
+        </div>
+        <button onclick="showToast('新增字典项功能已就绪','info')" class="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium shadow-sm transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+          新增字典项
+        </button>
+      </div>
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div class="flex border-b border-gray-200 bg-gray-50 px-4" id="dictCategoryTabs"></div>
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="bg-gray-50 border-b border-gray-200">
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">#</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">分类</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">编码</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">存储值</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">显示值</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">排序</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">状态</th>
+              <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase">操作</th>
+            </tr>
+          </thead>
+          <tbody id="dictTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ===================== Tab8 系统配置 ===================== -->
+    <div id="tab-config" class="tab-content p-6 hidden">
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <h1 class="text-2xl font-bold text-gray-900">系统配置</h1>
+          <p class="text-sm text-gray-500 mt-1">管理平台全局参数配置</p>
+        </div>
+        <button onclick="showToast('新增配置功能已就绪','info')" class="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium shadow-sm transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+          新增配置
+        </button>
+      </div>
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="bg-gray-50 border-b border-gray-200">
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">配置键</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">配置值</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">类型</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">说明</th>
+              <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase">操作</th>
+            </tr>
+          </thead>
+          <tbody id="configTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ===================== Tab9 操作日志 ===================== -->
+    <div id="tab-logs" class="tab-content p-6 hidden">
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <h1 class="text-2xl font-bold text-gray-900">操作日志</h1>
+          <p class="text-sm text-gray-500 mt-1">记录平台所有关键操作，支持审计追踪</p>
+        </div>
+      </div>
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-4">
+        <div class="flex items-center gap-3">
+          <input type="date" class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+          <span class="text-gray-400">~</span>
+          <input type="date" class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+          <select class="px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 focus:ring-2 focus:ring-blue-500 outline-none">
+            <option value="">全部模块</option>
+            <option>用户管理</option>
+            <option>角色管理</option>
+            <option>岗位权限</option>
+            <option>项目权限</option>
+            <option>权限包</option>
+          </select>
+          <select class="px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 focus:ring-2 focus:ring-blue-500 outline-none">
+            <option value="">全部操作</option>
+            <option>创建</option>
+            <option>修改</option>
+            <option>删除</option>
+          </select>
+          <button class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors">搜索</button>
+        </div>
+      </div>
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="bg-gray-50 border-b border-gray-200">
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">时间</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">操作人</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">模块</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">操作</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">对象</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">详情</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">IP</th>
+            </tr>
+          </thead>
+          <tbody id="logTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ===================== MODALS ===================== -->
+
+<!-- Modal: 从HR添加用户 -->
+<div id="modalHrAddUser" class="modal-overlay">
+  <div class="bg-white rounded-2xl shadow-2xl w-[700px] max-h-[85vh] overflow-y-auto">
+    <div class="p-5 border-b border-gray-200 flex items-center justify-between">
+      <h3 class="text-lg font-bold text-gray-900">从HR添加用户</h3>
+      <button onclick="closeModal('modalHrAddUser')" class="text-gray-400 hover:text-gray-600 text-xl">&times;</button>
+    </div>
+    <div class="p-5">
+      <div class="relative mb-4">
+        <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+        <input id="hrSearchInput" oninput="filterHrList()" type="text" placeholder="搜索HR人员：姓名 / 工号 / 部门…" class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
+      </div>
+      <div class="max-h-48 overflow-y-auto border border-gray-200 rounded-lg">
+        <table class="w-full text-sm">
+          <thead class="bg-gray-50 sticky top-0">
+            <tr>
+              <th class="px-3 py-2 text-center w-10"></th>
+              <th class="px-3 py-2 text-left text-xs text-gray-500">姓名</th>
+              <th class="px-3 py-2 text-left text-xs text-gray-500">工号</th>
+              <th class="px-3 py-2 text-left text-xs text-gray-500">部门</th>
+              <th class="px-3 py-2 text-left text-xs text-gray-500">岗位</th>
+            </tr>
+          </thead>
+          <tbody id="hrListBody"></tbody>
+        </table>
+      </div>
+      <div id="hrSelectedInfo" class="hidden mt-4 p-4 bg-green-50 rounded-lg border border-green-200">
+        <div class="text-sm font-medium text-gray-900 mb-2">已选：<span id="hrSelectedName"></span></div>
+        <div class="text-xs text-gray-600 mb-1">自动映射用户名：<span id="hrAutoUsername" class="font-mono font-medium text-gray-900"></span></div>
+        <div class="text-xs text-gray-600 mb-2">自动映射角色（来自岗位权限配置）：</div>
+        <div id="hrAutoRole" class="flex flex-wrap gap-1 mb-2"></div>
+        <div class="text-xs text-gray-600 mb-1">追加admin角色：</div>
+        <div class="flex items-center gap-2">
+          <select id="hrExtraRoleSelect" class="px-2 py-1 border border-gray-300 rounded text-xs">
+            <option value="">选择角色…</option>
+            <option value="pm">pm</option>
+            <option value="cra">cra</option>
+            <option value="dm">dm</option>
+            <option value="qa">qa</option>
+          </select>
+          <button onclick="addHrExtraRole()" class="px-2 py-1 bg-amber-100 text-amber-700 rounded text-xs hover:bg-amber-200">+追加</button>
+        </div>
+        <div id="hrExtraRoles" class="flex flex-wrap gap-1 mt-2"></div>
+      </div>
+    </div>
+    <div class="p-5 border-t border-gray-200 flex justify-end gap-3">
+      <button onclick="closeModal('modalHrAddUser')" class="px-4 py-2 text-sm text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg">取消</button>
+      <button onclick="confirmHrAddUser()" class="px-4 py-2 text-sm text-white bg-green-600 hover:bg-green-700 rounded-lg font-medium">确认添加</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: 添加系统账号 -->
+<div id="modalSysAddUser" class="modal-overlay">
+  <div class="bg-white rounded-2xl shadow-2xl w-[500px] max-h-[85vh] overflow-y-auto">
+    <div class="p-5 border-b border-gray-200 flex items-center justify-between">
+      <h3 class="text-lg font-bold text-gray-900">添加系统账号</h3>
+      <button onclick="closeModal('modalSysAddUser')" class="text-gray-400 hover:text-gray-600 text-xl">&times;</button>
+    </div>
+    <div class="p-5">
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-700 mb-1">用户名 <span class="text-red-500">*</span></label>
+        <input id="sysUsername" type="text" placeholder="如：api_service" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+      </div>
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-700 mb-1">用途说明 <span class="text-red-500">*</span></label>
+        <input id="sysPurpose" type="text" placeholder="如：数据同步API服务" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+      </div>
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-700 mb-1">分配角色 <span class="text-red-500">*</span></label>
+        <div class="flex items-center gap-2">
+          <select id="sysRoleSelect" class="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+            <option value="">选择角色…</option>
+            <option value="pm">pm</option>
+            <option value="cra">cra</option>
+            <option value="dm">dm</option>
+            <option value="qa">qa</option>
+            <option value="super_admin">super_admin</option>
+          </select>
+          <button onclick="addSysRole()" class="px-3 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm hover:bg-gray-200">+</button>
+        </div>
+        <div id="sysSelectedRoles" class="flex flex-wrap gap-1 mt-2"></div>
+      </div>
+      <div class="p-3 bg-amber-50 rounded-lg border border-amber-200">
+        <div class="text-xs text-amber-700">⚠️ 系统账号仅用于API服务/机器人等非人员场景，不会映射HR岗位</div>
+      </div>
+    </div>
+    <div class="p-5 border-t border-gray-200 flex justify-end gap-3">
+      <button onclick="closeModal('modalSysAddUser')" class="px-4 py-2 text-sm text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg">取消</button>
+      <button onclick="confirmSysAddUser()" class="px-4 py-2 text-sm text-white bg-blue-600 hover:bg-blue-700 rounded-lg font-medium">确认创建</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: 编辑岗位权限 -->
+<div id="modalEditPositionPerm" class="modal-overlay">
+  <div class="bg-white rounded-2xl shadow-2xl w-[750px] max-h-[85vh] overflow-y-auto">
+    <div class="p-5 border-b border-gray-200 flex items-center justify-between">
+      <h3 class="text-lg font-bold text-gray-900">编辑岗位权限</h3>
+      <button onclick="closeModal('modalEditPositionPerm')" class="text-gray-400 hover:text-gray-600 text-xl">&times;</button>
+    </div>
+    <div class="p-5">
+      <div class="grid grid-cols-2 gap-4 mb-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">岗位选择</label>
+          <select id="editPPPosition" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+            <option>PM</option><option>CRA</option><option>CRC</option><option>DM</option><option>QA</option><option>BD</option><option>财务</option><option>人事</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">基础角色</label>
+          <div class="px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-700 bg-gray-50">自动生成（如 pm / dept_head）</div>
+        </div>
+      </div>
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-700 mb-1">负责人额外角色</label>
+        <div class="flex items-center gap-2">
+          <input type="text" placeholder="如 dept_head" class="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+          <button class="px-3 py-2 bg-blue-100 text-blue-700 rounded-lg text-sm hover:bg-blue-200">+添加</button>
+        </div>
+        <div class="text-xs text-gray-400 mt-1">部门负责人由HR组织架构决定，自动获 dept_head 角色 + 审批权</div>
+      </div>
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-700 mb-2">模块勾选树</label>
+        <div class="border border-gray-200 rounded-lg p-3 max-h-64 overflow-y-auto">
+          <div id="positionPermModuleTree"></div>
+        </div>
+        <div class="text-xs text-gray-400 mt-1">勾选 = 该岗位可看到此菜单；每个模块可展开选 列表/创建/删除</div>
+      </div>
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-700 mb-1">数据范围</label>
+        <select class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+          <option>本人数据</option>
+          <option>本部门数据</option>
+          <option>本部门及下级</option>
+          <option>全部数据</option>
+          <option>自定义</option>
+        </select>
+      </div>
+    </div>
+    <div class="p-5 border-t border-gray-200 flex justify-end gap-3">
+      <button onclick="closeModal('modalEditPositionPerm')" class="px-4 py-2 text-sm text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg">取消</button>
+      <button onclick="showToast('岗位权限已保存','success');closeModal('modalEditPositionPerm')" class="px-4 py-2 text-sm text-white bg-blue-600 hover:bg-blue-700 rounded-lg font-medium">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: 编辑项目岗位权限 -->
+<div id="modalEditProjectPerm" class="modal-overlay">
+  <div class="bg-white rounded-2xl shadow-2xl w-[750px] max-h-[85vh] overflow-y-auto">
+    <div class="p-5 border-b border-gray-200 flex items-center justify-between">
+      <h3 class="text-lg font-bold text-gray-900">编辑项目岗位权限</h3>
+      <button onclick="closeModal('modalEditProjectPerm')" class="text-gray-400 hover:text-gray-600 text-xl">&times;</button>
+    </div>
+    <div class="p-5">
+      <div class="grid grid-cols-2 gap-4 mb-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">项目岗位</label>
+          <select id="editPrjPPPosition" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+            <option>PM</option><option>APM</option><option>PI</option><option>CRA</option><option>CRC</option><option>DM</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">对应角色</label>
+          <input type="text" placeholder="如 pm" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+        </div>
+      </div>
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-700 mb-1">允许来源岗位（可多选）</label>
+        <div class="flex flex-wrap gap-2">
+          <label class="inline-flex items-center gap-1 px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-sm cursor-pointer hover:bg-blue-50 hover:border-blue-300">
+            <input type="checkbox" class="rounded border-gray-300 text-blue-600"> CRA
+          </label>
+          <label class="inline-flex items-center gap-1 px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-sm cursor-pointer hover:bg-blue-50 hover:border-blue-300">
+            <input type="checkbox" class="rounded border-gray-300 text-blue-600"> CRC
+          </label>
+          <label class="inline-flex items-center gap-1 px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-sm cursor-pointer hover:bg-blue-50 hover:border-blue-300">
+            <input type="checkbox" class="rounded border-gray-300 text-blue-600"> PM
+          </label>
+          <label class="inline-flex items-center gap-1 px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-sm cursor-pointer hover:bg-blue-50 hover:border-blue-300">
+            <input type="checkbox" class="rounded border-gray-300 text-blue-600"> DM
+          </label>
+        </div>
+      </div>
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-700 mb-2">模块勾选</label>
+        <div class="border border-gray-200 rounded-lg p-3 max-h-48 overflow-y-auto">
+          <div id="projectPermModuleTree"></div>
+        </div>
+      </div>
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-700 mb-1">项目数据范围</label>
+        <select class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+          <option>本项目数据</option>
+          <option>本项目+中心数据</option>
+          <option>全部项目数据</option>
+        </select>
+      </div>
+    </div>
+    <div class="p-5 border-t border-gray-200 flex justify-end gap-3">
+      <button onclick="closeModal('modalEditProjectPerm')" class="px-4 py-2 text-sm text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg">取消</button>
+      <button onclick="showToast('项目岗位权限已保存','success');closeModal('modalEditProjectPerm')" class="px-4 py-2 text-sm text-white bg-blue-600 hover:bg-blue-700 rounded-lg font-medium">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: 权限包详情/编辑 -->
+<div id="modalPermPkgDetail" class="modal-overlay">
+  <div class="bg-white rounded-2xl shadow-2xl w-[800px] max-h-[85vh] overflow-y-auto">
+    <div class="p-5 border-b border-gray-200 flex items-center justify-between">
+      <h3 id="permPkgDetailTitle" class="text-lg font-bold text-gray-900">权限包详情</h3>
+      <button onclick="closeModal('modalPermPkgDetail')" class="text-gray-400 hover:text-gray-600 text-xl">&times;</button>
+    </div>
+    <div class="p-5">
+      <div class="grid grid-cols-2 gap-4 mb-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">名称</label>
+          <input id="permPkgName" type="text" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">类型</label>
+          <select id="permPkgType" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+            <option value="single">单领域</option>
+            <option value="composite">复合</option>
+            <option value="custom">自定义</option>
+          </select>
+        </div>
+      </div>
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-700 mb-2">模块勾选树（每个模块可选 full / read / none）</label>
+        <div class="border border-gray-200 rounded-lg p-3 max-h-52 overflow-y-auto" id="permPkgModuleTree"></div>
+      </div>
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-700 mb-1">数据范围</label>
+        <select class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+          <option>本人数据</option><option>本部门数据</option><option>本部门及下级</option><option>全部数据</option>
+        </select>
+      </div>
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-700 mb-2">快捷操作</label>
+        <div class="flex gap-2">
+          <button onclick="showToast('已复制为只读版','success')" class="px-3 py-1.5 text-xs bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200">📋 复制为只读版</button>
+          <button onclick="showToast('已另存为新包','success')" class="px-3 py-1.5 text-xs bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200">💾 另存为新包</button>
+        </div>
+      </div>
+      <div class="mb-4">
+        <div class="flex items-center justify-between mb-2">
+          <label class="text-sm font-medium text-gray-700">已分配人员</label>
+          <button onclick="showToast('添加人员功能已就绪','info')" class="px-3 py-1 text-xs text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg">+添加人员</button>
+        </div>
+        <div id="permPkgAssignedUsers" class="border border-gray-200 rounded-lg p-2 max-h-32 overflow-y-auto"></div>
+      </div>
+    </div>
+    <div class="p-5 border-t border-gray-200 flex justify-end gap-3">
+      <button onclick="closeModal('modalPermPkgDetail')" class="px-4 py-2 text-sm text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg">取消</button>
+      <button onclick="showToast('权限包已保存','success');closeModal('modalPermPkgDetail')" class="px-4 py-2 text-sm text-white bg-blue-600 hover:bg-blue-700 rounded-lg font-medium">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: 新增角色 -->
+<div id="modalAddRole" class="modal-overlay">
+  <div class="bg-white rounded-2xl shadow-2xl w-[500px] max-h-[85vh] overflow-y-auto">
+    <div class="p-5 border-b border-gray-200 flex items-center justify-between">
+      <h3 class="text-lg font-bold text-gray-900">新增角色</h3>
+      <button onclick="closeModal('modalAddRole')" class="text-gray-400 hover:text-gray-600 text-xl">&times;</button>
+    </div>
+    <div class="p-5">
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-700 mb-1">角色名称</label>
+        <input type="text" placeholder="如：数据管理员" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+      </div>
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-700 mb-1">角色编码</label>
+        <input type="text" placeholder="如：data_manager" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none font-mono">
+      </div>
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-700 mb-1">说明</label>
+        <input type="text" placeholder="角色用途描述" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+      </div>
+    </div>
+    <div class="p-5 border-t border-gray-200 flex justify-end gap-3">
+      <button onclick="closeModal('modalAddRole')" class="px-4 py-2 text-sm text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg">取消</button>
+      <button onclick="showToast('角色已创建','success');closeModal('modalAddRole')" class="px-4 py-2 text-sm text-white bg-blue-600 hover:bg-blue-700 rounded-lg font-medium">创建</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: 新增岗位权限 / 项目岗位权限 / 权限包 (placeholder modals reuse edit modals) -->
+<div id="modalAddPositionPerm" class="modal-overlay">
+  <div class="bg-white rounded-2xl shadow-2xl w-[750px] max-h-[85vh] overflow-y-auto">
+    <div class="p-5 border-b border-gray-200 flex items-center justify-between">
+      <h3 class="text-lg font-bold text-gray-900">新增岗位权限</h3>
+      <button onclick="closeModal('modalAddPositionPerm')" class="text-gray-400 hover:text-gray-600 text-xl">&times;</button>
+    </div>
+    <div class="p-5">
+      <div class="grid grid-cols-2 gap-4 mb-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">岗位</label>
+          <input type="text" placeholder="输入岗位名称" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">自动角色</label>
+          <input type="text" placeholder="如 custom_role" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none font-mono">
+        </div>
+      </div>
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-700 mb-2">模块勾选树</label>
+        <div class="border border-gray-200 rounded-lg p-3 max-h-48 overflow-y-auto" id="addPPModuleTree"></div>
+      </div>
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-700 mb-1">数据范围</label>
+        <select class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+          <option>本人数据</option><option>本部门数据</option><option>本部门及下级</option><option>全部数据</option>
+        </select>
+      </div>
+    </div>
+    <div class="p-5 border-t border-gray-200 flex justify-end gap-3">
+      <button onclick="closeModal('modalAddPositionPerm')" class="px-4 py-2 text-sm text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg">取消</button>
+      <button onclick="showToast('岗位权限已创建','success');closeModal('modalAddPositionPerm')" class="px-4 py-2 text-sm text-white bg-blue-600 hover:bg-blue-700 rounded-lg font-medium">创建</button>
+    </div>
+  </div>
+</div>
+
+<div id="modalAddProjectPerm" class="modal-overlay">
+  <div class="bg-white rounded-2xl shadow-2xl w-[750px] max-h-[85vh] overflow-y-auto">
+    <div class="p-5 border-b border-gray-200 flex items-center justify-between">
+      <h3 class="text-lg font-bold text-gray-900">新增项目岗位权限</h3>
+      <button onclick="closeModal('modalAddProjectPerm')" class="text-gray-400 hover:text-gray-600 text-xl">&times;</button>
+    </div>
+    <div class="p-5">
+      <div class="grid grid-cols-2 gap-4 mb-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">项目岗位</label>
+          <input type="text" placeholder="输入项目岗位名称" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">对应角色</label>
+          <input type="text" placeholder="如 pm" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none font-mono">
+        </div>
+      </div>
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-700 mb-1">允许来源岗位（可多选）</label>
+        <div class="flex flex-wrap gap-2">
+          <label class="inline-flex items-center gap-1 px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-sm cursor-pointer">
+            <input type="checkbox" class="rounded border-gray-300 text-blue-600"> CRA
+          </label>
+          <label class="inline-flex items-center gap-1 px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-sm cursor-pointer">
+            <input type="checkbox" class="rounded border-gray-300 text-blue-600"> CRC
+          </label>
+          <label class="inline-flex items-center gap-1 px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-sm cursor-pointer">
+            <input type="checkbox" class="rounded border-gray-300 text-blue-600"> PM
+          </label>
+        </div>
+      </div>
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-700 mb-2">模块勾选</label>
+        <div class="border border-gray-200 rounded-lg p-3 max-h-48 overflow-y-auto" id="addPrjPPModuleTree"></div>
+      </div>
+    </div>
+    <div class="p-5 border-t border-gray-200 flex justify-end gap-3">
+      <button onclick="closeModal('modalAddProjectPerm')" class="px-4 py-2 text-sm text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg">取消</button>
+      <button onclick="showToast('项目岗位权限已创建','success');closeModal('modalAddProjectPerm')" class="px-4 py-2 text-sm text-white bg-blue-600 hover:bg-blue-700 rounded-lg font-medium">创建</button>
+    </div>
+  </div>
+</div>
+
+<div id="modalAddPermPkg" class="modal-overlay">
+  <div class="bg-white rounded-2xl shadow-2xl w-[800px] max-h-[85vh] overflow-y-auto">
+    <div class="p-5 border-b border-gray-200 flex items-center justify-between">
+      <h3 class="text-lg font-bold text-gray-900">新增权限包</h3>
+      <button onclick="closeModal('modalAddPermPkg')" class="text-gray-400 hover:text-gray-600 text-xl">&times;</button>
+    </div>
+    <div class="p-5">
+      <div class="grid grid-cols-2 gap-4 mb-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">名称</label>
+          <input type="text" placeholder="如：运营管理包" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">类型</label>
+          <select class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+            <option value="single">单领域</option>
+            <option value="composite">复合</option>
+            <option value="custom">自定义</option>
+          </select>
+        </div>
+      </div>
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-700 mb-2">模块勾选树</label>
+        <div class="border border-gray-200 rounded-lg p-3 max-h-48 overflow-y-auto" id="addPermPkgModuleTree"></div>
+      </div>
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-700 mb-1">数据范围</label>
+        <select class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+          <option>本人数据</option><option>本部门数据</option><option>本部门及下级</option><option>全部数据</option>
+        </select>
+      </div>
+    </div>
+    <div class="p-5 border-t border-gray-200 flex justify-end gap-3">
+      <button onclick="closeModal('modalAddPermPkg')" class="px-4 py-2 text-sm text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg">取消</button>
+      <button onclick="showToast('权限包已创建','success');closeModal('modalAddPermPkg')" class="px-4 py-2 text-sm text-white bg-blue-600 hover:bg-blue-700 rounded-lg font-medium">创建</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===================== DATA =====================
+const users = [
+  { id:1, username:'zhangwei', realName:'张伟', dept:'项目管理部', roles:[{name:'PM',code:'pm',source:'hr'}] },
+  { id:2, username:'lina', realName:'李娜', dept:'临床运营部', roles:[{name:'CRA',code:'cra',source:'hr'}] },
+  { id:3, username:'wangfang', realName:'王芳', dept:'临床运营部', roles:[{name:'CRC',code:'crc',source:'hr'}] },
+  { id:4, username:'chenming', realName:'陈明', dept:'数据管理部', roles:[{name:'DM',code:'dm',source:'hr'}] },
+  { id:5, username:'zhaojun', realName:'赵军', dept:'质量保证部', roles:[{name:'QA',code:'qa',source:'hr'}] },
+  { id:6, username:'sunli', realName:'孙丽', dept:'商务拓展部', roles:[{name:'BD',code:'bd',source:'hr'}] },
+  { id:7, username:'liuyang', realName:'刘洋', dept:'财务部', roles:[{name:'财务',code:'finance',source:'hr'}] },
+  { id:8, username:'huangxin', realName:'黄鑫', dept:'人力资源部', roles:[{name:'人事',code:'hr_role',source:'hr'}] },
+  { id:9, username:'zhouhua', realName:'周华', dept:'项目管理部', roles:[{name:'PM',code:'pm',source:'hr'},{name:'APM',code:'apm',source:'project'}] },
+  { id:10, username:'api_sync', realName:'数据同步服务', dept:'系统', roles:[{name:'数据同步',code:'data_sync',source:'admin'}] },
+];
+
+const roles = [
+  { code:'super_admin', name:'超级管理员', source:'admin', isSystem:true, desc:'系统最高权限' },
+  { code:'pm', name:'项目经理', source:'hr', isSystem:true, desc:'项目管理+中心管理+审批' },
+  { code:'cra', name:'CRA', source:'hr', isSystem:true, desc:'项目管理+中心管理' },
+  { code:'crc', name:'CRC', source:'hr', isSystem:true, desc:'项目管理(有限)+中心管理(有限)' },
+  { code:'dm', name:'数据管理员', source:'hr', isSystem:true, desc:'数据管理+项目只读' },
+  { code:'qa', name:'QA', source:'hr', isSystem:true, desc:'质量管理+项目只读' },
+  { code:'bd', name:'商务', source:'hr', isSystem:true, desc:'商务管理+申办方' },
+  { code:'finance', name:'财务', source:'hr', isSystem:true, desc:'预算+费用+合同' },
+  { code:'hr_role', name:'人事', source:'hr', isSystem:true, desc:'HR管理+培训' },
+  { code:'dept_head', name:'部门负责人', source:'hr', isSystem:true, desc:'审批权+本部门数据范围' },
+  { code:'apm', name:'项目副经理', source:'project', isSystem:false, desc:'项目内PM权限' },
+  { code:'data_sync', name:'数据同步', source:'admin', isSystem:false, desc:'API数据同步专用' },
+];
+
+const rolePermissions = {
+  super_admin: 'all',
+  pm: [0,1,2,3,4,5,6,7,8,9,10,11],
+  cra: [0,1,2,3,4,5,6],
+  crc: [0,1,2,3],
+  dm: [0,1,8,9,10,11],
+  qa: [0,1,2,3,4,5,6,7,8,9,10,11],
+  finance: [12,13,14],
+  hr_role: [15,16,17],
+};
+
+const permissionTree = [
+  { name:'项目管理', type:'full', children:[{name:'项目列表',type:'full'},{name:'项目创建',type:'full'},{name:'项目删除',type:'full'}] },
+  { name:'中心管理', type:'full', children:[{name:'中心列表',type:'full'},{name:'中心创建',type:'full'},{name:'中心编辑',type:'full'}] },
+  { name:'审批', type:'full', children:[{name:'审批提交',type:'full'},{name:'审批处理',type:'full'},{name:'审批终审',type:'full'}] },
+  { name:'数据管理', type:'full', children:[{name:'CRF设计',type:'full'},{name:'数据录入',type:'full'},{name:'数据导出',type:'full'},{name:'数据锁定',type:'full'}] },
+  { name:'质量管理', type:'full', children:[{name:'稽查',type:'full'},{name:'质控',type:'full'},{name:'CAPA',type:'full'}] },
+  { name:'商务管理', type:'full', children:[{name:'商机',type:'full'},{name:'报价',type:'full'}] },
+  { name:'申办方', type:'full', children:[{name:'申办方列表',type:'full'}] },
+  { name:'预算', type:'full', children:[{name:'预算查看',type:'full'},{name:'预算编辑',type:'full'}] },
+  { name:'费用', type:'full', children:[{name:'费用查看',type:'full'},{name:'费用编辑',type:'full'}] },
+  { name:'合同', type:'full', children:[{name:'合同查看',type:'full'},{name:'合同编辑',type:'full'}] },
+  { name:'HR管理', type:'full', children:[{name:'人员管理',type:'full'},{name:'组织架构',type:'full'}] },
+  { name:'培训', type:'full', children:[{name:'培训计划',type:'full'},{name:'培训记录',type:'full'}] },
+];
+
+const dataScopes = {
+  pm: { type:'dept_sub', label:'本部门及下级' },
+  cra: { type:'dept', label:'本部门' },
+  crc: { type:'self', label:'本人数据' },
+  dm: { type:'dept', label:'本部门' },
+  qa: { type:'all', label:'全部数据' },
+  finance: { type:'dept', label:'本部门' },
+  hr_role: { type:'dept_sub', label:'本部门及下级' },
+};
+
+const departments = [
+  { code:'HQ', name:'集团总部', parent:null, leader:'王总', members:[{name:'王总',roles:[{code:'super_admin',source:'admin'}]}] },
+  { code:'PM', name:'项目管理部', parent:'HQ', leader:'张伟', members:[{name:'张伟',roles:[{code:'pm',source:'hr'}]},{name:'周华',roles:[{code:'pm',source:'hr'},{code:'apm',source:'project'}]}] },
+  { code:'CR', name:'临床运营部', parent:'HQ', leader:'李娜', members:[{name:'李娜',roles:[{code:'cra',source:'hr'}]},{name:'王芳',roles:[{code:'crc',source:'hr'}]}] },
+  { code:'DM', name:'数据管理部', parent:'HQ', leader:'陈明', members:[{name:'陈明',roles:[{code:'dm',source:'hr'}]}] },
+  { code:'QA', name:'质量保证部', parent:'HQ', leader:'赵军', members:[{name:'赵军',roles:[{code:'qa',source:'hr'}]}] },
+  { code:'BD', name:'商务拓展部', parent:'HQ', leader:'孙丽', members:[{name:'孙丽',roles:[{code:'bd',source:'hr'}]}] },
+  { code:'FIN', name:'财务部', parent:'HQ', leader:'刘洋', members:[{name:'刘洋',roles:[{code:'finance',source:'hr'}]}] },
+  { code:'HR', name:'人力资源部', parent:'HQ', leader:'黄鑫', members:[{name:'黄鑫',roles:[{code:'hr_role',source:'hr'}]}] },
+];
+
+const hrMembers = [
+  { empNo:'EMP001', name:'张伟', dept:'项目管理部', position:'PM', isLeader:true },
+  { empNo:'EMP002', name:'李娜', dept:'临床运营部', position:'CRA', isLeader:true },
+  { empNo:'EMP003', name:'王芳', dept:'临床运营部', position:'CRC', isLeader:false },
+  { empNo:'EMP004', name:'陈明', dept:'数据管理部', position:'DM', isLeader:true },
+  { empNo:'EMP005', name:'赵军', dept:'质量保证部', position:'QA', isLeader:true },
+  { empNo:'EMP006', name:'孙丽', dept:'商务拓展部', position:'BD', isLeader:true },
+  { empNo:'EMP007', name:'刘洋', dept:'财务部', position:'财务', isLeader:true },
+  { empNo:'EMP008', name:'黄鑫', dept:'人力资源部', position:'人事', isLeader:true },
+  { empNo:'EMP009', name:'周华', dept:'项目管理部', position:'CRA', isLeader:false },
+  { empNo:'EMP010', name:'吴静', dept:'临床运营部', position:'CRC', isLeader:false },
+];
+
+const positionPermData = [
+  { position:'PM', role:'pm', modules:[{name:'项目管理',level:'full'},{name:'中心管理',level:'full'},{name:'审批',level:'full'}] },
+  { position:'CRA', role:'cra', modules:[{name:'项目管理',level:'full'},{name:'中心管理',level:'full'}] },
+  { position:'CRC', role:'crc', modules:[{name:'项目管理',level:'limited'},{name:'中心管理',level:'limited'}] },
+  { position:'DM', role:'dm', modules:[{name:'数据管理',level:'full'},{name:'项目管理',level:'readonly'}] },
+  { position:'QA', role:'qa', modules:[{name:'质量管理',level:'full'},{name:'项目管理',level:'readonly'}] },
+  { position:'BD', role:'bd', modules:[{name:'商务管理',level:'full'},{name:'申办方',level:'full'}] },
+  { position:'财务', role:'finance', modules:[{name:'预算',level:'full'},{name:'费用',level:'full'},{name:'合同',level:'full'}] },
+  { position:'人事', role:'hr_role', modules:[{name:'HR管理',level:'full'},{name:'培训',level:'full'}] },
+];
+
+const projectPermData = [
+  { position:'PM', sourcePositions:['PM'], role:'pm', modules:[{name:'项目管理',level:'full'},{name:'中心管理',level:'full'},{name:'审批',level:'full'}] },
+  { position:'APM', sourcePositions:['CRA','CRC'], role:'pm', modules:[{name:'项目管理',level:'full'},{name:'中心管理',level:'full'},{name:'审批',level:'full'}] },
+  { position:'PI', sourcePositions:[], role:'pi', modules:[{name:'项目管理',level:'readonly'},{name:'中心管理',level:'full'}] },
+  { position:'CRA', sourcePositions:['CRA'], role:'cra', modules:[{name:'项目管理',level:'limited'},{name:'中心管理',level:'full'}] },
+  { position:'CRC', sourcePositions:['CRC'], role:'crc', modules:[{name:'项目管理',level:'limited'},{name:'中心管理',level:'limited'}] },
+  { position:'DM', sourcePositions:['DM'], role:'dm', modules:[{name:'数据管理',level:'full'},{name:'项目管理',level:'readonly'}] },
+];
+
+const permPackages = [
+  { name:'财务管理包', type:'single', modules:['预算','费用','合同'], moduleLevel:'full', assignedCount:3, assignedUsers:['刘洋','王会','李计'] },
+  { name:'项目管理包', type:'single', modules:['项目管理','中心管理','审批'], moduleLevel:'full', assignedCount:5, assignedUsers:['张伟','李PM','王PM','赵PM','陈PM'] },
+  { name:'行政管理包', type:'single', modules:['行政','物资','印章'], moduleLevel:'full', assignedCount:2, assignedUsers:['赵行政','钱行政'] },
+  { name:'HR管理包', type:'single', modules:['HR管理','培训','考勤'], moduleLevel:'full', assignedCount:2, assignedUsers:['黄鑫','何HR'] },
+  { name:'副总裁包', type:'composite', modules:['财务','项目','HR','审批'], moduleLevel:'full', assignedCount:2, assignedUsers:['李副总','王副总'] },
+  { name:'COO包', type:'composite', modules:['全模块(只读)','审批终审'], moduleLevel:'read', assignedCount:1, assignedUsers:['陈COO'] },
+  { name:'CEO包', type:'composite', modules:['全模块读写','全审批'], moduleLevel:'full', assignedCount:1, assignedUsers:['王总'] },
+  { name:'审计监察包', type:'custom', modules:['全模块只读','操作日志'], moduleLevel:'read', assignedCount:1, assignedUsers:['赵审计'] },
+];
+
+const dictData = [
+  { category:'项目类型', code:'proj_type', value:'phase1', label:'I期临床', sort:1, status:'active' },
+  { category:'项目类型', code:'proj_type', value:'phase2', label:'II期临床', sort:2, status:'active' },
+  { category:'项目类型', code:'proj_type', value:'phase3', label:'III期临床', sort:3, status:'active' },
+  { category:'项目类型', code:'proj_type', value:'be', label:'BE研究', sort:4, status:'active' },
+  { category:'项目状态', code:'proj_status', value:'planning', label:'规划中', sort:1, status:'active' },
+  { category:'项目状态', code:'proj_status', value:'ongoing', label:'进行中', sort:2, status:'active' },
+  { category:'项目状态', code:'proj_status', value:'completed', label:'已完成', sort:3, status:'active' },
+  { category:'中心状态', code:'site_status', value:'pending', label:'待启动', sort:1, status:'active' },
+  { category:'中心状态', code:'site_status', value:'active', label:'活跃', sort:2, status:'active' },
+  { category:'中心状态', code:'site_status', value:'closed', label:'已关闭', sort:3, status:'active' },
+  { category:'审批类型', code:'approval_type', value:'budget', label:'预算审批', sort:1, status:'active' },
+  { category:'审批类型', code:'approval_type', value:'contract', label:'合同审批', sort:2, status:'active' },
+];
+
+const sysConfig = [
+  { key:'sys.name', value:'药物研发管理平台', type:'string', desc:'平台名称' },
+  { key:'sys.session.timeout', value:'30', type:'number', desc:'会话超时(分钟)' },
+  { key:'sys.password.min_length', value:'8', type:'number', desc:'密码最小长度' },
+  { key:'sys.login.max_attempts', value:'5', type:'number', desc:'最大登录尝试次数' },
+  { key:'sys.audit.enabled', value:'true', type:'boolean', desc:'审计日志开关' },
+  { key:'sys.hr.sync_interval', value:'60', type:'number', desc:'HR同步间隔(分钟)' },
+];
+
+const operationLogs = [
+  { time:'2025-01-15 14:32:05', user:'admin', module:'用户管理', action:'create', target:'zhangwei', detail:'从HR添加用户', ip:'192.168.1.100' },
+  { time:'2025-01-15 14:28:17', user:'admin', module:'岗位权限', action:'update', target:'PM→pm', detail:'修改PM岗位模块权限', ip:'192.168.1.100' },
+  { time:'2025-01-15 13:45:22', user:'admin', module:'权限包', action:'create', target:'副总裁包', detail:'新增复合权限包', ip:'192.168.1.100' },
+  { time:'2025-01-15 11:20:33', user:'admin', module:'角色管理', action:'update', target:'pm', detail:'修改PM角色数据范围', ip:'192.168.1.100' },
+  { time:'2025-01-14 16:55:11', user:'admin', module:'项目岗位权限', action:'create', target:'APM', detail:'新增APM项目岗位权限', ip:'192.168.1.100' },
+  { time:'2025-01-14 10:12:44', user:'admin', module:'部门管理', action:'sync', target:'全部', detail:'从HR同步部门数据', ip:'192.168.1.100' },
+  { time:'2025-01-13 09:30:00', user:'admin', module:'系统配置', action:'update', target:'sys.session.timeout', detail:'会话超时改为30分钟', ip:'192.168.1.100' },
+];
+
+// ===================== STATE =====================
+let selectedHrMember = null;
+let hrExtraRoles = [];
+let sysSelectedRoles = [];
+let selectedRoleCode = null;
+let selectedDeptCode = null;
+let currentDictCategory = '项目类型';
+let currentPermPkgFilter = 'all';
+
+// ===================== UTILITY =====================
+function sourceBadge(source) {
+  if (source === 'hr') return '<span class="badge-hr px-2 py-0.5 rounded text-xs font-medium">🟢 HR入职</span>';
+  if (source === 'project') return '<span class="badge-project px-2 py-0.5 rounded text-xs font-medium">🔵 项目</span>';
+  if (source === 'admin') return '<span class="badge-admin px-2 py-0.5 rounded text-xs font-medium">🟠 admin手动</span>';
+  return '<span class="badge-system px-2 py-0.5 rounded text-xs font-medium">系统</span>';
+}
+function roleSourceIcon(source) {
+  if (source === 'hr') return '🟢';
+  if (source === 'project') return '🔵';
+  if (source === 'admin') return '🟠';
+  return '⚪';
+}
+function actionBadge(action) {
+  const m = { create:'<span class="px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-700">创建</span>', update:'<span class="px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-700">修改</span>', delete:'<span class="px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-700">删除</span>', sync:'<span class="px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-700">同步</span>' };
+  return m[action] || `<span class="px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-700">${action}</span>`;
+}
+function moduleLevelTag(level) {
+  if (level === 'full') return '<span class="module-check full">✓ 全读写</span>';
+  if (level === 'limited') return '<span class="module-check limited">✓ 有限</span>';
+  if (level === 'readonly') return '<span class="module-check readonly">✓ 只读</span>';
+  return '<span class="module-check" style="background:#f3f4f6;color:#9ca3af;border:1px solid #e5e7eb">— 无</span>';
+}
+function pkgTypeBadge(type) {
+  if (type === 'single') return '<span class="pkg-type-single px-2 py-0.5 rounded text-xs font-medium">单领域</span>';
+  if (type === 'composite') return '<span class="pkg-type-composite px-2 py-0.5 rounded text-xs font-medium">复合</span>';
+  if (type === 'custom') return '<span class="pkg-type-custom px-2 py-0.5 rounded text-xs font-medium">自定义</span>';
+  return '';
+}
+function showToast(msg, type='info') {
+  const container = document.getElementById('toastContainer');
+  const colors = { success:'bg-green-600', warning:'bg-amber-500', error:'bg-red-600', info:'bg-blue-600' };
+  const icons = { success:'✓', warning:'⚠', error:'✕', info:'ℹ' };
+  const el = document.createElement('div');
+  el.className = `toast ${colors[type]||colors.info} text-white px-4 py-2.5 rounded-lg shadow-lg text-sm flex items-center gap-2`;
+  el.innerHTML = `<span>${icons[type]||icons.info}</span> ${msg}`;
+  container.appendChild(el);
+  setTimeout(() => el.remove(), 3000);
+}
+function openModal(id) {
+  document.getElementById(id).classList.add('show');
+  if (id === 'modalHrAddUser') renderHrList();
+  if (id === 'modalSysAddUser') { sysSelectedRoles = []; renderSysSelectedRoles(); }
+}
+function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+
+// ===================== TAB SWITCH =====================
+function switchTab(tabName) {
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+  document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+  document.getElementById('tab-' + tabName).classList.remove('hidden');
+  document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+}
+
+// ===================== USER TABLE =====================
+function renderUserTable() {
+  const tbody = document.getElementById('userTableBody');
+  tbody.innerHTML = users.map((u, i) => `
+    <tr class="border-b border-gray-100 hover:bg-gray-50">
+      <td class="px-4 py-3 text-gray-500">${i+1}</td>
+      <td class="px-4 py-3 font-mono font-medium text-gray-900">${u.username}</td>
+      <td class="px-4 py-3 text-gray-700">${u.realName}</td>
+      <td class="px-4 py-3 text-gray-600">${u.dept}</td>
+      <td class="px-4 py-3">
+        <div class="flex flex-wrap gap-1">
+          ${u.roles.map(r => sourceBadge(r.source)).join('')}
+        </div>
+      </td>
+      <td class="px-4 py-3 text-center">
+        <div class="flex items-center justify-center gap-1">
+          <button onclick="showToast('编辑用户功能已就绪','info')" class="px-2 py-1 text-xs text-blue-600 hover:bg-blue-50 rounded transition-colors">编辑</button>
+          <button onclick="showToast('密码已重置','success')" class="px-2 py-1 text-xs text-gray-500 hover:bg-gray-100 rounded transition-colors">重置密码</button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+// ===================== HR ADD USER =====================
+function renderHrList(filter='') {
+  const tbody = document.getElementById('hrListBody');
+  const filtered = hrMembers.filter(m => !filter || m.name.includes(filter) || m.empNo.includes(filter) || m.dept.includes(filter) || m.position.includes(filter));
+  tbody.innerHTML = filtered.map(m => `
+    <tr class="border-b border-gray-100 hover:bg-gray-50 cursor-pointer ${selectedHrMember && selectedHrMember.empNo === m.empNo ? 'bg-blue-50' : ''}" onclick="selectHrMember('${m.empNo}')">
+      <td class="px-3 py-2 text-center"><input type="radio" name="hrSelect" value="${m.empNo}" ${selectedHrMember && selectedHrMember.empNo === m.empNo ? 'checked' : ''} class="text-blue-600"></td>
+      <td class="px-3 py-2 font-medium text-gray-900">${m.name}</td>
+      <td class="px-3 py-2 text-gray-600 font-mono">${m.empNo}</td>
+      <td class="px-3 py-2 text-gray-600">${m.dept}</td>
+      <td class="px-3 py-2 text-gray-600">${m.position}</td>
+    </tr>
+  `).join('');
+}
+function filterHrList() { renderHrList(document.getElementById('hrSearchInput').value.trim()); }
+function selectHrMember(empNo) {
+  selectedHrMember = hrMembers.find(m => m.empNo === empNo);
+  hrExtraRoles = [];
+  renderHrList();
+  updateHrSelectedInfo();
+}
+function updateHrSelectedInfo() {
+  const m = selectedHrMember;
+  if (!m) { document.getElementById('hrSelectedInfo').classList.add('hidden'); return; }
+  document.getElementById('hrSelectedInfo').classList.remove('hidden');
+  document.getElementById('hrSelectedName').textContent = `${m.name} (${m.empNo} / ${m.dept} / ${m.position})`;
+  document.getElementById('hrAutoUsername').textContent = m.empNo;
+  const mapping = positionPermData.find(p => p.position === m.position);
+  const autoRole = mapping ? mapping.role : '—';
+  const extraRole = m.isLeader ? ' + dept_head' : '';
+  document.getElementById('hrAutoRole').innerHTML = `<span class="badge-hr px-2 py-0.5 rounded text-xs font-medium">🟢 ${autoRole}(HR映射)${m.isLeader ? '</span> <span class="badge-hr px-2 py-0.5 rounded text-xs font-medium">🟢 dept_head(负责人)' : ''}</span>`;
+}
+function addHrExtraRole() {
+  const sel = document.getElementById('hrExtraRoleSelect');
+  const code = sel.value;
+  if (!code || hrExtraRoles.includes(code)) return;
+  hrExtraRoles.push(code); sel.value = '';
+  document.getElementById('hrExtraRoles').innerHTML = hrExtraRoles.map(code =>
+    `<span class="inline-flex items-center gap-1 badge-admin px-2 py-1 rounded text-xs font-medium">🟠 ${code}(admin追加) <button onclick="hrExtraRoles=hrExtraRoles.filter(r=>r!=='${code}');document.getElementById('hrExtraRoles').innerHTML=hrExtraRoles.map(c=>'<span class=\\'inline-flex items-center gap-1 badge-admin px-2 py-1 rounded text-xs font-medium\\'>🟠 '+c+'(admin追加) <button onclick=\\'hrExtraRoles=hrExtraRoles.filter(r=>r!==\\'${code}\\');\\'&times;</button></span>').join('')" class="text-amber-500 hover:text-amber-700">&times;</button></span>`
+  ).join('');
+}
+function confirmHrAddUser() {
+  if (!selectedHrMember) { showToast('请选择HR人员','warning'); return; }
+  showToast(`用户 ${selectedHrMember.name} 添加成功，角色已自动映射`, 'success');
+  selectedHrMember = null; hrExtraRoles = [];
+  closeModal('modalHrAddUser');
+}
+
+// ===================== SYS ADD USER =====================
+function addSysRole() {
+  const sel = document.getElementById('sysRoleSelect');
+  const code = sel.value;
+  if (!code || sysSelectedRoles.includes(code)) return;
+  sysSelectedRoles.push(code); sel.value = '';
+  renderSysSelectedRoles();
+}
+function removeSysRole(code) { sysSelectedRoles = sysSelectedRoles.filter(r => r !== code); renderSysSelectedRoles(); }
+function renderSysSelectedRoles() {
+  document.getElementById('sysSelectedRoles').innerHTML = sysSelectedRoles.map(code =>
+    `<span class="inline-flex items-center gap-1 badge-system px-2 py-1 rounded text-xs font-medium">系统: ${code} <button onclick="removeSysRole('${code}')" class="text-gray-500 hover:text-gray-700">&times;</button></span>`
+  ).join('');
+}
+function confirmSysAddUser() {
+  const username = document.getElementById('sysUsername').value.trim();
+  const purpose = document.getElementById('sysPurpose').value.trim();
+  if (!username) { showToast('请输入用户名','warning'); return; }
+  if (!purpose) { showToast('请输入用途说明','warning'); return; }
+  if (sysSelectedRoles.length === 0) { showToast('请选择至少一个角色','warning'); return; }
+  showToast(`系统账号 ${username} 创建成功`, 'success');
+  closeModal('modalSysAddUser');
+}
+
+// ===================== ROLE MANAGEMENT =====================
+function renderRoleList() {
+  document.getElementById('roleList').innerHTML = roles.map(r => `
+    <div class="role-item ${selectedRoleCode === r.code ? 'selected' : ''}" onclick="selectRole('${r.code}')">
+      <div class="flex items-center justify-between">
+        <span class="text-sm font-medium text-gray-900">${r.name}</span>
+        <span class="text-xs">${roleSourceIcon(r.source)}</span>
+      </div>
+      <div class="text-xs text-gray-500 mt-0.5">${r.code} ${r.isSystem ? '· <span class="text-blue-500">内置</span>' : ''}</div>
+    </div>
+  `).join('');
+}
+function selectRole(code) { selectedRoleCode = code; renderRoleList(); renderRoleDetail(code); }
+function renderRoleDetail(code) {
+  const role = roles.find(r => r.code === code);
+  if (!role) return;
+  const scope = dataScopes[code] || { type:'self', label:'本人数据' };
+  const perms = rolePermissions[code];
+  let permHtml = '';
+  if (perms === 'all') {
+    permHtml = '<div class="text-sm text-green-600 font-medium mb-4">✅ 全部权限（超级管理员）</div>';
+  } else {
+    let idx = 0;
+    permHtml = permissionTree.map(group => {
+      const gIdx = idx;
+      const children = group.children;
+      const checkedCount = children.filter((_, i) => perms.includes(gIdx + i)).length;
+      const allChecked = checkedCount === children.length;
+      idx += children.length;
+      return `
+        <div class="mb-3">
+          <label class="perm-parent flex items-center gap-2 text-sm text-gray-800 mb-1">
+            <input type="checkbox" ${allChecked ? 'checked' : ''} class="rounded border-gray-300 text-blue-600" disabled>
+            ${group.name}
+          </label>
+          <div class="perm-child space-y-1">
+            ${children.map((child, i) => `
+              <label class="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900">
+                <input type="checkbox" ${perms.includes(gIdx + i) ? 'checked' : ''} class="rounded border-gray-300 text-blue-600" disabled>
+                ${child.name}
+              </label>
+            `).join('')}
+          </div>
+        </div>`;
+    }).join('');
+  }
+  const sourceLabel = role.source === 'hr' ? 'HR映射' : role.source === 'project' ? '项目角色' : 'admin手动';
+  const sourceBadgeClass = role.source === 'hr' ? 'badge-hr' : role.source === 'project' ? 'badge-project' : 'badge-admin';
+  document.getElementById('roleDetailPanel').innerHTML = `
+    <div class="flex items-start justify-between mb-5">
+      <div>
+        <div class="flex items-center gap-2 mb-1">
+          <h3 class="text-lg font-bold text-gray-900">${role.name}</h3>
+          <span class="${sourceBadgeClass} px-2 py-0.5 rounded text-xs font-medium">${roleSourceIcon(role.source)} ${sourceLabel}</span>
+          ${role.isSystem ? '<span class="px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-700">系统内置</span>' : ''}
+        </div>
+        <div class="text-sm text-gray-500">${role.code} · ${role.desc}</div>
+      </div>
+      <div class="flex gap-2">
+        <button onclick="showToast('角色编辑功能已就绪','info')" class="px-3 py-1.5 text-xs text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors">编辑</button>
+        ${!role.isSystem ? `<button onclick="showToast('角色已删除','warning')" class="px-3 py-1.5 text-xs text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors">删除</button>` : ''}
+      </div>
+    </div>
+    <div class="mb-6">
+      <div class="text-sm font-semibold text-gray-700 mb-3">权限配置</div>
+      <div class="border border-gray-200 rounded-lg p-4 max-h-[calc(100vh-500px)] overflow-y-auto">${permHtml}</div>
+    </div>
+    <div class="mb-4">
+      <div class="text-sm font-semibold text-gray-700 mb-2">数据范围</div>
+      <div class="flex items-center gap-3">
+        <select class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none" disabled>
+          <option ${scope.type==='all'?'selected':''}>全部数据</option>
+          <option ${scope.type==='dept_sub'?'selected':''}>本部门及下级</option>
+          <option ${scope.type==='dept'?'selected':''}>本部门</option>
+          <option ${scope.type==='self'?'selected':''}>本人数据</option>
+        </select>
+        <span class="text-sm text-gray-500">当前: ${scope.label}</span>
+      </div>
+    </div>`;
+}
+
+// ===================== DEPARTMENT =====================
+function renderDeptTree() {
+  const root = departments.find(d => d.parent === null);
+  if (!root) return;
+  document.getElementById('deptTree').innerHTML = renderDeptNode(root, 0);
+}
+function renderDeptNode(dept, level) {
+  const children = departments.filter(d => d.parent === dept.code);
+  const isSelected = selectedDeptCode === dept.code;
+  let html = `<div class="tree-node ${isSelected ? 'selected' : ''}" onclick="selectDept('${dept.code}')" style="padding-left:${level*20+8}px">
+    ${children.length > 0 ? '<svg class="w-3 h-3 inline-block mr-1 text-gray-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>' : '<span class="inline-block w-3 mr-1"></span>'}
+    <span class="font-medium">${dept.name}</span>
+    ${dept.leader ? `<span class="text-xs text-gray-400 ml-1">· ${dept.leader}</span>` : ''}
+  </div>`;
+  children.forEach(child => { html += renderDeptNode(child, level + 1); });
+  return html;
+}
+function selectDept(code) { selectedDeptCode = code; renderDeptTree(); renderDeptDetail(code); }
+function renderDeptDetail(code) {
+  const dept = departments.find(d => d.code === code);
+  if (!dept) return;
+  document.getElementById('deptDetailPanel').innerHTML = `
+    <div class="mb-5">
+      <h3 class="text-lg font-bold text-gray-900">${dept.name}</h3>
+      <div class="flex items-center gap-4 mt-1 text-sm text-gray-500">
+        <span>编码: ${dept.code}</span>
+        <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-green-50 text-green-700 rounded text-xs">
+          <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+          已关联HR
+        </span>
+      </div>
+    </div>
+    <div class="grid grid-cols-3 gap-4 mb-6">
+      <div class="p-3 bg-gray-50 rounded-lg">
+        <div class="text-xs text-gray-500 mb-1">部门负责人</div>
+        <div class="text-sm font-medium text-gray-900 flex items-center gap-1">${dept.leader || '<span class="text-gray-400">未设置</span>'} <span class="text-xs text-green-600">来自HR ✓</span></div>
+      </div>
+      <div class="p-3 bg-gray-50 rounded-lg">
+        <div class="text-xs text-gray-500 mb-1">成员数量</div>
+        <div class="text-sm font-medium text-gray-900">${dept.members.length} 人</div>
+      </div>
+      <div class="p-3 bg-gray-50 rounded-lg flex items-center justify-center">
+        <button onclick="showToast('编辑权限属性功能已就绪','info')" class="px-3 py-1.5 text-xs text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors font-medium">编辑权限属性</button>
+      </div>
+    </div>
+    <div class="mb-4">
+      <div class="text-sm font-semibold text-gray-700 mb-3">成员列表</div>
+      ${dept.members.length > 0 ? `
+        <table class="w-full text-sm">
+          <thead><tr class="bg-gray-50 border-b border-gray-200">
+            <th class="px-3 py-2 text-left text-xs font-semibold text-gray-500">#</th>
+            <th class="px-3 py-2 text-left text-xs font-semibold text-gray-500">姓名</th>
+            <th class="px-3 py-2 text-left text-xs font-semibold text-gray-500">角色</th>
+            <th class="px-3 py-2 text-left text-xs font-semibold text-gray-500">来源</th>
+          </tr></thead>
+          <tbody>${dept.members.map((m, i) => `
+            <tr class="border-b border-gray-100 hover:bg-gray-50">
+              <td class="px-3 py-2 text-gray-500">${i+1}</td>
+              <td class="px-3 py-2 text-gray-900 font-medium">${m.name}</td>
+              <td class="px-3 py-2"><div class="flex flex-wrap gap-1">${m.roles.map(r => `<span class="px-1.5 py-0.5 rounded text-xs bg-gray-100 text-gray-700">${r.code}</span>`).join('')}</div></td>
+              <td class="px-3 py-2"><div class="flex flex-wrap gap-1">${m.roles.map(r => sourceBadge(r.source)).join('')}</div></td>
+            </tr>`).join('')}</tbody>
+        </table>` : '<div class="text-center text-gray-400 py-8 text-sm">暂无成员</div>'}
+    </div>`;
+}
+
+// ===================== POSITION PERM (Tab4) =====================
+function renderPositionPermTable() {
+  document.getElementById('positionPermTableBody').innerHTML = positionPermData.map(p => `
+    <tr class="border-b border-gray-100 hover:bg-gray-50">
+      <td class="px-4 py-3"><span class="inline-flex items-center px-2.5 py-1 rounded-lg text-sm font-semibold bg-indigo-100 text-indigo-700">${p.position}</span></td>
+      <td class="px-4 py-3"><span class="inline-flex items-center px-2.5 py-1 rounded-lg text-sm font-mono bg-blue-100 text-blue-700">${p.role}</span></td>
+      <td class="px-4 py-3"><div class="flex flex-wrap gap-1">${p.modules.map(m => `<span class="module-check ${m.level}">${m.name} ${m.level==='full'?'✓':m.level==='limited'?'✓(有限)':'✓(只读)'}</span>`).join('')}</div></td>
+      <td class="px-4 py-3 text-center">
+        <button onclick="openModal('modalEditPositionPerm')" class="px-2 py-1 text-xs text-blue-600 hover:bg-blue-50 rounded transition-colors">编辑</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+// ===================== PROJECT PERM (Tab5) =====================
+function renderProjectPermTable() {
+  document.getElementById('projectPermTableBody').innerHTML = projectPermData.map(p => `
+    <tr class="border-b border-gray-100 hover:bg-gray-50">
+      <td class="px-4 py-3"><span class="inline-flex items-center px-2.5 py-1 rounded-lg text-sm font-semibold bg-purple-100 text-purple-700">${p.position}</span></td>
+      <td class="px-4 py-3"><div class="flex flex-wrap gap-1">${p.sourcePositions.length > 0 ? p.sourcePositions.map(s => `<span class="px-2 py-0.5 rounded text-xs bg-gray-100 text-gray-700">${s}</span>`).join('') : '<span class="text-xs text-gray-400">—</span>'}</div></td>
+      <td class="px-4 py-3"><span class="inline-flex items-center px-2.5 py-1 rounded-lg text-sm font-mono bg-blue-100 text-blue-700">${p.role}</span></td>
+      <td class="px-4 py-3"><div class="flex flex-wrap gap-1">${p.modules.map(m => `<span class="module-check ${m.level}">${m.name} ${m.level==='full'?'✓':m.level==='limited'?'✓(有限)':'✓(只读)'}</span>`).join('')}</div></td>
+      <td class="px-4 py-3 text-center">
+        <button onclick="openModal('modalEditProjectPerm')" class="px-2 py-1 text-xs text-blue-600 hover:bg-blue-50 rounded transition-colors">编辑</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+// ===================== PERM PACKAGE (Tab6) =====================
+function filterPermPkg(type) {
+  currentPermPkgFilter = type;
+  document.querySelectorAll('.perm-pkg-filter').forEach(btn => {
+    btn.classList.remove('bg-blue-600','text-white','active');
+    btn.classList.add('bg-gray-100','text-gray-700');
+  });
+  const activeBtn = document.querySelector(`.perm-pkg-filter[data-filter="${type}"]`);
+  if (activeBtn) { activeBtn.classList.remove('bg-gray-100','text-gray-700'); activeBtn.classList.add('bg-blue-600','text-white','active'); }
+  renderPermPkgTable();
+}
+function renderPermPkgTable() {
+  const filtered = currentPermPkgFilter === 'all' ? permPackages : permPackages.filter(p => p.type === currentPermPkgFilter);
+  document.getElementById('permPkgTableBody').innerHTML = filtered.map(p => `
+    <tr class="border-b border-gray-100 hover:bg-gray-50">
+      <td class="px-4 py-3"><span class="font-semibold text-gray-900">${p.name}</span></td>
+      <td class="px-4 py-3">${pkgTypeBadge(p.type)}</td>
+      <td class="px-4 py-3"><div class="flex flex-wrap gap-1">${p.modules.map(m => `<span class="module-check ${p.moduleLevel==='full'?'full':p.moduleLevel==='read'?'readonly':'limited'}">${m}</span>`).join('')}</div></td>
+      <td class="px-4 py-3"><span class="inline-flex items-center justify-center w-8 h-8 rounded-full ${p.assignedCount>0?'bg-blue-100 text-blue-700':'bg-gray-100 text-gray-400'} text-sm font-semibold">${p.assignedCount}</span></td>
+      <td class="px-4 py-3 text-center">
+        <button onclick="openPermPkgDetail('${p.name}')" class="px-2 py-1 text-xs text-blue-600 hover:bg-blue-50 rounded transition-colors">详情</button>
+        <button onclick="openPermPkgDetail('${p.name}')" class="px-2 py-1 text-xs text-gray-500 hover:bg-gray-100 rounded transition-colors">编辑</button>
+      </td>
+    </tr>
+  `).join('');
+}
+function openPermPkgDetail(name) {
+  const pkg = permPackages.find(p => p.name === name);
+  if (!pkg) return;
+  document.getElementById('permPkgDetailTitle').textContent = `权限包 · ${pkg.name}`;
+  document.getElementById('permPkgName').value = pkg.name;
+  document.getElementById('permPkgType').value = pkg.type;
+  document.getElementById('permPkgAssignedUsers').innerHTML = pkg.assignedUsers.map(u =>
+    `<div class="flex items-center justify-between py-1.5 px-2 border-b border-gray-100 last:border-0">
+      <span class="text-sm text-gray-700">${u}</span>
+      <button onclick="showToast('已移除','warning')" class="text-xs text-red-400 hover:text-red-600">移除</button>
+    </div>`
+  ).join('');
+  openModal('modalPermPkgDetail');
+}
+
+// ===================== MODULE TREES FOR MODALS =====================
+function renderModuleTree(containerId, editable) {
+  const modules = ['项目管理','中心管理','审批','数据管理','质量管理','商务管理','申办方','预算','费用','合同','HR管理','培训','行政','物资','印章','操作日志'];
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  if (editable) {
+    el.innerHTML = modules.map(m => `
+      <div class="flex items-center justify-between py-1.5 px-1 hover:bg-gray-50 rounded">
+        <label class="flex items-center gap-2 text-sm text-gray-700">
+          <input type="checkbox" class="rounded border-gray-300 text-blue-600"> ${m}
+        </label>
+        <div class="flex gap-1">
+          <button class="perm-level-btn active-full" onclick="this.classList.remove('active-read','active-none');this.classList.add('active-full');this.nextElementSibling.classList.remove('active-full','active-none');this.nextElementSibling.nextElementSibling.classList.remove('active-full','active-read');">full</button>
+          <button class="perm-level-btn" onclick="this.classList.remove('active-full','active-none');this.classList.add('active-read');this.previousElementSibling.classList.remove('active-full','active-read','active-none');this.nextElementSibling.classList.remove('active-full','active-read');">read</button>
+          <button class="perm-level-btn" onclick="this.classList.remove('active-full','active-read');this.classList.add('active-none');this.previousElementSibling.classList.remove('active-full','active-read');this.previousElementSibling.previousElementSibling.classList.remove('active-full','active-read');">none</button>
+        </div>
+      </div>
+    `).join('');
+  } else {
+    el.innerHTML = modules.map(m => `
+      <div class="flex items-center justify-between py-1.5 px-1">
+        <label class="flex items-center gap-2 text-sm text-gray-700">
+          <input type="checkbox" class="rounded border-gray-300 text-blue-600"> ${m}
+        </label>
+      </div>
+    `).join('');
+  }
+}
+
+// ===================== DICT TABLE =====================
+function renderDictTable() {
+  const categories = [...new Set(dictData.map(d => d.category))];
+  document.getElementById('dictCategoryTabs').innerHTML = categories.map(c =>
+    `<button onclick="switchDictCategory('${c}')" class="px-4 py-3 text-sm font-medium border-b-2 ${currentDictCategory === c ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'} transition-colors">${c}</button>`
+  ).join('');
+  const filtered = dictData.filter(d => d.category === currentDictCategory);
+  document.getElementById('dictTableBody').innerHTML = filtered.map((d, i) => `
+    <tr class="border-b border-gray-100 hover:bg-gray-50">
+      <td class="px-4 py-3 text-gray-500">${i+1}</td>
+      <td class="px-4 py-3 text-gray-600">${d.category}</td>
+      <td class="px-4 py-3 font-mono text-gray-700">${d.code}</td>
+      <td class="px-4 py-3 font-mono text-gray-900">${d.value}</td>
+      <td class="px-4 py-3 text-gray-700">${d.label}</td>
+      <td class="px-4 py-3 text-gray-500">${d.sort}</td>
+      <td class="px-4 py-3">${d.status === 'active' ? '<span class="text-green-600 text-xs font-medium">启用</span>' : '<span class="text-red-600 text-xs font-medium">禁用</span>'}</td>
+      <td class="px-4 py-3 text-center"><button onclick="showToast('编辑功能已就绪','info')" class="px-2 py-1 text-xs text-blue-600 hover:bg-blue-50 rounded transition-colors">编辑</button></td>
+    </tr>
+  `).join('');
+}
+function switchDictCategory(cat) { currentDictCategory = cat; renderDictTable(); }
+
+// ===================== CONFIG TABLE =====================
+function renderConfigTable() {
+  document.getElementById('configTableBody').innerHTML = sysConfig.map(c => `
+    <tr class="border-b border-gray-100 hover:bg-gray-50">
+      <td class="px-4 py-3 font-mono text-sm text-gray-900">${c.key}</td>
+      <td class="px-4 py-3 text-sm text-gray-700">${c.value}</td>
+      <td class="px-4 py-3"><span class="px-2 py-0.5 rounded text-xs font-medium ${c.type==='string'?'bg-gray-100 text-gray-700':c.type==='number'?'bg-blue-100 text-blue-700':c.type==='boolean'?'bg-purple-100 text-purple-700':'bg-amber-100 text-amber-700'}">${c.type}</span></td>
+      <td class="px-4 py-3 text-sm text-gray-500">${c.desc}</td>
+      <td class="px-4 py-3 text-center"><button onclick="showToast('配置编辑功能已就绪','info')" class="px-2 py-1 text-xs text-blue-600 hover:bg-blue-50 rounded transition-colors">编辑</button></td>
+    </tr>
+  `).join('');
+}
+
+// ===================== LOG TABLE =====================
+function renderLogTable() {
+  document.getElementById('logTableBody').innerHTML = operationLogs.map(l => `
+    <tr class="border-b border-gray-100 hover:bg-gray-50">
+      <td class="px-4 py-3 text-xs text-gray-500 whitespace-nowrap">${l.time}</td>
+      <td class="px-4 py-3 text-sm text-gray-900 font-medium">${l.user}</td>
+      <td class="px-4 py-3 text-sm text-gray-600">${l.module}</td>
+      <td class="px-4 py-3">${actionBadge(l.action)}</td>
+      <td class="px-4 py-3 text-sm font-mono text-gray-700">${l.target}</td>
+      <td class="px-4 py-3 text-sm text-gray-600 max-w-xs truncate">${l.detail}</td>
+      <td class="px-4 py-3 text-xs text-gray-400 font-mono">${l.ip}</td>
+    </tr>
+  `).join('');
+}
+
+// ===================== INIT =====================
+function init() {
+  renderUserTable();
+  renderRoleList();
+  renderDeptTree();
+  renderPositionPermTable();
+  renderProjectPermTable();
+  renderPermPkgTable();
+  renderDictTable();
+  renderConfigTable();
+  renderLogTable();
+  // Render module trees in modals
+  renderModuleTree('positionPermModuleTree', true);
+  renderModuleTree('projectPermModuleTree', false);
+  renderModuleTree('permPkgModuleTree', true);
+  renderModuleTree('addPPModuleTree', true);
+  renderModuleTree('addPrjPPModuleTree', false);
+  renderModuleTree('addPermPkgModuleTree', true);
+  switchTab('users');
+}
+init();
+</script>
+</body>
+</html>

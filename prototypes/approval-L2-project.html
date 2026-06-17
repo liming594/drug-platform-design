@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sinocro 平台 - 项目审批 L2</title>
+<style>
+/* ========== CSS变量体系（与L1统一） ========== */
+:root {
+  --color-primary: #4361ee;
+  --color-primary-light: #eef0ff;
+  --color-success: #10b981;
+  --color-success-light: #ecfdf5;
+  --color-warning: #f59e0b;
+  --color-warning-light: #fffbeb;
+  --color-danger: #ef4444;
+  --color-danger-light: #fef2f2;
+  --color-info: #06b6d4;
+  --color-info-light: #ecfeff;
+  --color-purple: #8b5cf6;
+  --color-purple-light: #f5f3ff;
+  --color-sidebar: #1e293b;
+  --color-sidebar-hover: #334155;
+  --color-bg: #f8fafc;
+  --color-card: #ffffff;
+  --color-text: #1e293b;
+  --color-text-secondary: #64748b;
+  --color-text-muted: #94a3b8;
+  --color-border: #e2e8f0;
+  --radius: 8px;
+  --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 6px rgba(0,0,0,0.07), 0 2px 4px rgba(0,0,0,0.06);
+  --shadow-lg: 0 10px 15px rgba(0,0,0,0.1), 0 4px 6px rgba(0,0,0,0.05);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif; background: var(--color-bg); color: var(--color-text); display: flex; min-height: 100vh; }
+
+/* ========== 侧边栏 ========== */
+.sidebar { width: 220px; min-height: 100vh; background: var(--color-sidebar); color: #e2e8f0; display: flex; flex-direction: column; position: fixed; left: 0; top: 0; bottom: 0; z-index: 100; }
+.sidebar-logo { padding: 20px 16px; border-bottom: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; gap: 10px; }
+.sidebar-logo .logo-icon { width: 32px; height: 32px; background: var(--color-primary); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; color: #fff; }
+.sidebar-logo .logo-text { font-size: 16px; font-weight: 600; color: #f1f5f9; }
+.sidebar-nav { flex: 1; padding: 12px 8px; }
+.nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 6px; color: #94a3b8; font-size: 13.5px; cursor: pointer; transition: all .2s; margin-bottom: 2px; text-decoration: none; }
+.nav-item:hover { background: var(--color-sidebar-hover); color: #e2e8f0; }
+.nav-item.active { background: var(--color-primary); color: #fff; }
+.nav-item .nav-icon { width: 18px; text-align: center; font-size: 14px; }
+.sidebar-footer { padding: 16px; border-top: 1px solid rgba(255,255,255,0.08); font-size: 12px; color: #64748b; }
+
+/* ========== 主内容区 ========== */
+.main-content { margin-left: 220px; flex: 1; min-height: 100vh; }
+.top-bar { background: var(--color-card); border-bottom: 1px solid var(--color-border); padding: 0 24px; height: 56px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
+.top-bar h1 { font-size: 16px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+.breadcrumb { font-size: 12px; color: var(--color-text-muted); display: flex; align-items: center; gap: 4px; }
+.breadcrumb a { color: var(--color-primary); text-decoration: none; }
+.breadcrumb a:hover { text-decoration: underline; }
+
+/* ========== 项目信息头 ========== */
+.project-header { background: var(--color-card); border-bottom: 1px solid var(--color-border); padding: 20px 24px; }
+.project-header-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 16px; }
+.project-title { font-size: 20px; font-weight: 700; color: var(--color-text); display: flex; align-items: center; gap: 10px; }
+.project-code { font-size: 12px; background: var(--color-primary-light); color: var(--color-primary); padding: 2px 8px; border-radius: 4px; font-weight: 600; }
+.project-status { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 500; }
+.project-status.active { background: var(--color-success-light); color: var(--color-success); }
+.project-status .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; animation: blink 1.5s infinite; }
+@keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+.project-meta { display: flex; gap: 32px; font-size: 13px; color: var(--color-text-secondary); }
+.project-meta-item { display: flex; align-items: center; gap: 6px; }
+.project-meta-label { color: var(--color-text-muted); }
+
+/* ========== Tab栏 ========== */
+.tab-bar { background: var(--color-card); border-bottom: 1px solid var(--color-border); padding: 0 24px; display: flex; gap: 0; }
+.tab-item { padding: 12px 20px; font-size: 13.5px; color: var(--color-text-secondary); cursor: pointer; border-bottom: 2px solid transparent; transition: all .2s; position: relative; }
+.tab-item:hover { color: var(--color-primary); }
+.tab-item.active { color: var(--color-primary); border-bottom-color: var(--color-primary); font-weight: 500; }
+.tab-item .tab-badge { position: absolute; top: 6px; right: 4px; background: var(--color-danger); color: #fff; font-size: 10px; padding: 1px 5px; border-radius: 10px; font-weight: 600; }
+.tab-content { padding: 20px 24px; }
+
+/* ========== 审批类型标签 ========== */
+.type-tag { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; white-space: nowrap; }
+.type-tag.budget { background: var(--color-primary-light); color: var(--color-primary); }
+.type-tag.expense { background: var(--color-warning-light); color: var(--color-warning); }
+.type-tag.seal { background: var(--color-purple-light); color: var(--color-purple); }
+.type-tag.contract { background: var(--color-success-light); color: var(--color-success); }
+.type-tag.travel { background: var(--color-info-light); color: var(--color-info); }
+
+/* ========== 状态标签 ========== */
+.status-tag { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 500; }
+.status-tag.approving { background: var(--color-primary-light); color: var(--color-primary); }
+.status-tag.approved { background: var(--color-success-light); color: var(--color-success); }
+.status-tag.rejected { background: var(--color-danger-light); color: var(--color-danger); }
+.status-tag.withdrawn { background: #f1f5f9; color: var(--color-text-muted); }
+
+/* ========== 审批记录列表 ========== */
+.approval-list { display: flex; flex-direction: column; gap: 0; }
+.approval-record { background: var(--color-card); border: 1px solid var(--color-border); border-radius: var(--radius); margin-bottom: 10px; box-shadow: var(--shadow); overflow: hidden; transition: all .2s; }
+.approval-record:hover { border-color: var(--color-primary); }
+.record-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; cursor: pointer; }
+.record-header:hover { background: #f8fafc; }
+.record-left { display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0; }
+.record-title { font-size: 13.5px; font-weight: 600; color: var(--color-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.record-right { display: flex; align-items: center; gap: 16px; flex-shrink: 0; }
+.record-info { font-size: 12px; color: var(--color-text-muted); display: flex; align-items: center; gap: 4px; }
+.record-expand-icon { font-size: 12px; color: var(--color-text-muted); transition: transform .25s; width: 20px; text-align: center; }
+.approval-record.expanded .record-expand-icon { transform: rotate(180deg); }
+
+/* ========== 时间线详情（展开区域） ========== */
+.record-detail { display: none; padding: 0 18px 16px; border-top: 1px solid var(--color-border); }
+.approval-record.expanded .record-detail { display: block; }
+.detail-content { display: flex; gap: 24px; margin-top: 14px; }
+.detail-form { flex: 1; min-width: 0; }
+.detail-timeline-area { width: 280px; flex-shrink: 0; }
+
+/* ========== 表单摘要 ========== */
+.form-section { margin-bottom: 12px; }
+.form-section-title { font-size: 12px; font-weight: 600; color: var(--color-text-secondary); margin-bottom: 8px; padding-bottom: 4px; border-bottom: 1px solid var(--color-border); }
+.form-row { display: flex; gap: 12px; margin-bottom: 6px; }
+.form-field { flex: 1; }
+.form-label { font-size: 11px; color: var(--color-text-muted); }
+.form-value { font-size: 12.5px; color: var(--color-text); margin-top: 1px; }
+
+/* ========== 审批时间线 ========== */
+.timeline { position: relative; padding-left: 22px; }
+.timeline::before { content: ''; position: absolute; left: 6px; top: 4px; bottom: 4px; width: 2px; background: var(--color-border); }
+.timeline-item { position: relative; padding-bottom: 14px; }
+.timeline-item:last-child { padding-bottom: 0; }
+.timeline-dot { position: absolute; left: -22px; top: 2px; width: 14px; height: 14px; border-radius: 50%; border: 2px solid; display: flex; align-items: center; justify-content: center; font-size: 7px; }
+.timeline-dot.done { border-color: var(--color-success); background: var(--color-success); color: #fff; }
+.timeline-dot.current { border-color: var(--color-primary); background: var(--color-primary); color: #fff; animation: pulse 2s infinite; }
+.timeline-dot.pending { border-color: #cbd5e1; background: #fff; }
+.timeline-dot.rejected { border-color: var(--color-danger); background: var(--color-danger); color: #fff; }
+@keyframes pulse { 0%,100% { box-shadow: 0 0 0 0 rgba(67,97,238,0.4); } 50% { box-shadow: 0 0 0 6px rgba(67,97,238,0); } }
+.timeline-content { padding-left: 4px; }
+.timeline-title { font-size: 12px; font-weight: 500; color: var(--color-text); }
+.timeline-info { font-size: 10.5px; color: var(--color-text-muted); margin-top: 1px; }
+.timeline-comment { font-size: 11px; color: var(--color-text-secondary); margin-top: 3px; padding: 4px 6px; background: #f8fafc; border-radius: 3px; border-left: 2px solid var(--color-primary); }
+
+/* ========== 步骤进度条 ========== */
+.step-progress { display: flex; align-items: center; gap: 0; margin: 6px 0; }
+.step-dot { width: 16px; height: 16px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 8px; color: #fff; flex-shrink: 0; position: relative; z-index: 2; }
+.step-dot.done { background: var(--color-success); }
+.step-dot.current { background: var(--color-primary); animation: pulse 2s infinite; }
+.step-dot.pending { background: #cbd5e1; }
+.step-line { flex: 1; height: 3px; min-width: 12px; }
+.step-line.done { background: var(--color-success); }
+.step-line.current { background: linear-gradient(90deg, var(--color-primary), #cbd5e1); }
+.step-line.pending { background: #e2e8f0; }
+.step-labels { display: flex; justify-content: space-between; margin-top: 2px; font-size: 9px; color: var(--color-text-muted); }
+
+/* ========== 按钮 ========== */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 4px; padding: 7px 16px; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer; border: 1px solid transparent; transition: all .15s; }
+.btn-primary { background: var(--color-primary); color: #fff; }
+.btn-primary:hover { background: #3a56d4; }
+.btn-success { background: var(--color-success); color: #fff; }
+.btn-success:hover { background: #059669; }
+.btn-danger { background: var(--color-danger); color: #fff; }
+.btn-danger:hover { background: #dc2626; }
+.btn-outline { background: transparent; border-color: var(--color-border); color: var(--color-text-secondary); }
+.btn-outline:hover { border-color: var(--color-primary); color: var(--color-primary); }
+.btn-sm { padding: 5px 10px; font-size: 12px; }
+
+/* ========== 发起审批弹窗 ========== */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200; display: none; align-items: center; justify-content: center; backdrop-filter: blur(2px); }
+.modal-overlay.show { display: flex; }
+.modal { background: var(--color-card); border-radius: 12px; width: 600px; max-width: 95vw; max-height: 85vh; overflow: hidden; box-shadow: var(--shadow-lg); display: flex; flex-direction: column; animation: modalIn .25s ease; }
+@keyframes modalIn { from { opacity: 0; transform: translateY(20px) scale(0.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
+.modal-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 24px; border-bottom: 1px solid var(--color-border); }
+.modal-header h3 { font-size: 15px; font-weight: 600; }
+.modal-close { width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--color-text-muted); background: transparent; border: none; font-size: 18px; transition: all .15s; }
+.modal-close:hover { background: #f1f5f9; color: var(--color-text); }
+.modal-body { flex: 1; overflow-y: auto; padding: 20px 24px; }
+.modal-footer { padding: 12px 24px; border-top: 1px solid var(--color-border); display: flex; justify-content: flex-end; gap: 8px; }
+
+/* ========== 发起审批表单 ========== */
+.init-type-select { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
+.init-type-card { padding: 16px 12px; border: 2px solid var(--color-border); border-radius: var(--radius); text-align: center; cursor: pointer; transition: all .2s; }
+.init-type-card:hover { border-color: var(--color-primary-light); background: var(--color-primary-light); }
+.init-type-card.selected { border-color: var(--color-primary); background: var(--color-primary-light); }
+.init-type-icon { font-size: 24px; margin-bottom: 6px; }
+.init-type-name { font-size: 12.5px; font-weight: 600; color: var(--color-text); }
+.init-type-code { font-size: 10px; color: var(--color-text-muted); margin-top: 2px; }
+
+.form-group { margin-bottom: 14px; }
+.form-group label { font-size: 12.5px; font-weight: 500; color: var(--color-text-secondary); display: block; margin-bottom: 4px; }
+.form-group .required::after { content: ' *'; color: var(--color-danger); }
+.form-control { width: 100%; padding: 7px 10px; border: 1px solid var(--color-border); border-radius: 6px; font-size: 13px; font-family: inherit; transition: border-color .15s; }
+.form-control:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 3px rgba(67,97,238,0.1); }
+textarea.form-control { resize: vertical; min-height: 70px; }
+.form-hint { font-size: 11px; color: var(--color-text-muted); margin-top: 3px; }
+.form-row-2 { display: flex; gap: 12px; }
+.form-row-2 > .form-group { flex: 1; }
+
+.flow-preview { background: #f8fafc; border: 1px dashed var(--color-border); border-radius: var(--radius); padding: 12px 14px; margin-bottom: 14px; }
+.flow-preview-title { font-size: 12px; font-weight: 600; color: var(--color-text-secondary); margin-bottom: 8px; }
+.flow-preview-steps { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+.flow-preview-step { padding: 3px 10px; border-radius: 4px; font-size: 11px; background: #fff; border: 1px solid var(--color-border); color: var(--color-text-secondary); }
+.flow-preview-step .step-num { color: var(--color-primary); font-weight: 600; margin-right: 2px; }
+.flow-preview-arrow { color: var(--color-text-muted); font-size: 11px; }
+
+/* ========== 侧滑面板 ========== */
+.slide-panel-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.35); z-index: 300; display: none; opacity: 0; transition: opacity .3s; }
+.slide-panel-overlay.show { display: block; opacity: 1; }
+.slide-panel { position: fixed; right: -480px; top: 0; bottom: 0; width: 480px; background: var(--color-card); z-index: 301; box-shadow: var(--shadow-lg); display: flex; flex-direction: column; transition: right .35s cubic-bezier(0.16,1,0.3,1); }
+.slide-panel.show { right: 0; }
+.slide-panel-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid var(--color-border); flex-shrink: 0; }
+.slide-panel-header h3 { font-size: 14px; font-weight: 600; }
+.slide-panel-body { flex: 1; overflow-y: auto; padding: 20px; }
+.slide-panel-footer { padding: 14px 20px; border-top: 1px solid var(--color-border); display: flex; gap: 8px; justify-content: flex-end; flex-shrink: 0; }
+
+/* ========== 侧滑面板内的表单/时间线 ========== */
+.panel-form-section { margin-bottom: 18px; }
+.panel-form-title { font-size: 12.5px; font-weight: 600; color: var(--color-text); margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid var(--color-border); display: flex; align-items: center; gap: 6px; }
+.panel-form-row { display: flex; gap: 12px; margin-bottom: 6px; }
+.panel-form-field { flex: 1; }
+.panel-form-label { font-size: 11px; color: var(--color-text-muted); }
+.panel-form-value { font-size: 12.5px; color: var(--color-text); margin-top: 1px; }
+
+.panel-action-section { background: #f8fafc; border-radius: var(--radius); padding: 14px; margin-top: 16px; }
+.panel-action-title { font-size: 12.5px; font-weight: 600; margin-bottom: 10px; }
+.panel-action-group { margin-bottom: 10px; }
+.panel-action-group label { font-size: 11.5px; font-weight: 500; display: block; margin-bottom: 3px; color: var(--color-text-secondary); }
+.panel-action-textarea { width: 100%; padding: 6px 8px; border: 1px solid var(--color-border); border-radius: 6px; font-size: 12px; resize: vertical; min-height: 50px; font-family: inherit; }
+.panel-action-textarea:focus { outline: none; border-color: var(--color-primary); }
+.panel-action-buttons { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* ========== 通知提示 ========== */
+.toast { position: fixed; top: 20px; right: 20px; z-index: 999; padding: 12px 20px; border-radius: 8px; font-size: 13px; font-weight: 500; color: #fff; opacity: 0; transform: translateX(20px); transition: all .3s; pointer-events: none; }
+.toast.show { opacity: 1; transform: translateX(0); pointer-events: auto; }
+.toast.success { background: var(--color-success); }
+.toast.error { background: var(--color-danger); }
+.toast.info { background: var(--color-primary); }
+</style>
+</head>
+<body>
+
+<!-- ========== 侧边栏 ========== -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">S</div>
+    <div class="logo-text">Sinocro 平台</div>
+  </div>
+  <nav class="sidebar-nav">
+    <a class="nav-item" href="#"><span class="nav-icon">🏠</span>工作台</a>
+    <a class="nav-item active"><span class="nav-icon">📊</span>项目中心</a>
+    <a class="nav-item" href="#"><span class="nav-icon">✅</span>审批中心</a>
+    <a class="nav-item" href="#"><span class="nav-icon">💰</span>预算管理</a>
+    <a class="nav-item" href="#"><span class="nav-icon">📄</span>合同管理</a>
+    <a class="nav-item" href="#"><span class="nav-icon">🔖</span>用印管理</a>
+    <a class="nav-item" href="#"><span class="nav-icon">👥</span>人力资源</a>
+    <a class="nav-item" href="#"><span class="nav-icon">⚙️</span>系统设置</a>
+  </nav>
+  <div class="sidebar-footer">v2.0 · 审批平台</div>
+</aside>
+
+<!-- ========== 主内容 ========== -->
+<div class="main-content">
+  <!-- 顶部栏 -->
+  <div class="top-bar">
+    <div>
+      <div class="breadcrumb">
+        <a href="#">项目中心</a> <span>/</span> <span>XY-2026-001</span> <span>/</span> <span>审批</span>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px">
+      <div class="user-avatar" style="width:30px;height:30px;background:var(--color-primary);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:600">张</div>
+    </div>
+  </div>
+
+  <!-- 项目信息头 -->
+  <div class="project-header">
+    <div class="project-header-top">
+      <div>
+        <div class="project-title">
+          XY-2026-001 三期临床项目
+          <span class="project-status active"><span class="dot"></span>进行中</span>
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="openInitModal()">+ 发起审批</button>
+    </div>
+    <div class="project-meta">
+      <div class="project-meta-item">
+        <span class="project-meta-label">项目经理：</span>
+        <span>王建国</span>
+      </div>
+      <div class="project-meta-item">
+        <span class="project-meta-label">项目阶段：</span>
+        <span>III期临床</span>
+      </div>
+      <div class="project-meta-item">
+        <span class="project-meta-label">启动日期：</span>
+        <span>2026-01-15</span>
+      </div>
+      <div class="project-meta-item">
+        <span class="project-meta-label">总预算：</span>
+        <span style="font-weight:600;color:var(--color-primary)">¥12,500,000</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab栏 -->
+  <div class="tab-bar">
+    <div class="tab-item">概览</div>
+    <div class="tab-item">预算</div>
+    <div class="tab-item">合同</div>
+    <div class="tab-item active">审批<span class="tab-badge">3</span></div>
+    <div class="tab-item">文档</div>
+    <div class="tab-item">成员</div>
+  </div>
+
+  <!-- 审批记录列表 -->
+  <div class="tab-content">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+      <h3 style="font-size:14px;font-weight:600">审批记录</h3>
+      <div style="display:flex;gap:8px;align-items:center">
+        <select class="filter-select" id="recordTypeFilter" style="padding:5px 24px 5px 8px;border:1px solid var(--color-border);border-radius:6px;font-size:12px;background:var(--color-card);cursor:pointer;appearance:none;background-image:url('data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2710%27 height=%276%27%3E%3Cpath d=%27M0 0l5 6 5-6z%27 fill=%27%2394a3b8%27/%3E%3C/svg%3E');background-repeat:no-repeat;background-position:right 6px center">
+          <option value="">全部类型</option>
+          <option value="budget">预算变更</option>
+          <option value="expense">费用报销</option>
+          <option value="seal">用印申请</option>
+          <option value="contract">合同审批</option>
+          <option value="travel">出差申请</option>
+        </select>
+      </div>
+    </div>
+    <div class="approval-list" id="approvalList"></div>
+  </div>
+</div>
+
+<!-- ========== 发起审批弹窗 ========== -->
+<div class="modal-overlay" id="initModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>发起审批</h3>
+      <button class="modal-close" onclick="closeInitModal()">&times;</button>
+    </div>
+    <div class="modal-body" id="initModalBody">
+      <!-- 步骤1：选择审批类型 -->
+      <div id="initStep1">
+        <div style="font-size:13px;font-weight:600;margin-bottom:12px;color:var(--color-text-secondary)">① 选择审批类型</div>
+        <div class="init-type-select" id="initTypeSelect">
+          <div class="init-type-card" data-type="budget" onclick="selectInitType('budget')">
+            <div class="init-type-icon">💰</div>
+            <div class="init-type-name">预算变更</div>
+            <div class="init-type-code">APV_BUDGET</div>
+          </div>
+          <div class="init-type-card" data-type="expense" onclick="selectInitType('expense')">
+            <div class="init-type-icon">🧾</div>
+            <div class="init-type-name">费用报销</div>
+            <div class="init-type-code">APV_EXPENSE</div>
+          </div>
+          <div class="init-type-card" data-type="seal" onclick="selectInitType('seal')">
+            <div class="init-type-icon">🔖</div>
+            <div class="init-type-name">用印申请</div>
+            <div class="init-type-code">APV_SEAL</div>
+          </div>
+        </div>
+      </div>
+      <!-- 步骤2：填写业务表单（动态显示） -->
+      <div id="initStep2" style="display:none">
+        <div style="font-size:13px;font-weight:600;margin-bottom:12px;color:var(--color-text-secondary)">② 填写审批表单</div>
+        <div id="initFormArea"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeInitModal()">取消</button>
+      <button class="btn btn-outline" id="initBackBtn" style="display:none" onclick="initGoBack()">← 上一步</button>
+      <button class="btn btn-primary" id="initNextBtn" onclick="initNext()" disabled>下一步</button>
+      <button class="btn btn-success" id="initSubmitBtn" style="display:none" onclick="submitApproval()">提交审批</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========== 侧滑面板 ========== -->
+<div class="slide-panel-overlay" id="slidePanelOverlay" onclick="closeSlidePanel()"></div>
+<div class="slide-panel" id="slidePanel">
+  <div class="slide-panel-header">
+    <h3 id="slidePanelTitle">审批详情</h3>
+    <button class="modal-close" onclick="closeSlidePanel()">&times;</button>
+  </div>
+  <div class="slide-panel-body" id="slidePanelBody"></div>
+  <div class="slide-panel-footer" id="slidePanelFooter">
+    <button class="btn btn-success" onclick="handlePanelAction('approve')">✓ 通过</button>
+    <button class="btn btn-danger" onclick="handlePanelAction('reject')">✕ 驳回</button>
+    <button class="btn btn-outline" onclick="closeSlidePanel()">关闭</button>
+  </div>
+</div>
+
+<!-- 通知提示 -->
+<div class="toast" id="toast"></div>
+
+<script>
+/* ========== 模拟数据 ========== */
+
+// 流程配置（用于自动匹配flow_code和预览流程步骤）
+const flowConfig = {
+  budget: { code:'APV_BUDGET', name:'预算变更', steps:['部门负责人','财务审核','总经理','CEO'] },
+  expense: { code:'APV_EXPENSE', name:'费用报销', steps:['直属上级','财务审核','财务总监'] },
+  seal: { code:'APV_SEAL', name:'用印申请', steps:['部门负责人','法务审核','总经理'] },
+  contract: { code:'APV_CONTRACT', name:'合同审批', steps:['部门负责人','法务审核','财务审核','总经理'] },
+  travel: { code:'APV_TRAVEL', name:'出差申请', steps:['直属上级','副总经理'] },
+};
+
+// 审批记录数据
+const approvalRecords = [
+  {
+    id: 1, type: 'budget', typeLabel: '预算', title: '预算变更-2026-Q3追加CRO费用',
+    initiator: '王建国', initTime: '2026-06-17 09:30', currentStep: 2, totalSteps: 4, status: 'approving',
+    steps: ['部门负责人','财务审核','总经理','CEO'],
+    amount: '¥2,450,000', reason: '三期临床CRO服务费用超出原预算15%，需追加预算以覆盖新增中心费用。',
+    remark: '已获得部门负责人初步同意'
+  },
+  {
+    id: 2, type: 'expense', typeLabel: '费用', title: '费用报销-三期临床受试者补偿金',
+    initiator: '李晓明', initTime: '2026-06-16 14:20', currentStep: 3, totalSteps: 3, status: 'approved',
+    steps: ['直属上级','财务审核','财务总监'],
+    amount: '¥128,000', reason: '2026年5月受试者交通及营养补偿费用结算。',
+    remark: ''
+  },
+  {
+    id: 3, type: 'seal', typeLabel: '用印', title: '用印申请-知情同意书盖章',
+    initiator: '赵敏', initTime: '2026-06-15 16:45', currentStep: 1, totalSteps: 3, status: 'approving',
+    steps: ['部门负责人','法务审核','总经理'],
+    amount: '—', reason: '新版知情同意书需加盖公司公章后提交伦理委员会审查。',
+    remark: '加急处理'
+  },
+  {
+    id: 4, type: 'contract', typeLabel: '合同', title: '合同审批-CRO服务合同补充协议',
+    initiator: '陈思远', initTime: '2026-06-14 11:00', currentStep: 3, totalSteps: 4, status: 'rejected',
+    steps: ['部门负责人','法务审核','财务审核','总经理'],
+    amount: '¥3,200,000', reason: 'CRO服务范围调整，需签署补充协议覆盖新增5家中心。',
+    remark: '法务审核提出修改意见'
+  },
+  {
+    id: 5, type: 'expense', typeLabel: '费用', title: '费用报销-实验室检测费',
+    initiator: '刘婷', initTime: '2026-06-13 10:15', currentStep: 3, totalSteps: 3, status: 'approved',
+    steps: ['直属上级','财务审核','财务总监'],
+    amount: '¥256,000', reason: '中心实验室样本检测费用第四期结算。',
+    remark: ''
+  },
+  {
+    id: 6, type: 'budget', typeLabel: '预算', title: '预算变更-设备采购预算调整',
+    initiator: '周磊', initTime: '2026-06-12 09:00', currentStep: 3, totalSteps: 4, status: 'approved',
+    steps: ['部门负责人','财务审核','总经理','CEO'],
+    amount: '¥5,800,000', reason: '因供应商调价，需调整设备采购预算。',
+    remark: ''
+  },
+];
+
+// 审批时间线详情数据
+const timelineDetails = {
+  1: [
+    { step:'部门负责人', person:'张总监', time:'2026-06-17 10:15', result:'approved', comment:'同意追加，需关注费用管控。' },
+    { step:'财务审核', person:'等待审批', time:'—', result:'pending', comment:'' },
+    { step:'总经理', person:'—', time:'—', result:'pending', comment:'' },
+    { step:'CEO', person:'—', time:'—', result:'pending', comment:'' },
+  ],
+  2: [
+    { step:'直属上级', person:'王建国', time:'2026-06-16 15:00', result:'approved', comment:'费用合理，同意报销。' },
+    { step:'财务审核', person:'李会计', time:'2026-06-16 16:30', result:'approved', comment:'票据齐全，金额核实无误。' },
+    { step:'财务总监', person:'赵总监', time:'2026-06-17 09:00', result:'approved', comment:'已批准。' },
+  ],
+  3: [
+    { step:'部门负责人', person:'等待审批', time:'—', result:'pending', comment:'' },
+    { step:'法务审核', person:'—', time:'—', result:'pending', comment:'' },
+    { step:'总经理', person:'—', time:'—', result:'pending', comment:'' },
+  ],
+  4: [
+    { step:'部门负责人', person:'张总监', time:'2026-06-14 14:00', result:'approved', comment:'同意。' },
+    { step:'法务审核', person:'孙法务', time:'2026-06-14 17:30', result:'rejected', comment:'第5.2条款需修改，违约责任描述不清晰，请修改后重新提交。' },
+    { step:'财务审核', person:'—', time:'—', result:'pending', comment:'' },
+    { step:'总经理', person:'—', time:'—', result:'pending', comment:'' },
+  ],
+  5: [
+    { step:'直属上级', person:'王建国', time:'2026-06-13 11:00', result:'approved', comment:'同意。' },
+    { step:'财务审核', person:'李会计', time:'2026-06-13 14:20', result:'approved', comment:'核实无误。' },
+    { step:'财务总监', person:'赵总监', time:'2026-06-13 16:45', result:'approved', comment:'已批准。' },
+  ],
+  6: [
+    { step:'部门负责人', person:'张总监', time:'2026-06-12 10:30', result:'approved', comment:'同意调整。' },
+    { step:'财务审核', person:'李会计', time:'2026-06-12 14:00', result:'approved', comment:'预算调整合理。' },
+    { step:'总经理', person:'王总', time:'2026-06-12 16:20', result:'approved', comment:'批准。' },
+    { step:'CEO', person:'陈CEO', time:'2026-06-13 09:10', result:'approved', comment:'同意预算调整。' },
+  ],
+};
+
+/* ========== 渲染审批记录列表 ========== */
+function renderApprovalList(filter) {
+  let data = approvalRecords;
+  if (filter) data = data.filter(d => d.type === filter);
+  const list = document.getElementById('approvalList');
+  list.innerHTML = data.map(item => `
+    <div class="approval-record" id="record-${item.id}">
+      <div class="record-header" onclick="toggleRecord(${item.id})">
+        <div class="record-left">
+          <span class="type-tag ${item.type}">${item.typeLabel}</span>
+          <span class="record-title">${item.title}</span>
+        </div>
+        <div class="record-right">
+          <span class="record-info">👤 ${item.initiator}</span>
+          <span class="record-info">🕐 ${item.initTime}</span>
+          <span class="record-info">步骤 ${item.currentStep}/${item.totalSteps}</span>
+          <span class="status-tag ${item.status}">${item.status === 'approving' ? '审批中' : item.status === 'approved' ? '已通过' : '已驳回'}</span>
+          <span class="record-expand-icon">▼</span>
+        </div>
+      </div>
+      <div class="record-detail">
+        <div class="detail-content">
+          <div class="detail-form">
+            <div class="form-section">
+              <div class="form-section-title">📋 业务表单</div>
+              <div class="form-row">
+                <div class="form-field"><div class="form-label">审批类型</div><div class="form-value"><span class="type-tag ${item.type}">${item.typeLabel}</span></div></div>
+                <div class="form-field"><div class="form-label">涉及金额</div><div class="form-value" style="font-weight:600;color:var(--color-primary)">${item.amount}</div></div>
+              </div>
+              <div class="form-row">
+                <div class="form-field"><div class="form-label">发起人</div><div class="form-value">${item.initiator}</div></div>
+                <div class="form-field"><div class="form-label">发起时间</div><div class="form-value">${item.initTime}</div></div>
+              </div>
+              <div class="form-row">
+                <div class="form-field"><div class="form-label">申请原因</div><div class="form-value">${item.reason}</div></div>
+              </div>
+              ${item.remark ? `<div class="form-row"><div class="form-field"><div class="form-label">备注</div><div class="form-value" style="color:var(--color-warning)">${item.remark}</div></div></div>` : ''}
+            </div>
+          </div>
+          <div class="detail-timeline-area">
+            <div class="form-section-title" style="font-size:12px;font-weight:600;color:var(--color-text-secondary);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--color-border)">📌 审批时间线</div>
+            ${renderTimeline(item.id)}
+          </div>
+        </div>
+        <div style="margin-top:12px;display:flex;gap:8px;justify-content:flex-end">
+          <button class="btn btn-outline btn-sm" onclick="openSlidePanel(${item.id})">📋 侧滑详情</button>
+          ${item.status === 'approving' ? `
+            <button class="btn btn-success btn-sm" onclick="handleAction(${item.id},'approve')">✓ 通过</button>
+            <button class="btn btn-danger btn-sm" onclick="handleAction(${item.id},'reject')">✕ 驳回</button>
+          ` : ''}
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+/* ========== 渲染时间线 ========== */
+function renderTimeline(recordId) {
+  const items = timelineDetails[recordId] || [];
+  return `<div class="timeline">${items.map(item => {
+    let dotClass = item.result === 'approved' ? 'done' : item.result === 'rejected' ? 'rejected' : item.result === 'pending' ? 'pending' : 'current';
+    let icon = item.result === 'approved' ? '✓' : item.result === 'rejected' ? '✕' : '';
+    return `
+      <div class="timeline-item">
+        <div class="timeline-dot ${dotClass}">${icon}</div>
+        <div class="timeline-content">
+          <div class="timeline-title">${item.step}</div>
+          <div class="timeline-info">${item.person !== '—' && item.person !== '等待审批' ? item.person + ' · ' : ''}${item.time}</div>
+          ${item.comment ? `<div class="timeline-comment">${item.comment}</div>` : ''}
+        </div>
+      </div>
+    `;
+  }).join('')}</div>`;
+}
+
+/* ========== 展开/收起记录 ========== */
+function toggleRecord(id) {
+  const el = document.getElementById('record-' + id);
+  el.classList.toggle('expanded');
+}
+
+/* ========== 发起审批弹窗 ========== */
+let selectedInitType = '';
+
+function openInitModal() {
+  selectedInitType = '';
+  document.getElementById('initStep1').style.display = 'block';
+  document.getElementById('initStep2').style.display = 'none';
+  document.getElementById('initNextBtn').style.display = '';
+  document.getElementById('initNextBtn').disabled = true;
+  document.getElementById('initSubmitBtn').style.display = 'none';
+  document.getElementById('initBackBtn').style.display = 'none';
+  document.querySelectorAll('.init-type-card').forEach(c => c.classList.remove('selected'));
+  document.getElementById('initModal').classList.add('show');
+}
+
+function closeInitModal() {
+  document.getElementById('initModal').classList.remove('show');
+}
+
+function selectInitType(type) {
+  selectedInitType = type;
+  document.querySelectorAll('.init-type-card').forEach(c => c.classList.remove('selected'));
+  document.querySelector(`.init-type-card[data-type="${type}"]`).classList.add('selected');
+  document.getElementById('initNextBtn').disabled = false;
+}
+
+function initNext() {
+  if (!selectedInitType) return;
+  document.getElementById('initStep1').style.display = 'none';
+  document.getElementById('initStep2').style.display = 'block';
+  document.getElementById('initNextBtn').style.display = 'none';
+  document.getElementById('initSubmitBtn').style.display = '';
+  document.getElementById('initBackBtn').style.display = '';
+
+  const flow = flowConfig[selectedInitType];
+  let formHtml = '';
+
+  // 流程预览
+  formHtml += `<div class="flow-preview">
+    <div class="flow-preview-title">🔄 匹配流程：${flow.name}（${flow.code}）</div>
+    <div class="flow-preview-steps">
+      ${flow.steps.map((s, i) => `<span class="flow-preview-step"><span class="step-num">${i+1}</span>${s}</span>${i < flow.steps.length -1 ? '<span class="flow-preview-arrow">→</span>' : ''}`).join('')}
+    </div>
+  </div>`;
+
+  // 根据类型生成不同表单
+  if (selectedInitType === 'budget') {
+    formHtml += `
+      <div class="form-group"><label class="required">变更标题</label><input class="form-control" placeholder="如：2026-Q3追加CRO费用" /></div>
+      <div class="form-row-2">
+        <div class="form-group"><label class="required">变更金额（元）</label><input class="form-control" type="number" placeholder="0.00" /></div>
+        <div class="form-group"><label>原预算金额</label><input class="form-control" value="10,050,000" readonly style="background:#f8fafc" /></div>
+      </div>
+      <div class="form-group"><label class="required">变更原因</label><textarea class="form-control" placeholder="请说明预算变更原因..."></textarea></div>
+      <div class="form-group"><label>附件</label><input class="form-control" type="file" /><div class="form-hint">支持 PDF/Excel/Word，最大10MB</div></div>
+    `;
+  } else if (selectedInitType === 'expense') {
+    formHtml += `
+      <div class="form-group"><label class="required">报销标题</label><input class="form-control" placeholder="如：三期临床受试者补偿金" /></div>
+      <div class="form-row-2">
+        <div class="form-group"><label class="required">报销金额（元）</label><input class="form-control" type="number" placeholder="0.00" /></div>
+        <div class="form-group"><label class="required">费用类型</label>
+          <select class="form-control"><option>临床试验费用</option><option>差旅费用</option><option>采购费用</option><option>其他</option></select>
+        </div>
+      </div>
+      <div class="form-group"><label class="required">费用说明</label><textarea class="form-control" placeholder="请说明费用用途..."></textarea></div>
+      <div class="form-group"><label class="required">附件（发票/票据）</label><input class="form-control" type="file" multiple /><div class="form-hint">必传，支持 PDF/图片，最大10MB</div></div>
+    `;
+  } else if (selectedInitType === 'seal') {
+    formHtml += `
+      <div class="form-group"><label class="required">用印标题</label><input class="form-control" placeholder="如：知情同意书盖章" /></div>
+      <div class="form-row-2">
+        <div class="form-group"><label class="required">印章类型</label>
+          <select class="form-control"><option>公章</option><option>合同章</option><option>财务章</option><option>法人章</option></select>
+        </div>
+        <div class="form-group"><label class="required">用印份数</label><input class="form-control" type="number" value="1" /></div>
+      </div>
+      <div class="form-group"><label class="required">用印原因</label><textarea class="form-control" placeholder="请说明用印用途..."></textarea></div>
+      <div class="form-group"><label class="required">附件（待盖章文件）</label><input class="form-control" type="file" /><div class="form-hint">必传，支持 PDF/Word</div></div>
+    `;
+  }
+
+  document.getElementById('initFormArea').innerHTML = formHtml;
+}
+
+function initGoBack() {
+  document.getElementById('initStep1').style.display = 'block';
+  document.getElementById('initStep2').style.display = 'none';
+  document.getElementById('initNextBtn').style.display = '';
+  document.getElementById('initNextBtn').disabled = !selectedInitType;
+  document.getElementById('initSubmitBtn').style.display = 'none';
+  document.getElementById('initBackBtn').style.display = 'none';
+}
+
+function submitApproval() {
+  closeInitModal();
+  showToast('审批已提交，流程自动匹配 ' + (flowConfig[selectedInitType] ? flowConfig[selectedInitType].code : ''), 'success');
+}
+
+/* ========== 侧滑面板 ========== */
+function openSlidePanel(recordId) {
+  const record = approvalRecords.find(r => r.id === recordId);
+  if (!record) return;
+  const timeline = timelineDetails[recordId] || [];
+
+  document.getElementById('slidePanelTitle').textContent = record.title;
+
+  let bodyHtml = `
+    <!-- 业务表单只读 -->
+    <div class="panel-form-section">
+      <div class="panel-form-title">📋 业务表单</div>
+      <div class="panel-form-row">
+        <div class="panel-form-field"><div class="panel-form-label">审批类型</div><div class="panel-form-value"><span class="type-tag ${record.type}">${record.typeLabel}</span></div></div>
+        <div class="panel-form-field"><div class="panel-form-label">流程编码</div><div class="panel-form-value" style="font-family:monospace;font-size:12px;color:var(--color-primary)">${flowConfig[record.type]?.code || '—'}</div></div>
+      </div>
+      <div class="panel-form-row">
+        <div class="panel-form-field"><div class="panel-form-label">发起人</div><div class="panel-form-value">${record.initiator}</div></div>
+        <div class="panel-form-field"><div class="panel-form-label">发起时间</div><div class="panel-form-value">${record.initTime}</div></div>
+      </div>
+      <div class="panel-form-row">
+        <div class="panel-form-field"><div class="panel-form-label">涉及金额</div><div class="panel-form-value" style="font-weight:600;color:var(--color-primary)">${record.amount}</div></div>
+        <div class="panel-form-field"><div class="panel-form-label">当前状态</div><div class="panel-form-value"><span class="status-tag ${record.status}">${record.status === 'approving' ? '审批中' : record.status === 'approved' ? '已通过' : '已驳回'}</span></div></div>
+      </div>
+      <div class="panel-form-row">
+        <div class="panel-form-field"><div class="panel-form-label">申请原因</div><div class="panel-form-value">${record.reason}</div></div>
+      </div>
+      ${record.remark ? `<div class="panel-form-row"><div class="panel-form-field"><div class="panel-form-label">备注</div><div class="panel-form-value" style="color:var(--color-warning)">${record.remark}</div></div></div>` : ''}
+    </div>
+
+    <!-- 审批时间线 -->
+    <div class="panel-form-section">
+      <div class="panel-form-title">📌 审批时间线</div>
+      <div class="timeline">
+        ${timeline.map(item => {
+          let dotClass = item.result === 'approved' ? 'done' : item.result === 'rejected' ? 'rejected' : 'pending';
+          let icon = item.result === 'approved' ? '✓' : item.result === 'rejected' ? '✕' : '';
+          return `
+            <div class="timeline-item">
+              <div class="timeline-dot ${dotClass}">${icon}</div>
+              <div class="timeline-content">
+                <div class="timeline-title">${item.step}</div>
+                <div class="timeline-info">${item.person !== '—' && item.person !== '等待审批' ? item.person + ' · ' : ''}${item.time}</div>
+                ${item.comment ? `<div class="timeline-comment">${item.comment}</div>` : ''}
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    </div>
+
+    <!-- 审批操作区（仅审批中可操作） -->
+    ${record.status === 'approving' ? `
+    <div class="panel-action-section">
+      <div class="panel-action-title">审批操作</div>
+      <div class="panel-action-group">
+        <label>审批意见</label>
+        <textarea class="panel-action-textarea" placeholder="请输入审批意见（可选）..."></textarea>
+      </div>
+    </div>` : ''}
+  `;
+
+  document.getElementById('slidePanelBody').innerHTML = bodyHtml;
+
+  // 根据状态显示/隐藏底部按钮
+  const footer = document.getElementById('slidePanelFooter');
+  if (record.status === 'approving') {
+    footer.innerHTML = `
+      <button class="btn btn-success" onclick="handlePanelAction('approve')">✓ 通过</button>
+      <button class="btn btn-danger" onclick="handlePanelAction('reject')">✕ 驳回</button>
+      <button class="btn btn-outline" onclick="closeSlidePanel()">关闭</button>
+    `;
+  } else {
+    footer.innerHTML = `<button class="btn btn-outline" onclick="closeSlidePanel()">关闭</button>`;
+  }
+
+  // 显示侧滑面板
+  document.getElementById('slidePanelOverlay').classList.add('show');
+  setTimeout(() => document.getElementById('slidePanel').classList.add('show'), 10);
+}
+
+function closeSlidePanel() {
+  document.getElementById('slidePanel').classList.remove('show');
+  setTimeout(() => document.getElementById('slidePanelOverlay').classList.remove('show'), 350);
+}
+
+function handlePanelAction(action) {
+  const msgs = { approve: '审批已通过', reject: '审批已驳回' };
+  showToast(msgs[action], action === 'approve' ? 'success' : 'error');
+  closeSlidePanel();
+}
+
+/* ========== 审批操作 ========== */
+function handleAction(id, action) {
+  const msgs = { approve: '审批已通过', reject: '审批已驳回' };
+  showToast(msgs[action], action === 'approve' ? 'success' : 'error');
+}
+
+/* ========== 筛选 ========== */
+document.getElementById('recordTypeFilter').addEventListener('change', function() {
+  renderApprovalList(this.value);
+});
+
+/* ========== 通知提示 ========== */
+function showToast(msg, type) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.className = 'toast ' + (type || 'info') + ' show';
+  setTimeout(() => toast.classList.remove('show'), 2500);
+}
+
+/* ========== 初始化 ========== */
+renderApprovalList();
+</script>
+</body>
+</html>
