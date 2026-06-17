@@ -1,0 +1,2069 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRO药物研发平台 - 智能工作台</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Dark Theme Palette */
+            --bg-primary: #0f1419;
+            --bg-secondary: #1a2332;
+            --bg-card: #1e2a3a;
+            --bg-card-hover: #243044;
+            --bg-elevated: #2a3a4d;
+            
+            /* Accent Colors */
+            --accent-primary: #3b82f6;
+            --accent-secondary: #60a5fa;
+            --accent-success: #10b981;
+            --accent-warning: #f59e0b;
+            --accent-danger: #ef4444;
+            --accent-info: #06b6d4;
+            
+            /* Text */
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            
+            /* Borders */
+            --border-default: #334155;
+            --border-hover: #475569;
+            
+            /* Shadows */
+            --shadow-sm: 0 1px 2px rgba(0,0,0,0.3);
+            --shadow-md: 0 4px 6px rgba(0,0,0,0.4);
+            --shadow-lg: 0 10px 15px rgba(0,0,0,0.5);
+            
+            /* Spacing */
+            --space-xs: 4px;
+            --space-sm: 8px;
+            --space-md: 16px;
+            --space-lg: 24px;
+            --space-xl: 32px;
+            
+            /* Border Radius */
+            --radius-sm: 6px;
+            --radius-md: 10px;
+            --radius-lg: 14px;
+            --radius-full: 9999px;
+            
+            /* Transitions */
+            --transition-fast: 150ms ease;
+            --transition-normal: 250ms ease;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        
+        /* ========== Layout ========== */
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        /* ========== Sidebar ========== */
+        .sidebar {
+            width: 260px;
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border-default);
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            z-index: 100;
+            transition: width var(--transition-normal);
+        }
+        
+        .sidebar.collapsed {
+            width: 72px;
+        }
+        
+        .sidebar-header {
+            padding: var(--space-lg);
+            border-bottom: 1px solid var(--border-default);
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+        }
+        
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-info));
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 18px;
+        }
+        
+        .logo-text {
+            font-weight: 700;
+            font-size: 18px;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+        
+        .sidebar.collapsed .logo-text {
+            opacity: 0;
+            width: 0;
+        }
+        
+        .nav-section {
+            padding: var(--space-md) var(--space-sm);
+            flex: 1;
+            overflow-y: auto;
+        }
+        
+        .nav-label {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            padding: var(--space-sm) var(--space-md);
+            margin-top: var(--space-sm);
+        }
+        
+        .sidebar.collapsed .nav-label {
+            opacity: 0;
+            height: 0;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+            padding: var(--space-md);
+            border-radius: var(--radius-md);
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            margin-bottom: 2px;
+        }
+        
+        .nav-item:hover {
+            background: var(--bg-card);
+            color: var(--text-primary);
+        }
+        
+        .nav-item.active {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(6, 182, 212, 0.1));
+            color: var(--accent-primary);
+            border-left: 3px solid var(--accent-primary);
+        }
+        
+        .nav-item i {
+            width: 20px;
+            text-align: center;
+            font-size: 16px;
+        }
+        
+        .nav-item-text {
+            white-space: nowrap;
+            overflow: hidden;
+        }
+        
+        .sidebar.collapsed .nav-item-text {
+            opacity: 0;
+            width: 0;
+        }
+        
+        .nav-badge {
+            margin-left: auto;
+            background: var(--accent-danger);
+            color: white;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: var(--radius-full);
+        }
+        
+        .sidebar.collapsed .nav-badge {
+            position: absolute;
+            top: 6px;
+            right: 6px;
+            padding: 2px 5px;
+            font-size: 10px;
+        }
+        
+        .sidebar.collapsed .nav-item {
+            position: relative;
+        }
+        
+        .sidebar-footer {
+            padding: var(--space-md);
+            border-top: 1px solid var(--border-default);
+        }
+        
+        .user-card {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+            padding: var(--space-md);
+            background: var(--bg-card);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: background var(--transition-fast);
+        }
+        
+        .user-card:hover {
+            background: var(--bg-card-hover);
+        }
+        
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: var(--radius-full);
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .user-info {
+            flex: 1;
+            overflow: hidden;
+        }
+        
+        .user-name {
+            font-weight: 600;
+            font-size: 14px;
+            white-space: nowrap;
+        }
+        
+        .user-role {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+        
+        .sidebar.collapsed .user-info {
+            opacity: 0;
+            width: 0;
+        }
+        
+        .collapse-btn {
+            position: absolute;
+            right: -12px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 24px;
+            height: 24px;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-default);
+            border-radius: var(--radius-full);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            z-index: 10;
+        }
+        
+        .collapse-btn:hover {
+            background: var(--accent-primary);
+            color: white;
+            border-color: var(--accent-primary);
+        }
+        
+        /* ========== Main Content ========== */
+        .main-content {
+            flex: 1;
+            margin-left: 260px;
+            transition: margin-left var(--transition-normal);
+        }
+        
+        .sidebar.collapsed ~ .main-content {
+            margin-left: 72px;
+        }
+        
+        /* ========== Header ========== */
+        .header {
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-default);
+            padding: var(--space-md) var(--space-xl);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+        
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: var(--space-lg);
+        }
+        
+        .page-title {
+            font-size: 20px;
+            font-weight: 700;
+        }
+        
+        /* Role Switcher */
+        .role-switcher {
+            display: flex;
+            background: var(--bg-card);
+            border-radius: var(--radius-md);
+            padding: 4px;
+            gap: 4px;
+        }
+        
+        .role-tab {
+            padding: var(--space-sm) var(--space-md);
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+        
+        .role-tab:hover {
+            color: var(--text-primary);
+        }
+        
+        .role-tab.active {
+            background: var(--accent-primary);
+            color: white;
+        }
+        
+        .role-tab i {
+            font-size: 12px;
+        }
+        
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+        }
+        
+        .search-box {
+            display: flex;
+            align-items: center;
+            background: var(--bg-card);
+            border: 1px solid var(--border-default);
+            border-radius: var(--radius-md);
+            padding: var(--space-sm) var(--space-md);
+            gap: var(--space-sm);
+            min-width: 280px;
+            transition: all var(--transition-fast);
+        }
+        
+        .search-box:focus-within {
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+        }
+        
+        .search-box i {
+            color: var(--text-muted);
+        }
+        
+        .search-box input {
+            flex: 1;
+            background: none;
+            border: none;
+            outline: none;
+            color: var(--text-primary);
+            font-size: 14px;
+        }
+        
+        .search-box input::placeholder {
+            color: var(--text-muted);
+        }
+        
+        .search-shortcut {
+            font-size: 11px;
+            color: var(--text-muted);
+            background: var(--bg-elevated);
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+        
+        .header-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: var(--radius-md);
+            background: var(--bg-card);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            position: relative;
+        }
+        
+        .header-icon:hover {
+            background: var(--bg-card-hover);
+            color: var(--text-primary);
+        }
+        
+        .header-icon .badge {
+            position: absolute;
+            top: 6px;
+            right: 6px;
+            width: 8px;
+            height: 8px;
+            background: var(--accent-danger);
+            border-radius: var(--radius-full);
+        }
+        
+        .header-icon .badge.warning {
+            background: var(--accent-warning);
+        }
+        
+        /* ========== Content Area ========== */
+        .content-area {
+            padding: var(--space-xl);
+        }
+        
+        /* ========== Quick Stats Row ========== */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: var(--space-md);
+            margin-bottom: var(--space-xl);
+        }
+        
+        .stat-card {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            padding: var(--space-lg);
+            border: 1px solid var(--border-default);
+            transition: all var(--transition-fast);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--stat-color, var(--accent-primary));
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--border-hover);
+        }
+        
+        .stat-card.primary { --stat-color: var(--accent-primary); }
+        .stat-card.success { --stat-color: var(--accent-success); }
+        .stat-card.warning { --stat-color: var(--accent-warning); }
+        .stat-card.info { --stat-color: var(--accent-info); }
+        
+        .stat-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            margin-bottom: var(--space-md);
+        }
+        
+        .stat-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            background: rgba(59, 130, 246, 0.1);
+            color: var(--stat-color, var(--accent-primary));
+        }
+        
+        .stat-card.success .stat-icon { background: rgba(16, 185, 129, 0.1); color: var(--accent-success); }
+        .stat-card.warning .stat-icon { background: rgba(245, 158, 11, 0.1); color: var(--accent-warning); }
+        .stat-card.info .stat-icon { background: rgba(6, 182, 212, 0.1); color: var(--accent-info); }
+        
+        .stat-trend {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 12px;
+            font-weight: 500;
+            padding: 4px 8px;
+            border-radius: var(--radius-sm);
+        }
+        
+        .stat-trend.up {
+            color: var(--accent-success);
+            background: rgba(16, 185, 129, 0.1);
+        }
+        
+        .stat-trend.down {
+            color: var(--accent-danger);
+            background: rgba(239, 68, 68, 0.1);
+        }
+        
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: var(--space-xs);
+        }
+        
+        .stat-label {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+        
+        .stat-progress {
+            margin-top: var(--space-md);
+            height: 6px;
+            background: var(--bg-elevated);
+            border-radius: var(--radius-full);
+            overflow: hidden;
+        }
+        
+        .stat-progress-bar {
+            height: 100%;
+            background: var(--stat-color, var(--accent-primary));
+            border-radius: var(--radius-full);
+            transition: width var(--transition-normal);
+        }
+        
+        /* ========== Main Grid ========== */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 380px;
+            gap: var(--space-xl);
+        }
+        
+        /* ========== Pipeline Section ========== */
+        .section-card {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-default);
+            overflow: hidden;
+        }
+        
+        .section-header {
+            padding: var(--space-lg);
+            border-bottom: 1px solid var(--border-default);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+        
+        .section-title i {
+            color: var(--accent-primary);
+        }
+        
+        .section-actions {
+            display: flex;
+            gap: var(--space-sm);
+        }
+        
+        .section-btn {
+            padding: var(--space-sm) var(--space-md);
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            color: var(--text-secondary);
+            background: var(--bg-elevated);
+            border: none;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            display: flex;
+            align-items: center;
+            gap: var(--space-xs);
+        }
+        
+        .section-btn:hover {
+            color: var(--text-primary);
+            background: var(--bg-card-hover);
+        }
+        
+        .section-btn.primary {
+            background: var(--accent-primary);
+            color: white;
+        }
+        
+        .section-btn.primary:hover {
+            background: var(--accent-secondary);
+        }
+        
+        /* Pipeline Tabs */
+        .pipeline-tabs {
+            display: flex;
+            padding: 0 var(--space-lg);
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-default);
+            gap: var(--space-xs);
+        }
+        
+        .pipeline-tab {
+            padding: var(--space-md) var(--space-lg);
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all var(--transition-fast);
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+        
+        .pipeline-tab:hover {
+            color: var(--text-primary);
+        }
+        
+        .pipeline-tab.active {
+            color: var(--accent-primary);
+            border-bottom-color: var(--accent-primary);
+        }
+        
+        .pipeline-tab .count {
+            font-size: 12px;
+            background: var(--bg-elevated);
+            padding: 2px 8px;
+            border-radius: var(--radius-full);
+        }
+        
+        .pipeline-tab.active .count {
+            background: rgba(59, 130, 246, 0.2);
+            color: var(--accent-primary);
+        }
+        
+        /* Pipeline Content */
+        .pipeline-content {
+            padding: var(--space-lg);
+        }
+        
+        .pipeline-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: var(--space-md);
+            position: relative;
+        }
+        
+        .pipeline-stage {
+            background: var(--bg-secondary);
+            border-radius: var(--radius-md);
+            padding: var(--space-md);
+            border: 1px solid var(--border-default);
+            transition: all var(--transition-fast);
+        }
+        
+        .pipeline-stage:hover {
+            border-color: var(--accent-primary);
+            transform: translateY(-2px);
+        }
+        
+        .stage-header {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            margin-bottom: var(--space-md);
+            padding-bottom: var(--space-sm);
+            border-bottom: 1px solid var(--border-default);
+        }
+        
+        .stage-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+        
+        .stage-icon.phase1 { background: rgba(59, 130, 246, 0.15); color: var(--accent-primary); }
+        .stage-icon.phase2 { background: rgba(139, 92, 246, 0.15); color: #8b5cf6; }
+        .stage-icon.phase3 { background: rgba(245, 158, 11, 0.15); color: var(--accent-warning); }
+        .stage-icon.phase4 { background: rgba(6, 182, 212, 0.15); color: var(--accent-info); }
+        .stage-icon.phase5 { background: rgba(16, 185, 129, 0.15); color: var(--accent-success); }
+        
+        .stage-name {
+            font-size: 13px;
+            font-weight: 600;
+        }
+        
+        .stage-count {
+            margin-left: auto;
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+        
+        .stage-progress {
+            height: 4px;
+            background: var(--bg-elevated);
+            border-radius: var(--radius-full);
+            overflow: hidden;
+            margin-bottom: var(--space-sm);
+        }
+        
+        .stage-progress-bar {
+            height: 100%;
+            border-radius: var(--radius-full);
+        }
+        
+        .stage-icon.phase1 .stage-progress-bar { background: var(--accent-primary); }
+        .stage-icon.phase2 .stage-progress-bar { background: #8b5cf6; }
+        .stage-icon.phase3 .stage-progress-bar { background: var(--accent-warning); }
+        .stage-icon.phase4 .stage-progress-bar { background: var(--accent-info); }
+        .stage-icon.phase5 .stage-progress-bar { background: var(--accent-success); }
+        
+        .stage-detail {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+        
+        /* ========== Activity Feed ========== */
+        .activity-feed {
+            padding: var(--space-md);
+        }
+        
+        .activity-item {
+            display: flex;
+            gap: var(--space-md);
+            padding: var(--space-md);
+            border-radius: var(--radius-md);
+            transition: background var(--transition-fast);
+            cursor: pointer;
+        }
+        
+        .activity-item:hover {
+            background: var(--bg-secondary);
+        }
+        
+        .activity-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: var(--radius-full);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+        
+        .activity-icon.sae { background: rgba(239, 68, 68, 0.15); color: var(--accent-danger); }
+        .activity-icon.ethics { background: rgba(139, 92, 246, 0.15); color: #8b5cf6; }
+        .activity-icon.enroll { background: rgba(16, 185, 129, 0.15); color: var(--accent-success); }
+        .activity-icon.document { background: rgba(59, 130, 246, 0.15); color: var(--accent-primary); }
+        .activity-icon.alert { background: rgba(245, 158, 11, 0.15); color: var(--accent-warning); }
+        
+        .activity-content {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .activity-title {
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+        
+        .activity-tag {
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: var(--radius-sm);
+            font-weight: 500;
+        }
+        
+        .activity-tag.urgent {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--accent-danger);
+        }
+        
+        .activity-tag.normal {
+            background: rgba(59, 130, 246, 0.15);
+            color: var(--accent-primary);
+        }
+        
+        .activity-tag.success {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--accent-success);
+        }
+        
+        .activity-desc {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+        }
+        
+        .activity-meta {
+            font-size: 12px;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+        }
+        
+        .activity-meta span {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        /* ========== AI Insights ========== */
+        .insights-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: var(--space-md);
+            padding: var(--space-lg);
+        }
+        
+        .insight-card {
+            background: var(--bg-secondary);
+            border-radius: var(--radius-md);
+            padding: var(--space-md);
+            border: 1px solid var(--border-default);
+            transition: all var(--transition-fast);
+        }
+        
+        .insight-card:hover {
+            border-color: var(--accent-primary);
+        }
+        
+        .insight-header {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            margin-bottom: var(--space-md);
+        }
+        
+        .insight-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+        
+        .insight-icon.risk { background: rgba(239, 68, 68, 0.15); color: var(--accent-danger); }
+        .insight-icon.schedule { background: rgba(245, 158, 11, 0.15); color: var(--accent-warning); }
+        .insight-icon.efficiency { background: rgba(16, 185, 129, 0.15); color: var(--accent-success); }
+        .insight-icon.quality { background: rgba(59, 130, 246, 0.15); color: var(--accent-primary); }
+        
+        .insight-title {
+            font-size: 13px;
+            font-weight: 600;
+        }
+        
+        .insight-type {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+        
+        .insight-content {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+        
+        .insight-cta {
+            margin-top: var(--space-md);
+            font-size: 13px;
+            color: var(--accent-primary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: var(--space-xs);
+        }
+        
+        .insight-cta:hover {
+            color: var(--accent-secondary);
+        }
+        
+        /* ========== Quick Actions ========== */
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: var(--space-md);
+            padding: var(--space-lg);
+        }
+        
+        .action-card {
+            background: var(--bg-secondary);
+            border-radius: var(--radius-md);
+            padding: var(--space-lg);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            cursor: pointer;
+            border: 1px solid var(--border-default);
+            transition: all var(--transition-fast);
+        }
+        
+        .action-card:hover {
+            background: var(--bg-card-hover);
+            border-color: var(--accent-primary);
+            transform: translateY(-2px);
+        }
+        
+        .action-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            margin-bottom: var(--space-md);
+        }
+        
+        .action-card:nth-child(1) .action-icon { background: rgba(59, 130, 246, 0.15); color: var(--accent-primary); }
+        .action-card:nth-child(2) .action-icon { background: rgba(16, 185, 129, 0.15); color: var(--accent-success); }
+        .action-card:nth-child(3) .action-icon { background: rgba(139, 92, 246, 0.15); color: #8b5cf6; }
+        .action-card:nth-child(4) .action-icon { background: rgba(245, 158, 11, 0.15); color: var(--accent-warning); }
+        
+        .action-name {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        
+        .action-desc {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+        
+        /* ========== Right Sidebar ========== */
+        .right-sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-lg);
+        }
+        
+        /* ========== Todo Widget ========== */
+        .todo-list {
+            padding: var(--space-md);
+        }
+        
+        .todo-item {
+            display: flex;
+            align-items: flex-start;
+            gap: var(--space-md);
+            padding: var(--space-md);
+            border-radius: var(--radius-md);
+            transition: background var(--transition-fast);
+            cursor: pointer;
+        }
+        
+        .todo-item:hover {
+            background: var(--bg-secondary);
+        }
+        
+        .todo-checkbox {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--border-default);
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            margin-top: 2px;
+            transition: all var(--transition-fast);
+        }
+        
+        .todo-item:hover .todo-checkbox {
+            border-color: var(--accent-primary);
+        }
+        
+        .todo-checkbox.checked {
+            background: var(--accent-success);
+            border-color: var(--accent-success);
+        }
+        
+        .todo-checkbox.checked i {
+            color: white;
+            font-size: 12px;
+        }
+        
+        .todo-content {
+            flex: 1;
+        }
+        
+        .todo-text {
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+        
+        .todo-item.completed .todo-text {
+            text-decoration: line-through;
+            color: var(--text-muted);
+        }
+        
+        .todo-meta {
+            font-size: 12px;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+        }
+        
+        .todo-priority {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .todo-priority.high { color: var(--accent-danger); }
+        .todo-priority.medium { color: var(--accent-warning); }
+        .todo-priority.low { color: var(--accent-success); }
+        
+        /* ========== Alerts Widget ========== */
+        .alert-list {
+            padding: var(--space-md);
+        }
+        
+        .alert-item {
+            padding: var(--space-md);
+            border-radius: var(--radius-md);
+            margin-bottom: var(--space-sm);
+            border-left: 3px solid;
+            background: var(--bg-secondary);
+            transition: all var(--transition-fast);
+            cursor: pointer;
+        }
+        
+        .alert-item:hover {
+            transform: translateX(4px);
+        }
+        
+        .alert-item.critical {
+            border-left-color: var(--accent-danger);
+            background: rgba(239, 68, 68, 0.05);
+        }
+        
+        .alert-item.warning {
+            border-left-color: var(--accent-warning);
+            background: rgba(245, 158, 11, 0.05);
+        }
+        
+        .alert-item.info {
+            border-left-color: var(--accent-info);
+            background: rgba(6, 182, 212, 0.05);
+        }
+        
+        .alert-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: var(--space-xs);
+        }
+        
+        .alert-title {
+            font-size: 13px;
+            font-weight: 600;
+        }
+        
+        .alert-time {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+        
+        .alert-desc {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+        
+        /* ========== Scrollbar ========== */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: var(--bg-primary);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--bg-elevated);
+            border-radius: var(--radius-full);
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--border-hover);
+        }
+        
+        /* ========== Responsive ========== */
+        @media (max-width: 1400px) {
+            .stats-row {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .right-sidebar {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (max-width: 1024px) {
+            .sidebar {
+                width: 72px;
+            }
+            
+            .main-content {
+                margin-left: 72px;
+            }
+            
+            .sidebar .logo-text,
+            .sidebar .nav-label,
+            .sidebar .nav-item-text,
+            .sidebar .user-info {
+                display: none;
+            }
+            
+            .pipeline-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: var(--space-md);
+                padding: var(--space-md);
+            }
+            
+            .header-left,
+            .header-right {
+                width: 100%;
+                justify-content: space-between;
+            }
+            
+            .role-switcher {
+                overflow-x: auto;
+            }
+            
+            .search-box {
+                min-width: 200px;
+            }
+            
+            .stats-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .pipeline-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .right-sidebar {
+                grid-template-columns: 1fr;
+            }
+            
+            .insights-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .quick-actions {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <div class="logo-icon">
+                        <i class="fas fa-flask"></i>
+                    </div>
+                    <span class="logo-text">CRO药物研发平台</span>
+                </div>
+            </div>
+            
+            <nav class="nav-section">
+                <div class="nav-label">主导航</div>
+                <div class="nav-item active">
+                    <i class="fas fa-home"></i>
+                    <span class="nav-item-text">工作台</span>
+                </div>
+                <div class="nav-item">
+                    <i class="fas fa-folder-open"></i>
+                    <span class="nav-item-text">项目管理</span>
+                    <span class="nav-badge">12</span>
+                </div>
+                <div class="nav-item">
+                    <i class="fas fa-clipboard-list"></i>
+                    <span class="nav-item-text">监查任务</span>
+                    <span class="nav-badge">5</span>
+                </div>
+                <div class="nav-item">
+                    <i class="fas fa-database"></i>
+                    <span class="nav-item-text">数据管理</span>
+                </div>
+                <div class="nav-item">
+                    <i class="fas fa-chart-line"></i>
+                    <span class="nav-item-text">统计分析</span>
+                </div>
+                
+                <div class="nav-label">支持</div>
+                <div class="nav-item">
+                    <i class="fas fa-book"></i>
+                    <span class="nav-item-text">文档中心</span>
+                </div>
+                <div class="nav-item">
+                    <i class="fas fa-headset"></i>
+                    <span class="nav-item-text">技术支持</span>
+                </div>
+                <div class="nav-item">
+                    <i class="fas fa-cog"></i>
+                    <span class="nav-item-text">系统设置</span>
+                </div>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <div class="user-card">
+                    <div class="user-avatar">李</div>
+                    <div class="user-info">
+                        <div class="user-name">李明华</div>
+                        <div class="user-role">项目经理 PM</div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="header">
+                <div class="header-left">
+                    <h1 class="page-title">智能工作台</h1>
+                    <div class="role-switcher">
+                        <div class="role-tab active">
+                            <i class="fas fa-user-tie"></i>
+                            <span>PM</span>
+                        </div>
+                        <div class="role-tab">
+                            <i class="fas fa-user-check"></i>
+                            <span>CRA</span>
+                        </div>
+                        <div class="role-tab">
+                            <i class="fas fa-user-nurse"></i>
+                            <span>CRC</span>
+                        </div>
+                        <div class="role-tab">
+                            <i class="fas fa-user-shield"></i>
+                            <span>DM</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" placeholder="搜索项目、受试者、文档...">
+                        <span class="search-shortcut">⌘K</span>
+                    </div>
+                    <div class="header-icon">
+                        <i class="fas fa-bell"></i>
+                        <span class="badge warning"></span>
+                    </div>
+                    <div class="header-icon">
+                        <i class="fas fa-question-circle"></i>
+                    </div>
+                </div>
+            </header>
+            
+            <!-- Content Area -->
+            <div class="content-area">
+                <!-- Stats Row -->
+                <div class="stats-row">
+                    <div class="stat-card primary">
+                        <div class="stat-header">
+                            <div class="stat-icon">
+                                <i class="fas fa-folder"></i>
+                            </div>
+                            <div class="stat-trend up">
+                                <i class="fas fa-arrow-up"></i>
+                                12%
+                            </div>
+                        </div>
+                        <div class="stat-value">47</div>
+                        <div class="stat-label">项目总数</div>
+                        <div class="stat-progress">
+                            <div class="stat-progress-bar" style="width: 78%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card success">
+                        <div class="stat-header">
+                            <div class="stat-icon">
+                                <i class="fas fa-play-circle"></i>
+                            </div>
+                            <div class="stat-trend up">
+                                <i class="fas fa-arrow-up"></i>
+                                8%
+                            </div>
+                        </div>
+                        <div class="stat-value">32</div>
+                        <div class="stat-label">进行中项目</div>
+                        <div class="stat-progress">
+                            <div class="stat-progress-bar" style="width: 68%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card warning">
+                        <div class="stat-header">
+                            <div class="stat-icon">
+                                <i class="fas fa-user-plus"></i>
+                            </div>
+                            <div class="stat-trend down">
+                                <i class="fas fa-arrow-down"></i>
+                                3%
+                            </div>
+                        </div>
+                        <div class="stat-value">1,284</div>
+                        <div class="stat-label">入组人数</div>
+                        <div class="stat-progress">
+                            <div class="stat-progress-bar" style="width: 85%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card info">
+                        <div class="stat-header">
+                            <div class="stat-icon">
+                                <i class="fas fa-exclamation-triangle"></i>
+                            </div>
+                            <div class="stat-trend down">
+                                <i class="fas fa-arrow-down"></i>
+                                15%
+                            </div>
+                        </div>
+                        <div class="stat-value">8</div>
+                        <div class="stat-label">风险预警</div>
+                        <div class="stat-progress">
+                            <div class="stat-progress-bar" style="width: 22%"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Main Grid -->
+                <div class="main-grid">
+                    <!-- Left Column -->
+                    <div class="left-column">
+                        <!-- Pipeline Section -->
+                        <div class="section-card">
+                            <div class="section-header">
+                                <h2 class="section-title">
+                                    <i class="fas fa-project-diagram"></i>
+                                    临床管线
+                                </h2>
+                                <div class="section-actions">
+                                    <button class="section-btn">
+                                        <i class="fas fa-filter"></i>
+                                        筛选
+                                    </button>
+                                    <button class="section-btn primary">
+                                        <i class="fas fa-plus"></i>
+                                        新建项目
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="pipeline-tabs">
+                                <div class="pipeline-tab active">
+                                    全部
+                                    <span class="count">47</span>
+                                </div>
+                                <div class="pipeline-tab">
+                                    肿瘤
+                                    <span class="count">15</span>
+                                </div>
+                                <div class="pipeline-tab">
+                                    心血管
+                                    <span class="count">12</span>
+                                </div>
+                                <div class="pipeline-tab">
+                                    神经
+                                    <span class="count">10</span>
+                                </div>
+                                <div class="pipeline-tab">
+                                    其他
+                                    <span class="count">10</span>
+                                </div>
+                            </div>
+                            
+                            <div class="pipeline-content">
+                                <div class="pipeline-grid">
+                                    <div class="pipeline-stage">
+                                        <div class="stage-header">
+                                            <div class="stage-icon phase1">
+                                                <i class="fas fa-file-signature"></i>
+                                            </div>
+                                            <span class="stage-name">立项</span>
+                                            <span class="stage-count">8</span>
+                                        </div>
+                                        <div class="stage-progress">
+                                            <div class="stage-progress-bar" style="width: 100%"></div>
+                                        </div>
+                                        <div class="stage-detail">3 项目待启动</div>
+                                    </div>
+                                    
+                                    <div class="pipeline-stage">
+                                        <div class="stage-header">
+                                            <div class="stage-icon phase2">
+                                                <i class="fas fa-balance-scale"></i>
+                                            </div>
+                                            <span class="stage-name">伦理审查</span>
+                                            <span class="stage-count">12</span>
+                                        </div>
+                                        <div class="stage-progress">
+                                            <div class="stage-progress-bar" style="width: 75%"></div>
+                                        </div>
+                                        <div class="stage-detail">5 待伦理批复</div>
+                                    </div>
+                                    
+                                    <div class="pipeline-stage">
+                                        <div class="stage-header">
+                                            <div class="stage-icon phase3">
+                                                <i class="fas fa-running"></i>
+                                            </div>
+                                            <span class="stage-name">执行</span>
+                                            <span class="stage-count">18</span>
+                                        </div>
+                                        <div class="stage-progress">
+                                            <div class="stage-progress-bar" style="width: 60%"></div>
+                                        </div>
+                                        <div class="stage-detail">2 进度落后</div>
+                                    </div>
+                                    
+                                    <div class="pipeline-stage">
+                                        <div class="stage-header">
+                                            <div class="stage-icon phase4">
+                                                <i class="fas fa-keyboard"></i>
+                                            </div>
+                                            <span class="stage-name">数据管理</span>
+                                            <span class="stage-count">6</span>
+                                        </div>
+                                        <div class="stage-progress">
+                                            <div class="stage-progress-bar" style="width: 45%"></div>
+                                        </div>
+                                        <div class="stage-detail">12 疑问待解答</div>
+                                    </div>
+                                    
+                                    <div class="pipeline-stage">
+                                        <div class="stage-header">
+                                            <div class="stage-icon phase5">
+                                                <i class="fas fa-flag-checkered"></i>
+                                            </div>
+                                            <span class="stage-name">总结报告</span>
+                                            <span class="stage-count">3</span>
+                                        </div>
+                                        <div class="stage-progress">
+                                            <div class="stage-progress-bar" style="width: 20%"></div>
+                                        </div>
+                                        <div class="stage-detail">1 即将锁库</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Activity & Insights Grid -->
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-xl); margin-top: var(--space-xl);">
+                            <!-- Activity Feed -->
+                            <div class="section-card">
+                                <div class="section-header">
+                                    <h2 class="section-title">
+                                        <i class="fas fa-stream"></i>
+                                        项目动态
+                                    </h2>
+                                    <div class="section-actions">
+                                        <button class="section-btn">
+                                            全部动态
+                                            <i class="fas fa-chevron-right"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <div class="activity-feed">
+                                    <div class="activity-item">
+                                        <div class="activity-icon sae">
+                                            <i class="fas fa-exclamation-circle"></i>
+                                        </div>
+                                        <div class="activity-content">
+                                            <div class="activity-title">
+                                                SAE上报 - 项目X-2024-001
+                                                <span class="activity-tag urgent">紧急</span>
+                                            </div>
+                                            <div class="activity-desc">受试者E-012报告严重不良事件，需立即审核</div>
+                                            <div class="activity-meta">
+                                                <span><i class="far fa-clock"></i> 15分钟前</span>
+                                                <span><i class="fas fa-user"></i> CRA张伟</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="activity-item">
+                                        <div class="activity-icon ethics">
+                                            <i class="fas fa-certificate"></i>
+                                        </div>
+                                        <div class="activity-content">
+                                            <div class="activity-title">
+                                                伦理批件下达 - 项目C-2024-008
+                                                <span class="activity-tag success">完成</span>
+                                            </div>
+                                            <div class="activity-desc">III期临床试验伦理审批通过，可在三家中心启动</div>
+                                            <div class="activity-meta">
+                                                <span><i class="far fa-clock"></i> 2小时前</span>
+                                                <span><i class="fas fa-building"></i> 北京协和医院</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="activity-item">
+                                        <div class="activity-icon enroll">
+                                            <i class="fas fa-user-check"></i>
+                                        </div>
+                                        <div class="activity-content">
+                                            <div class="activity-title">
+                                                首例入组 - 项目N-2024-003
+                                                <span class="activity-tag normal">进行中</span>
+                                            </div>
+                                            <div class="activity-desc">神经退行性疾病项目成功入组首例受试者</div>
+                                            <div class="activity-meta">
+                                                <span><i class="far fa-clock"></i> 4小时前</span>
+                                                <span><i class="fas fa-hospital"></i> 上海华山医院</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="activity-item">
+                                        <div class="activity-icon document">
+                                            <i class="fas fa-file-alt"></i>
+                                        </div>
+                                        <div class="activity-content">
+                                            <div class="activity-title">
+                                                文档审核通过 - 项目H-2024-012
+                                                <span class="activity-tag normal">完成</span>
+                                            </div>
+                                            <div class="activity-desc">ICF、IB等核心文档通过QC审核</div>
+                                            <div class="activity-meta">
+                                                <span><i class="far fa-clock"></i> 6小时前</span>
+                                                <span><i class="fas fa-user-check"></i> DM王芳</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- AI Insights -->
+                            <div class="section-card">
+                                <div class="section-header">
+                                    <h2 class="section-title">
+                                        <i class="fas fa-brain"></i>
+                                        AI智能洞察
+                                    </h2>
+                                    <div class="section-actions">
+                                        <button class="section-btn">
+                                            <i class="fas fa-cog"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <div class="insights-grid">
+                                    <div class="insight-card">
+                                        <div class="insight-header">
+                                            <div class="insight-icon risk">
+                                                <i class="fas fa-chart-pie"></i>
+                                            </div>
+                                            <div>
+                                                <div class="insight-title">风险预警</div>
+                                                <div class="insight-type">预测分析</div>
+                                            </div>
+                                        </div>
+                                        <div class="insight-content">
+                                            项目X-2024-001入组速度低于预期，建议增加中心或优化筛选流程
+                                        </div>
+                                        <div class="insight-cta">
+                                            查看详情 <i class="fas fa-arrow-right"></i>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="insight-card">
+                                        <div class="insight-header">
+                                            <div class="insight-icon schedule">
+                                                <i class="fas fa-calendar-alt"></i>
+                                            </div>
+                                            <div>
+                                                <div class="insight-title">进度提醒</div>
+                                                <div class="insight-type">里程碑预警</div>
+                                            </div>
+                                        </div>
+                                        <div class="insight-content">
+                                            5个项目将在30天内到达关键里程碑，请确保资源到位
+                                        </div>
+                                        <div class="insight-cta">
+                                            查看详情 <i class="fas fa-arrow-right"></i>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="insight-card">
+                                        <div class="insight-header">
+                                            <div class="insight-icon efficiency">
+                                                <i class="fas fa-lightbulb"></i>
+                                            </div>
+                                            <div>
+                                                <div class="insight-title">效率建议</div>
+                                                <div class="insight-type">优化推荐</div>
+                                            </div>
+                                        </div>
+                                        <div class="insight-content">
+                                            历史数据显示周三下午监查效率最高，建议优先安排
+                                        </div>
+                                        <div class="insight-cta">
+                                            查看详情 <i class="fas fa-arrow-right"></i>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="insight-card">
+                                        <div class="insight-header">
+                                            <div class="insight-icon quality">
+                                                <i class="fas fa-check-double"></i>
+                                            </div>
+                                            <div>
+                                                <div class="insight-title">质量洞察</div>
+                                                <div class="insight-type">趋势分析</div>
+                                            </div>
+                                        </div>
+                                        <div class="insight-content">
+                                            本月文档质量评分提升12%，继续保持当前流程
+                                        </div>
+                                        <div class="insight-cta">
+                                            查看详情 <i class="fas fa-arrow-right"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Quick Actions -->
+                        <div class="section-card" style="margin-top: var(--space-xl);">
+                            <div class="section-header">
+                                <h2 class="section-title">
+                                    <i class="fas fa-bolt"></i>
+                                    快捷操作
+                                </h2>
+                            </div>
+                            <div class="quick-actions">
+                                <div class="action-card">
+                                    <div class="action-icon">
+                                        <i class="fas fa-plus-circle"></i>
+                                    </div>
+                                    <div class="action-name">新建项目</div>
+                                    <div class="action-desc">创建临床试验项目</div>
+                                </div>
+                                <div class="action-card">
+                                    <div class="action-icon">
+                                        <i class="fas fa-clipboard-check"></i>
+                                    </div>
+                                    <div class="action-name">提交SAE</div>
+                                    <div class="action-desc">上报严重不良事件</div>
+                                </div>
+                                <div class="action-card">
+                                    <div class="action-icon">
+                                        <i class="fas fa-file-import"></i>
+                                    </div>
+                                    <div class="action-name">批量导入</div>
+                                    <div class="action-desc">导入受试者数据</div>
+                                </div>
+                                <div class="action-card">
+                                    <div class="action-icon">
+                                        <i class="fas fa-file-export"></i>
+                                    </div>
+                                    <div class="action-name">导出报告</div>
+                                    <div class="action-desc">生成项目进度报告</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Right Sidebar -->
+                    <div class="right-sidebar">
+                        <!-- Todo Widget -->
+                        <div class="section-card">
+                            <div class="section-header">
+                                <h2 class="section-title">
+                                    <i class="fas fa-tasks"></i>
+                                    今日待办
+                                </h2>
+                                <div class="section-actions">
+                                    <button class="section-btn">
+                                        <i class="fas fa-plus"></i>
+                                        添加
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="todo-list">
+                                <div class="todo-item">
+                                    <div class="todo-checkbox">
+                                        <i class="fas fa-check"></i>
+                                    </div>
+                                    <div class="todo-content">
+                                        <div class="todo-text">审核项目X-2024-001 SAE报告</div>
+                                        <div class="todo-meta">
+                                            <span class="todo-priority high">
+                                                <i class="fas fa-flag"></i> 高优先级
+                                            </span>
+                                            <span>今天 14:00</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="todo-item">
+                                    <div class="todo-checkbox">
+                                        <i class="fas fa-check"></i>
+                                    </div>
+                                    <div class="todo-content">
+                                        <div class="todo-text">跟进伦理审批进度</div>
+                                        <div class="todo-meta">
+                                            <span class="todo-priority medium">
+                                                <i class="fas fa-flag"></i> 中优先级
+                                            </span>
+                                            <span>今天 16:00</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="todo-item">
+                                    <div class="todo-checkbox"></div>
+                                    <div class="todo-content">
+                                        <div class="todo-text">协调C-2024-008中心启动会</div>
+                                        <div class="todo-meta">
+                                            <span class="todo-priority medium">
+                                                <i class="fas fa-flag"></i> 中优先级
+                                            </span>
+                                            <span>明天 10:00</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="todo-item">
+                                    <div class="todo-checkbox"></div>
+                                    <div class="todo-content">
+                                        <div class="todo-text">更新项目里程碑计划</div>
+                                        <div class="todo-meta">
+                                            <span class="todo-priority low">
+                                                <i class="fas fa-flag"></i> 低优先级
+                                            </span>
+                                            <span>本周内</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="todo-item">
+                                    <div class="todo-checkbox"></div>
+                                    <div class="todo-content">
+                                        <div class="todo-text">审阅监查报告</div>
+                                        <div class="todo-meta">
+                                            <span class="todo-priority low">
+                                                <i class="fas fa-flag"></i> 低优先级
+                                            </span>
+                                            <span>本周内</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Alerts Widget -->
+                        <div class="section-card">
+                            <div class="section-header">
+                                <h2 class="section-title">
+                                    <i class="fas fa-exclamation-circle"></i>
+                                    风险预警
+                                </h2>
+                                <div class="section-actions">
+                                    <button class="section-btn">
+                                        查看全部
+                                        <i class="fas fa-chevron-right"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="alert-list">
+                                <div class="alert-item critical">
+                                    <div class="alert-header">
+                                        <span class="alert-title">超温告警</span>
+                                        <span class="alert-time">10分钟前</span>
+                                    </div>
+                                    <div class="alert-desc">研究中心03#冰箱温度超标，需立即处理</div>
+                                </div>
+                                
+                                <div class="alert-item critical">
+                                    <div class="alert-header">
+                                        <span class="alert-title">入组停滞</span>
+                                        <span class="alert-time">1小时前</span>
+                                    </div>
+                                    <div class="alert-desc">项目X-2024-001已连续30天无新增入组</div>
+                                </div>
+                                
+                                <div class="alert-item warning">
+                                    <div class="alert-header">
+                                        <span class="alert-title">文档逾期</span>
+                                        <span class="alert-time">3小时前</span>
+                                    </div>
+                                    <div class="alert-desc">3份监查报告已超过规定提交时限</div>
+                                </div>
+                                
+                                <div class="alert-item info">
+                                    <div class="alert-header">
+                                        <span class="alert-title">里程碑临近</span>
+                                        <span class="alert-time">5小时前</span>
+                                    </div>
+                                    <div class="alert-desc">项目N-2024-003中期分析将在15天后开始</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <script>
+        // Role Switcher
+        document.querySelectorAll('.role-tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.role-tab').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+        
+        // Pipeline Tabs
+        document.querySelectorAll('.pipeline-tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.pipeline-tab').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+        
+        // Sidebar Toggle
+        const sidebar = document.querySelector('.sidebar');
+        const collapseBtn = document.querySelector('.collapse-btn');
+        
+        if (collapseBtn) {
+            collapseBtn.addEventListener('click', function() {
+                sidebar.classList.toggle('collapsed');
+            });
+        }
+        
+        // Nav Items
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', function() {
+                document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+        
+        // Todo Checkbox
+        document.querySelectorAll('.todo-checkbox').forEach(checkbox => {
+            checkbox.addEventListener('click', function(e) {
+                e.stopPropagation();
+                this.classList.toggle('checked');
+                this.closest('.todo-item').classList.toggle('completed');
+            });
+        });
+    </script>
+</body>
+</html>
+<!--
+================================================================================
+                           CRO药物研发平台首页 - UX审计设计说明
+================================================================================
+
+【架构决策依据】
+
+1. 问题诊断：
+   - 原版：6个区域纵向堆叠，滚动成本高
+   - 信息层级扁平，缺乏视觉权重
+   - 无角色差异化，所有用户看到相同内容
+
+2. 设计目标：
+   - 减少滚动次数，一屏展示更多关键信息
+   - 通过视觉层次区分信息重要性
+   - 支持基于角色的内容自适应
+
+================================================================================
+                              使用的UX Patterns
+================================================================================
+
+【Pattern 01: Card-Based Layouts (Chunking)】
+位置：所有信息模块
+选择理由：
+  - 将复杂信息分解为独立的卡片单元
+  - 每个卡片有清晰的边界（边框、背景色）
+  - 支持视觉层次和交互状态
+  - Law of Common Region原则：卡片边界创造关联性
+
+【Pattern 02: Grid Layout (Chunking变体)】
+位置：Stats Row、Pipeline Grid、主内容区布局
+选择理由：
+  - 替代纵向堆叠，提高空间利用率
+  - 允许不同信息在水平维度并行展示
+  - 减少滚动次数，提升信息密度
+
+【Pattern 03: Tabs (Chunking)】
+位置：Pipeline分类、角色切换器
+选择理由：
+  - Hick's Law：减少可见选项，降低决策负担
+  - 同一空间承载不同内容，提高效率
+  - 用户按需切换，保持灵活性
+
+【Pattern 04: Sidebar Navigation (Navigation)】
+位置：左侧主导航
+选择理由：
+  - 企业级SaaS标准模式，用户熟悉
+  - 支持多级菜单，适合复杂信息架构
+  - 可折叠设计，平衡功能性和空间效率
+  - Priority+原则：高频功能可见，次要功能隐藏
+
+【Pattern 05: Progressive Disclosure (渐进披露)】
+位置：AI Insights、Alert详情、Todo项
+选择理由：
+  - 首页只展示摘要信息，减少认知负荷
+  - 点击"查看详情"展开完整内容
+  - Simple by default, powerful when needed原则
+
+【Pattern 06: Adaptive Content (Personalization)】
+位置：Role Switcher（角色切换器）
+选择理由：
+  - PM/CRA/CRC/DM四种角色有不同需求
+  - 顶部角色切换器允许快速切换视图
+  - 未来可扩展为自动根据登录角色显示
+
+【Pattern 07: Command Palette Pattern (Navigation变体)】
+位置：搜索框（⌘K快捷键提示）
+选择理由：
+  - Power user友好，加速高频操作
+  - 统一入口，减少导航层级
+  - 符合现代SaaS产品趋势（Notion、Linear等）
+
+【Pattern 08: Visual Hierarchy (通过Card变体实现)】
+位置：Stats Cards的颜色编码、趋势指示器
+选择理由：
+  - 通过颜色区分数据类型（成功/警告/危险/信息）
+  - 进度条直观展示完成度
+  - 数字突出显示（32px大字号）
+  - 用户可快速扫描关键指标
+
+【Pattern 09: Quick Actions (认知负荷优化)】
+位置：快捷操作卡片区
+选择理由：
+  - Hick's Law：常用操作前置，减少查找时间
+  - 图标+文字双重编码，提高识别性
+  - 2x2网格限制选项数量，避免选择困难
+
+【Pattern 10: Alert/Notification Patterns (反馈模式)】
+位置：风险预警模块、Badge提示
+选择理由：
+  - 紧急程度用颜色编码（critical/warning/info）
+  - 左侧边框强调，提高视觉关注度
+  - Badge提示数字，减少主动检查负担
+
+【Pattern 11: Sticky Header (Navigation)】
+位置：页面顶部header
+选择理由：
+  - 滚动时保持导航和关键操作可见
+  - 搜索框始终可访问
+  - 角色切换器随时可用
+
+================================================================================
+                              架构对比
+================================================================================
+
+原版架构（问题）：
+┌─────────────────┐
+│   角色+日期      │  ← 线性信息
+├─────────────────┤
+│   临床管线       │
+├─────────────────┤
+│   KPI指标       │  ← 需要滚动
+├─────────────────┤
+│   项目动态       │
+├─────────────────┤
+│   AI智能洞察     │
+├─────────────────┤
+│   快捷入口       │
+└─────────────────┘
+
+新架构（解决方案）：
+┌────────┬──────────────────────────────────────────────────────┐
+│        │  Header（角色切换器 + 搜索 + 通知）                    │
+│ 侧边栏  ├──────────────────────────────────────────────────────┤
+│ 导航    │  Stats Row（4个KPI卡片 - 一行展示）                    │
+│        ├─────────────────────────────────┬────────────────────┤
+│        │  Pipeline（管线+标签页+5阶段卡片）│   Todo Widget     │
+│        ├─────────────────────────────────┤                    │
+│        │  Activity + AI Insights（并列）  │   Alert Widget    │
+│        ├─────────────────────────────────┴────────────────────┤
+│        │  Quick Actions（4个快捷操作卡片）                      │
+└────────┴──────────────────────────────────────────────────────┘
+
+关键改进：
+1. 网格布局替代纵向堆叠，减少50%滚动
+2. 视觉层次通过颜色、大小、位置区分
+3. 右侧边栏承载待办和预警，平衡布局
+4. 卡片大小统一，信息密度提升
+
+================================================================================
+                              未来优化方向
+================================================================================
+
+1. 【角色差异化】根据PM/CRA/CRC/DM角色自动切换内容权重
+2. 【自定义布局】支持拖拽调整卡片位置（Personalization）
+3. 【智能排序】根据用户行为自动调整动态/待办顺序
+4. 【深度集成】与dashboard.js的renderHomeV6()函数对接
+5. 【数据刷新】考虑添加实时数据更新动画
+
+================================================================================
+-->

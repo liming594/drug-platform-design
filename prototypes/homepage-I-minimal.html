@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>药物研发平台 | CRO</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    :root {
+      --bg-primary: #0a0a0a;
+      --bg-secondary: #111;
+      --bg-tertiary: #181818;
+      --border: rgba(255, 255, 255, 0.06);
+      --border-hover: rgba(255, 255, 255, 0.12);
+      --text-primary: #e5e5e5;
+      --text-secondary: #737373;
+      --text-tertiary: #525252;
+      --accent: #3b82f6;
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      font-size: 14px;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    /* Layout */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 32px;
+    }
+
+    /* Header */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .logo {
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: -0.02em;
+      color: var(--text-primary);
+    }
+
+    .logo span {
+      color: var(--text-secondary);
+      font-weight: 400;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+    }
+
+    .command-trigger {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text-secondary);
+      font-size: 13px;
+      cursor: pointer;
+      transition: border-color 0.15s;
+    }
+
+    .command-trigger:hover {
+      border-color: var(--border-hover);
+      color: var(--text-primary);
+    }
+
+    .command-trigger kbd {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      padding: 2px 5px;
+      background: var(--bg-tertiary);
+      border-radius: 3px;
+    }
+
+    .user-avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 4px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    /* Main Content */
+    .main {
+      padding: 48px 0 80px;
+    }
+
+    .page-title {
+      font-size: 24px;
+      font-weight: 300;
+      letter-spacing: -0.03em;
+      margin-bottom: 48px;
+    }
+
+    /* Grid Layout */
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    .grid-item {
+      background: var(--bg-primary);
+      padding: 28px;
+    }
+
+    .grid-item-full {
+      grid-column: 1 / -1;
+    }
+
+    /* Section Header */
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+
+    .section-title {
+      font-size: 12px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-secondary);
+    }
+
+    .section-link {
+      font-size: 12px;
+      color: var(--text-tertiary);
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+
+    .section-link:hover {
+      color: var(--text-secondary);
+    }
+
+    /* Pipeline */
+    .pipeline {
+      display: flex;
+      gap: 0;
+    }
+
+    .pipeline-stage {
+      flex: 1;
+      padding: 16px;
+      text-align: center;
+      border-right: 1px solid var(--border);
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .pipeline-stage:last-child {
+      border-right: none;
+    }
+
+    .pipeline-stage:hover {
+      background: var(--bg-secondary);
+    }
+
+    .pipeline-count {
+      font-family: var(--font-mono);
+      font-size: 28px;
+      font-weight: 300;
+      color: var(--text-primary);
+      margin-bottom: 6px;
+    }
+
+    .pipeline-label {
+      font-size: 11px;
+      color: var(--text-tertiary);
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    /* KPI Cards */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .kpi-card {
+      padding: 16px 0;
+    }
+
+    .kpi-value {
+      font-family: var(--font-mono);
+      font-size: 32px;
+      font-weight: 300;
+      letter-spacing: -0.02em;
+      margin-bottom: 6px;
+    }
+
+    .kpi-label {
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    .kpi-trend {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-tertiary);
+      margin-left: 8px;
+    }
+
+    /* Activity List */
+    .activity-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .activity-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .activity-item:last-child {
+      border-bottom: none;
+    }
+
+    .activity-item:hover {
+      background: var(--bg-secondary);
+      margin: 0 -16px;
+      padding: 14px 16px;
+    }
+
+    .activity-icon {
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-tertiary);
+      font-size: 12px;
+      flex-shrink: 0;
+    }
+
+    .activity-content {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .activity-title {
+      font-size: 13px;
+      color: var(--text-primary);
+      margin-bottom: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .activity-meta {
+      font-size: 11px;
+      color: var(--text-tertiary);
+    }
+
+    .activity-time {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-tertiary);
+      flex-shrink: 0;
+    }
+
+    /* AI Insights */
+    .insight-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .insight-item {
+      padding: 14px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      cursor: pointer;
+      transition: border-color 0.15s;
+    }
+
+    .insight-item:hover {
+      border-color: var(--border-hover);
+    }
+
+    .insight-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .insight-badge {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--accent);
+      font-weight: 500;
+    }
+
+    .insight-title {
+      font-size: 13px;
+      color: var(--text-primary);
+      line-height: 1.5;
+    }
+
+    /* Empty State */
+    .empty-state {
+      padding: 32px 0;
+      text-align: center;
+      color: var(--text-tertiary);
+      font-size: 13px;
+    }
+
+    /* Command Palette Modal */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.8);
+      display: none;
+      align-items: flex-start;
+      justify-content: center;
+      padding-top: 15vh;
+      z-index: 1000;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal {
+      width: 100%;
+      max-width: 560px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .modal-input-wrap {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .modal-input-wrap i {
+      color: var(--text-tertiary);
+      font-size: 16px;
+    }
+
+    .modal-input {
+      flex: 1;
+      background: none;
+      border: none;
+      outline: none;
+      font-size: 15px;
+      color: var(--text-primary);
+      font-family: var(--font-sans);
+    }
+
+    .modal-input::placeholder {
+      color: var(--text-tertiary);
+    }
+
+    .modal-results {
+      max-height: 320px;
+      overflow-y: auto;
+    }
+
+    .modal-section {
+      padding: 8px 0;
+    }
+
+    .modal-section-title {
+      padding: 8px 16px;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-tertiary);
+    }
+
+    .modal-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 16px;
+      cursor: pointer;
+      transition: background 0.1s;
+    }
+
+    .modal-item:hover,
+    .modal-item.selected {
+      background: var(--bg-tertiary);
+    }
+
+    .modal-item i {
+      color: var(--text-tertiary);
+      font-size: 14px;
+      width: 20px;
+      text-align: center;
+    }
+
+    .modal-item span {
+      font-size: 13px;
+      color: var(--text-primary);
+    }
+
+    .modal-item kbd {
+      margin-left: auto;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      padding: 2px 6px;
+      background: var(--bg-primary);
+      border-radius: 3px;
+      color: var(--text-tertiary);
+    }
+
+    /* Footer hint */
+    .footer-hint {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 8px 16px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 12px;
+      color: var(--text-tertiary);
+    }
+
+    .footer-hint kbd {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      padding: 2px 6px;
+      background: var(--bg-tertiary);
+      border-radius: 3px;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .container {
+        padding: 0 20px;
+      }
+      
+      .grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .pipeline {
+        flex-direction: column;
+      }
+      
+      .pipeline-stage {
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+        text-align: left;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
+      
+      .pipeline-count {
+        font-size: 24px;
+        margin-bottom: 0;
+      }
+      
+      .kpi-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+      
+      .footer-hint {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <div class="container header">
+      <div class="logo">sinocro<span>.cn</span></div>
+      <div class="header-right">
+        <button class="command-trigger" onclick="openCommandPalette()">
+          <i class="fa-regular fa-terminal"></i>
+          <span>命令面板</span>
+          <kbd>⌘K</kbd>
+        </button>
+        <div class="user-avatar">PM</div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="main">
+    <div class="container">
+      <h1 class="page-title">项目概览</h1>
+
+      <!-- Pipeline Section -->
+      <section class="grid-item" style="margin-bottom: 24px;">
+        <div class="section-header">
+          <h2 class="section-title">临床管线</h2>
+          <a href="#" class="section-link">查看全部 →</a>
+        </div>
+        <div class="pipeline">
+          <div class="pipeline-stage">
+            <div class="pipeline-count">12</div>
+            <div class="pipeline-label">立项</div>
+          </div>
+          <div class="pipeline-stage">
+            <div class="pipeline-count">8</div>
+            <div class="pipeline-label">伦理</div>
+          </div>
+          <div class="pipeline-stage">
+            <div class="pipeline-count">23</div>
+            <div class="pipeline-label">执行</div>
+          </div>
+          <div class="pipeline-stage">
+            <div class="pipeline-count">6</div>
+            <div class="pipeline-label">数管</div>
+          </div>
+          <div class="pipeline-stage">
+            <div class="pipeline-count">4</div>
+            <div class="pipeline-label">总结</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- KPI Grid -->
+      <div class="grid" style="margin-bottom: 24px;">
+        <div class="grid-item">
+          <div class="section-header">
+            <h2 class="section-title">关键指标</h2>
+          </div>
+          <div class="kpi-grid">
+            <div class="kpi-card">
+              <div class="kpi-value">2,847<span class="kpi-trend">+12%</span></div>
+              <div class="kpi-label">入组总数</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-value">94.2%</div>
+              <div class="kpi-label">数据完整率</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid-item">
+          <div class="section-header">
+            <h2 class="section-title">本周新增</h2>
+          </div>
+          <div class="kpi-grid">
+            <div class="kpi-card">
+              <div class="kpi-value">156</div>
+              <div class="kpi-label">入组人数</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-value">3</div>
+              <div class="kpi-label">SAE报告</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Activity & Insights -->
+      <div class="grid">
+        <div class="grid-item">
+          <div class="section-header">
+            <h2 class="section-title">最近动态</h2>
+            <a href="#" class="section-link">更多 →</a>
+          </div>
+          <div class="activity-list">
+            <div class="activity-item">
+              <div class="activity-icon"><i class="fa-regular fa-user-plus"></i></div>
+              <div class="activity-content">
+                <div class="activity-title">YX-2024-001 首例入组完成</div>
+                <div class="activity-meta">肺癌II期 · 北京协和医院</div>
+              </div>
+              <div class="activity-time">2h</div>
+            </div>
+            <div class="activity-item">
+              <div class="activity-icon"><i class="fa-regular fa-file-check"></i></div>
+              <div class="activity-content">
+                <div class="activity-title">YX-2024-015 伦理审批通过</div>
+                <div class="activity-meta">糖尿病III期 · 上海瑞金医院</div>
+              </div>
+              <div class="activity-time">5h</div>
+            </div>
+            <div class="activity-item">
+              <div class="activity-icon"><i class="fa-regular fa-triangle-exclamation"></i></div>
+              <div class="activity-content">
+                <div class="activity-title">YX-2024-008 数据疑问待解答</div>
+                <div class="activity-meta">类风湿性关节炎II期 · 北大医院</div>
+              </div>
+              <div class="activity-time">1d</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid-item">
+          <div class="section-header">
+            <h2 class="section-title">AI 洞察</h2>
+          </div>
+          <div class="insight-list">
+            <div class="insight-item">
+              <div class="insight-header">
+                <span class="insight-badge">风险</span>
+              </div>
+              <div class="insight-title">YX-2024-008 入组进度低于预期15%，建议增加中心或调整招募策略</div>
+            </div>
+            <div class="insight-item">
+              <div class="insight-header">
+                <span class="insight-badge">优化</span>
+              </div>
+              <div class="insight-title">YX-2024-012 数据录入延迟较高，可优先安排DM资源支持</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer Hint -->
+  <div class="footer-hint">
+    <span><kbd>⌘K</kbd> 唤起命令面板</span>
+    <span><kbd>1-4</kbd> 快速切换视图</span>
+    <span><kbd>Tab</kbd> 导航</span>
+  </div>
+
+  <!-- Command Palette Modal -->
+  <div class="modal-overlay" id="commandPalette">
+    <div class="modal">
+      <div class="modal-input-wrap">
+        <i class="fa-regular fa-terminal"></i>
+        <input type="text" class="modal-input" placeholder="输入命令或搜索..." id="commandInput" autocomplete="off">
+      </div>
+      <div class="modal-results">
+        <div class="modal-section">
+          <div class="modal-section-title">快捷操作</div>
+          <div class="modal-item" onclick="executeCommand('projects')">
+            <i class="fa-regular fa-folder"></i>
+            <span>查看全部项目</span>
+            <kbd>⌘1</kbd>
+          </div>
+          <div class="modal-item" onclick="executeCommand('timeline')">
+            <i class="fa-regular fa-chart-timeline"></i>
+            <span>时间线视图</span>
+            <kbd>⌘2</kbd>
+          </div>
+          <div class="modal-item" onclick="executeCommand('risk')">
+            <i class="fa-regular fa-triangle-exclamation"></i>
+            <span>风险看板</span>
+            <kbd>⌘3</kbd>
+          </div>
+          <div class="modal-item" onclick="executeCommand('report')">
+            <i class="fa-regular fa-file-lines"></i>
+            <span>生成报告</span>
+            <kbd>⌘4</kbd>
+          </div>
+        </div>
+        <div class="modal-section">
+          <div class="modal-section-title">最近项目</div>
+          <div class="modal-item" onclick="executeCommand('project-001')">
+            <i class="fa-regular fa-file-medical"></i>
+            <span>YX-2024-001 肺癌II期临床</span>
+          </div>
+          <div class="modal-item" onclick="executeCommand('project-015')">
+            <i class="fa-regular fa-file-medical"></i>
+            <span>YX-2024-015 糖尿病III期临床</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Command Palette
+    function openCommandPalette() {
+      document.getElementById('commandPalette').classList.add('active');
+      document.getElementById('commandInput').focus();
+    }
+
+    function closeCommandPalette() {
+      document.getElementById('commandPalette').classList.remove('active');
+    }
+
+    function executeCommand(cmd) {
+      console.log('Executing:', cmd);
+      closeCommandPalette();
+    }
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', function(e) {
+      // ⌘K or Ctrl+K to open command palette
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        openCommandPalette();
+      }
+      // Escape to close
+      if (e.key === 'Escape') {
+        closeCommandPalette();
+      }
+      // Number keys for quick navigation
+      if (!e.metaKey && !e.ctrlKey && !e.altKey) {
+        const num = parseInt(e.key);
+        if (num >= 1 && num <= 4) {
+          const commands = ['projects', 'timeline', 'risk', 'report'];
+          executeCommand(commands[num - 1]);
+        }
+      }
+    });
+
+    // Click outside to close
+    document.getElementById('commandPalette').addEventListener('click', function(e) {
+      if (e.target === this) {
+        closeCommandPalette();
+      }
+    });
+  </script>
+</body>
+</html>
+<!--
+  ═══════════════════════════════════════════════════════════════════════════
+  极简 SaaS 设计决策说明
+  ═══════════════════════════════════════════════════════════════════════════
+
+  1. 视觉系统
+  ───────────────────────────────────────────────────────────────────────────
+  • 色彩：纯黑底 (#0a0a0a) + 灰白文字，零彩色干扰
+  • 边框：rgba(255,255,255,0.06) 极淡分隔线，营造层次而非分割
+  • 圆角：最大 6px，克制使用
+  • 阴影：完全禁用，依赖边框和间距创造深度
+  • 数字：JetBrains Mono 细体 32px，视觉焦点
+
+  2. 信息架构
+  ───────────────────────────────────────────────────────────────────────────
+  • 临床管线：横向5阶段极简展示，数字即信息
+  • KPI：仅4个核心指标（入组总数/完整率/本周新增/SAE），宁少勿多
+  • 动态：仅3条最近动态，点击展开全量
+  • AI洞察：仅2条最高优先级洞察，无噪音
+
+  3. 交互模式
+  ───────────────────────────────────────────────────────────────────────────
+  • ⌘K 命令面板：替代4个固定快捷入口，键盘驱动，符合 Raycast 理念
+  • 渐进披露：hover 显示上下文，默认只保留关键数字
+  • 数字快捷键：1-4 快速切换视图
+  • Tab 导航：完全键盘可操作
+
+  4. 排版节奏
+  ───────────────────────────────────────────────────────────────────────────
+  • 大量留白：section 间距 48px，元素间距 24px
+  • 有限宽度：max-width 1200px，两栏布局，信息密度低
+  • 字重克制：仅 300/400/500，无粗体，强调通过字号而非字重
+
+  5. 参考对标
+  ───────────────────────────────────────────────────────────────────────────
+  • Linear.app：极简 + monospace 数据 + subtle 边框
+  • Vercel Dashboard：黑白为主 + 干净排版
+  • Raycast：⌘K 命令面板交互范式
+  • Notion：内容优先 + sparse UI + 文字为主
+  ═══════════════════════════════════════════════════════════════════════════
+-->

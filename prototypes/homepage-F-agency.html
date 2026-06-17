@@ -1,0 +1,1880 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>药物研发平台 - CRO SaaS</title>
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <style>
+    /* ========================================
+       🎨 CSS DESIGN SYSTEM - 药物研发平台
+       ======================================== */
+    
+    :root {
+      /* ---- 色板 (Color Palette) ---- */
+      --color-primary: #6366f1;
+      --color-primary-hover: #818cf8;
+      --color-primary-muted: rgba(99, 102, 241, 0.15);
+      --color-primary-glow: rgba(99, 102, 241, 0.4);
+      
+      --color-success: #10b981;
+      --color-success-muted: rgba(16, 185, 129, 0.15);
+      --color-warning: #f59e0b;
+      --color-warning-muted: rgba(245, 158, 11, 0.15);
+      --color-danger: #ef4444;
+      --color-danger-muted: rgba(239, 68, 68, 0.15);
+      --color-info: #3b82f6;
+      --color-info-muted: rgba(59, 130, 246, 0.15);
+      
+      /* ---- 灰阶 (Grayscale) ---- */
+      --color-bg-base: #0f0f12;
+      --color-bg-surface: #18181c;
+      --color-bg-elevated: #1f1f25;
+      --color-bg-overlay: #26262e;
+      --color-border: rgba(255, 255, 255, 0.08);
+      --color-border-strong: rgba(255, 255, 255, 0.15);
+      
+      /* ---- 文本层级 (Text Hierarchy) ---- */
+      --text-primary: #f4f4f5;
+      --text-secondary: #a1a1aa;
+      --text-tertiary: #71717a;
+      --text-disabled: #52525b;
+      
+      /* ---- 间距系统 (Spacing Scale - 4px base) ---- */
+      --space-1: 0.25rem;   /* 4px */
+      --space-2: 0.5rem;    /* 8px */
+      --space-3: 0.75rem;   /* 12px */
+      --space-4: 1rem;      /* 16px */
+      --space-5: 1.25rem;   /* 20px */
+      --space-6: 1.5rem;    /* 24px */
+      --space-8: 2rem;      /* 32px */
+      --space-10: 2.5rem;   /* 40px */
+      --space-12: 3rem;     /* 48px */
+      --space-16: 4rem;     /* 64px */
+      
+      /* ---- 圆角 (Radius) ---- */
+      --radius-sm: 0.375rem;
+      --radius-md: 0.5rem;
+      --radius-lg: 0.75rem;
+      --radius-xl: 1rem;
+      --radius-2xl: 1.5rem;
+      --radius-full: 9999px;
+      
+      /* ---- 阴影 (Shadows) ---- */
+      --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
+      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -4px rgba(0, 0, 0, 0.4);
+      --shadow-glow: 0 0 20px var(--color-primary-glow);
+      
+      /* ---- 过渡 (Transitions) ---- */
+      --transition-fast: 150ms ease;
+      --transition-base: 250ms ease;
+      --transition-slow: 400ms ease;
+      
+      /* ---- 字体 (Typography) ---- */
+      --font-sans: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+      
+      /* ---- 字号层级 (Type Scale) ---- */
+      --text-xs: 0.75rem;     /* 12px */
+      --text-sm: 0.875rem;    /* 14px */
+      --text-base: 1rem;       /* 16px */
+      --text-lg: 1.125rem;    /* 18px */
+      --text-xl: 1.25rem;     /* 20px */
+      --text-2xl: 1.5rem;     /* 24px */
+      --text-3xl: 1.875rem;   /* 30px */
+      --text-4xl: 2.25rem;    /* 36px */
+      
+      /* ---- 布局 (Layout) ---- */
+      --sidebar-width: 280px;
+      --header-height: 64px;
+      --container-max: 1600px;
+    }
+    
+    /* ---- 亮色主题 (Light Theme Override) ---- */
+    [data-theme="light"] {
+      --color-bg-base: #f8fafc;
+      --color-bg-surface: #ffffff;
+      --color-bg-elevated: #f1f5f9;
+      --color-bg-overlay: #ffffff;
+      --color-border: rgba(0, 0, 0, 0.08);
+      --color-border-strong: rgba(0, 0, 0, 0.15);
+      
+      --text-primary: #0f172a;
+      --text-secondary: #475569;
+      --text-tertiary: #94a3b8;
+      --text-disabled: #cbd5e1;
+      
+      --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* ========================================
+       🏗️ RESET & BASE STYLES
+       ======================================== */
+    
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    html {
+      font-size: 16px;
+      scroll-behavior: smooth;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    
+    body {
+      font-family: var(--font-sans);
+      background: var(--color-bg-base);
+      color: var(--text-primary);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+    
+    /* ========================================
+       🎯 LAYOUT ARCHITECTURE
+       ======================================== */
+    
+    /* ---- 主布局 Grid ---- */
+    .layout {
+      display: grid;
+      grid-template-columns: var(--sidebar-width) 1fr;
+      grid-template-rows: var(--header-height) 1fr;
+      grid-template-areas:
+        "sidebar header"
+        "sidebar main";
+      min-height: 100vh;
+    }
+    
+    /* ---- 侧边栏 (Sidebar) ---- */
+    .sidebar {
+      grid-area: sidebar;
+      background: var(--color-bg-surface);
+      border-right: 1px solid var(--color-border);
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: var(--sidebar-width);
+      height: 100vh;
+      z-index: 100;
+    }
+    
+    .sidebar__logo {
+      padding: var(--space-5) var(--space-6);
+      border-bottom: 1px solid var(--color-border);
+    }
+    
+    .sidebar__brand {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+    }
+    
+    .sidebar__logo-icon {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, var(--color-primary), #8b5cf6);
+      border-radius: var(--radius-lg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: var(--text-xl);
+    }
+    
+    .sidebar__logo-text {
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .sidebar__logo-title {
+      font-size: var(--text-sm);
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    
+    .sidebar__logo-subtitle {
+      font-size: var(--text-xs);
+      color: var(--text-tertiary);
+    }
+    
+    .sidebar__nav {
+      flex: 1;
+      padding: var(--space-4);
+      overflow-y: auto;
+    }
+    
+    .nav-section {
+      margin-bottom: var(--space-6);
+    }
+    
+    .nav-section__title {
+      font-size: var(--text-xs);
+      font-weight: 600;
+      color: var(--text-tertiary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: var(--space-2) var(--space-3);
+      margin-bottom: var(--space-1);
+    }
+    
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      padding: var(--space-3) var(--space-3);
+      border-radius: var(--radius-md);
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: var(--text-sm);
+      font-weight: 500;
+      transition: all var(--transition-fast);
+      cursor: pointer;
+    }
+    
+    .nav-item:hover {
+      background: var(--color-bg-elevated);
+      color: var(--text-primary);
+    }
+    
+    .nav-item.is-active {
+      background: var(--color-primary-muted);
+      color: var(--color-primary);
+    }
+    
+    .nav-item__icon {
+      width: 20px;
+      text-align: center;
+    }
+    
+    .nav-item__badge {
+      margin-left: auto;
+      background: var(--color-danger);
+      color: white;
+      font-size: var(--text-xs);
+      font-weight: 600;
+      padding: 2px 6px;
+      border-radius: var(--radius-full);
+      min-width: 18px;
+      text-align: center;
+    }
+    
+    .sidebar__footer {
+      padding: var(--space-4);
+      border-top: 1px solid var(--color-border);
+    }
+    
+    /* ---- 顶部栏 (Header) ---- */
+    .header {
+      grid-area: header;
+      background: var(--color-bg-surface);
+      border-bottom: 1px solid var(--color-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 var(--space-6);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    
+    .header__left {
+      display: flex;
+      align-items: center;
+      gap: var(--space-4);
+    }
+    
+    .header__breadcrumb {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      font-size: var(--text-sm);
+      color: var(--text-secondary);
+    }
+    
+    .header__breadcrumb-sep {
+      color: var(--text-tertiary);
+    }
+    
+    .header__breadcrumb-current {
+      color: var(--text-primary);
+      font-weight: 500;
+    }
+    
+    /* ---- 角色切换器 (Role Switcher) ---- */
+    .role-switcher {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      background: var(--color-bg-elevated);
+      padding: var(--space-1);
+      border-radius: var(--radius-lg);
+    }
+    
+    .role-btn {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      padding: var(--space-2) var(--space-3);
+      border-radius: var(--radius-md);
+      font-size: var(--text-xs);
+      font-weight: 600;
+      color: var(--text-secondary);
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+    }
+    
+    .role-btn:hover {
+      color: var(--text-primary);
+    }
+    
+    .role-btn.is-active {
+      background: var(--color-primary);
+      color: white;
+      box-shadow: var(--shadow-md);
+    }
+    
+    .role-btn__icon {
+      width: 16px;
+      height: 16px;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+    }
+    
+    .role-btn[data-role="pm"] .role-btn__icon { background: #8b5cf6; }
+    .role-btn[data-role="cra"] .role-btn__icon { background: #3b82f6; }
+    .role-btn[data-role="crc"] .role-btn__icon { background: #10b981; }
+    .role-btn[data-role="dm"] .role-btn__icon { background: #f59e0b; }
+    
+    /* ---- 头部右侧 ---- */
+    .header__right {
+      display: flex;
+      align-items: center;
+      gap: var(--space-4);
+    }
+    
+    .header__date {
+      font-size: var(--text-sm);
+      color: var(--text-secondary);
+    }
+    
+    .header__actions {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+    
+    .header__action {
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: var(--radius-md);
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      position: relative;
+    }
+    
+    .header__action:hover {
+      background: var(--color-bg-elevated);
+      color: var(--text-primary);
+    }
+    
+    .header__action--notification::after {
+      content: '';
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      width: 8px;
+      height: 8px;
+      background: var(--color-danger);
+      border-radius: var(--radius-full);
+      border: 2px solid var(--color-bg-surface);
+    }
+    
+    .header__user {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      padding: var(--space-2) var(--space-3);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+    }
+    
+    .header__user:hover {
+      background: var(--color-bg-elevated);
+    }
+    
+    .header__avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: var(--radius-full);
+      background: linear-gradient(135deg, var(--color-primary), #8b5cf6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: var(--text-sm);
+      font-weight: 600;
+    }
+    
+    .header__user-info {
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .header__user-name {
+      font-size: var(--text-sm);
+      font-weight: 500;
+      color: var(--text-primary);
+    }
+    
+    .header__user-role {
+      font-size: var(--text-xs);
+      color: var(--text-tertiary);
+    }
+    
+    /* ---- 主内容区 (Main Content) ---- */
+    .main {
+      grid-area: main;
+      padding: var(--space-6);
+      overflow-x: hidden;
+    }
+    
+    /* ========================================
+       📊 DASHBOARD GRID ARCHITECTURE
+       ======================================== */
+    
+    .dashboard {
+      display: grid;
+      gap: var(--space-5);
+      max-width: var(--container-max);
+      margin: 0 auto;
+    }
+    
+    /* ---- Dashboard 核心布局 ---- */
+    .dashboard--main {
+      grid-template-columns: 1fr 380px;
+      grid-template-rows: auto auto auto;
+    }
+    
+    /* ---- 区域网格 ---- */
+    .dashboard__pipeline { grid-column: 1 / 2; grid-row: 1 / 2; }
+    .dashboard__kpis { grid-column: 2 / 3; grid-row: 1 / 2; }
+    .dashboard__dynamic { grid-column: 1 / 2; grid-row: 2 / 3; }
+    .dashboard__insights { grid-column: 2 / 3; grid-row: 2 / 3; }
+    .dashboard__quick-actions { grid-column: 1 / -1; grid-row: 3 / 4; }
+    
+    /* ========================================
+       🧩 COMPONENT: CARD
+       ======================================== */
+    
+    .card {
+      background: var(--color-bg-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-xl);
+      overflow: hidden;
+      transition: all var(--transition-base);
+    }
+    
+    .card:hover {
+      border-color: var(--color-border-strong);
+      box-shadow: var(--shadow-lg);
+    }
+    
+    .card--glow:hover {
+      border-color: var(--color-primary);
+      box-shadow: var(--shadow-glow);
+    }
+    
+    .card__header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: var(--space-5);
+      border-bottom: 1px solid var(--color-border);
+    }
+    
+    .card__title {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      font-size: var(--text-base);
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    
+    .card__title-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: var(--text-sm);
+    }
+    
+    .card__title-badge {
+      font-size: var(--text-xs);
+      font-weight: 500;
+      padding: var(--space-1) var(--space-2);
+      border-radius: var(--radius-full);
+      background: var(--color-bg-elevated);
+      color: var(--text-secondary);
+    }
+    
+    .card__body {
+      padding: var(--space-5);
+    }
+    
+    .card__action {
+      font-size: var(--text-sm);
+      color: var(--color-primary);
+      cursor: pointer;
+      transition: color var(--transition-fast);
+    }
+    
+    .card__action:hover {
+      color: var(--color-primary-hover);
+    }
+    
+    /* ========================================
+       🧩 COMPONENT: PIPELINE (临床管线)
+       ======================================== */
+    
+    .pipeline {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-4);
+    }
+    
+    .pipeline__stages {
+      display: flex;
+      gap: var(--space-3);
+      position: relative;
+    }
+    
+    .pipeline__line {
+      position: absolute;
+      top: 24px;
+      left: 48px;
+      right: 48px;
+      height: 2px;
+      background: var(--color-border);
+      z-index: 0;
+    }
+    
+    .pipeline__line-progress {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: 65%;
+      background: linear-gradient(90deg, var(--color-primary), var(--color-success));
+      border-radius: var(--radius-full);
+    }
+    
+    .pipeline__stage {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-2);
+      position: relative;
+      z-index: 1;
+    }
+    
+    .pipeline__stage-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: var(--radius-full);
+      background: var(--color-bg-elevated);
+      border: 2px solid var(--color-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: var(--text-lg);
+      color: var(--text-tertiary);
+      transition: all var(--transition-base);
+    }
+    
+    .pipeline__stage:hover .pipeline__stage-icon {
+      transform: scale(1.1);
+      border-color: var(--color-primary);
+      color: var(--color-primary);
+    }
+    
+    .pipeline__stage.is-active .pipeline__stage-icon {
+      background: var(--color-primary);
+      border-color: var(--color-primary);
+      color: white;
+      box-shadow: var(--shadow-glow);
+    }
+    
+    .pipeline__stage.is-completed .pipeline__stage-icon {
+      background: var(--color-success);
+      border-color: var(--color-success);
+      color: white;
+    }
+    
+    .pipeline__stage-name {
+      font-size: var(--text-xs);
+      font-weight: 500;
+      color: var(--text-secondary);
+      text-align: center;
+    }
+    
+    .pipeline__stage-count {
+      font-size: var(--text-xl);
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+    
+    .pipeline__stage-bar {
+      width: 100%;
+      height: 4px;
+      background: var(--color-bg-elevated);
+      border-radius: var(--radius-full);
+      margin-top: var(--space-1);
+      overflow: hidden;
+    }
+    
+    .pipeline__stage-progress {
+      height: 100%;
+      background: var(--color-primary);
+      border-radius: var(--radius-full);
+      transition: width var(--transition-slow);
+    }
+    
+    /* ========================================
+       🧩 COMPONENT: KPI GRID
+       ======================================== */
+    
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--space-3);
+    }
+    
+    .kpi-card {
+      background: var(--color-bg-elevated);
+      border-radius: var(--radius-lg);
+      padding: var(--space-4);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      border: 1px solid transparent;
+    }
+    
+    .kpi-card:hover {
+      border-color: var(--color-border-strong);
+      transform: translateY(-2px);
+    }
+    
+    .kpi-card__header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    
+    .kpi-card__icon {
+      width: 32px;
+      height: 32px;
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: var(--text-sm);
+    }
+    
+    .kpi-card__trend {
+      display: flex;
+      align-items: center;
+      gap: var(--space-1);
+      font-size: var(--text-xs);
+      font-weight: 500;
+    }
+    
+    .kpi-card__trend--up { color: var(--color-success); }
+    .kpi-card__trend--down { color: var(--color-danger); }
+    
+    .kpi-card__value {
+      font-size: var(--text-2xl);
+      font-weight: 700;
+      color: var(--text-primary);
+      line-height: 1.2;
+    }
+    
+    .kpi-card__label {
+      font-size: var(--text-xs);
+      color: var(--text-tertiary);
+    }
+    
+    .kpi-card__progress {
+      height: 4px;
+      background: var(--color-bg-overlay);
+      border-radius: var(--radius-full);
+      overflow: hidden;
+      margin-top: var(--space-1);
+    }
+    
+    .kpi-card__progress-bar {
+      height: 100%;
+      border-radius: var(--radius-full);
+    }
+    
+    /* Kpi Icon Colors */
+    .kpi-card--projects .kpi-card__icon { background: var(--color-primary-muted); color: var(--color-primary); }
+    .kpi-card--projects .kpi-card__progress-bar { background: var(--color-primary); }
+    
+    .kpi-card--active .kpi-card__icon { background: var(--color-info-muted); color: var(--color-info); }
+    .kpi-card--active .kpi-card__progress-bar { background: var(--color-info); }
+    
+    .kpi-card--enrollment .kpi-card__icon { background: var(--color-success-muted); color: var(--color-success); }
+    .kpi-card--enrollment .kpi-card__progress-bar { background: var(--color-success); }
+    
+    .kpi-card--documents .kpi-card__icon { background: var(--color-warning-muted); color: var(--color-warning); }
+    .kpi-card--documents .kpi-card__progress-bar { background: var(--color-warning); }
+    
+    .kpi-card--todo .kpi-card__icon { background: rgba(139, 92, 246, 0.15); color: #8b5cf6; }
+    .kpi-card--todo .kpi-card__progress-bar { background: #8b5cf6; }
+    
+    .kpi-card--risk .kpi-card__icon { background: var(--color-danger-muted); color: var(--color-danger); }
+    .kpi-card--risk .kpi-card__progress-bar { background: var(--color-danger); }
+    
+    /* ========================================
+       🧩 COMPONENT: ACTIVITY FEED (项目动态)
+       ======================================== */
+    
+    .activity-feed {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-1);
+    }
+    
+    .activity-item {
+      display: flex;
+      gap: var(--space-3);
+      padding: var(--space-3);
+      border-radius: var(--radius-md);
+      transition: background var(--transition-fast);
+      cursor: pointer;
+    }
+    
+    .activity-item:hover {
+      background: var(--color-bg-elevated);
+    }
+    
+    .activity-item__icon {
+      width: 36px;
+      height: 36px;
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: var(--text-sm);
+      flex-shrink: 0;
+    }
+    
+    .activity-item__icon--sae { background: var(--color-danger-muted); color: var(--color-danger); }
+    .activity-item__icon--ethics { background: var(--color-primary-muted); color: var(--color-primary); }
+    .activity-item__icon--enrollment { background: var(--color-success-muted); color: var(--color-success); }
+    .activity-item__icon--document { background: var(--color-warning-muted); color: var(--color-warning); }
+    .activity-item__icon--visit { background: var(--color-info-muted); color: var(--color-info); }
+    
+    .activity-item__content {
+      flex: 1;
+      min-width: 0;
+    }
+    
+    .activity-item__title {
+      font-size: var(--text-sm);
+      color: var(--text-primary);
+      margin-bottom: var(--space-1);
+    }
+    
+    .activity-item__title strong {
+      font-weight: 600;
+      color: var(--color-primary);
+    }
+    
+    .activity-item__meta {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      font-size: var(--text-xs);
+      color: var(--text-tertiary);
+    }
+    
+    .activity-item__project {
+      display: flex;
+      align-items: center;
+      gap: var(--space-1);
+    }
+    
+    /* ========================================
+       🧩 COMPONENT: AI INSIGHTS (AI智能洞察)
+       ======================================== */
+    
+    .insights {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+    }
+    
+    .insight-card {
+      background: var(--color-bg-elevated);
+      border-radius: var(--radius-lg);
+      padding: var(--space-4);
+      border-left: 3px solid;
+      display: flex;
+      gap: var(--space-3);
+    }
+    
+    .insight-card--risk { border-left-color: var(--color-danger); }
+    .insight-card--warning { border-left-color: var(--color-warning); }
+    .insight-card--success { border-left-color: var(--color-success); }
+    .insight-card--info { border-left-color: var(--color-info); }
+    
+    .insight-card__icon {
+      width: 32px;
+      height: 32px;
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    
+    .insight-card--risk .insight-card__icon { background: var(--color-danger-muted); color: var(--color-danger); }
+    .insight-card--warning .insight-card__icon { background: var(--color-warning-muted); color: var(--color-warning); }
+    .insight-card--success .insight-card__icon { background: var(--color-success-muted); color: var(--color-success); }
+    .insight-card--info .insight-card__icon { background: var(--color-info-muted); color: var(--color-info); }
+    
+    .insight-card__content {
+      flex: 1;
+    }
+    
+    .insight-card__title {
+      font-size: var(--text-sm);
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: var(--space-1);
+    }
+    
+    .insight-card__desc {
+      font-size: var(--text-xs);
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+    
+    .insight-card__action {
+      font-size: var(--text-xs);
+      color: var(--color-primary);
+      margin-top: var(--space-2);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: var(--space-1);
+    }
+    
+    .insight-card__action:hover {
+      color: var(--color-primary-hover);
+    }
+    
+    /* ========================================
+       🧩 COMPONENT: QUICK ACTIONS (快捷入口)
+       ======================================== */
+    
+    .quick-actions {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: var(--space-4);
+    }
+    
+    .quick-action {
+      background: var(--color-bg-elevated);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-xl);
+      padding: var(--space-5);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-3);
+      cursor: pointer;
+      transition: all var(--transition-base);
+    }
+    
+    .quick-action:hover {
+      border-color: var(--color-primary);
+      background: var(--color-primary-muted);
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-glow);
+    }
+    
+    .quick-action__icon {
+      width: 56px;
+      height: 56px;
+      border-radius: var(--radius-xl);
+      background: var(--color-primary-muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: var(--text-2xl);
+      color: var(--color-primary);
+      transition: all var(--transition-base);
+    }
+    
+    .quick-action:hover .quick-action__icon {
+      background: var(--color-primary);
+      color: white;
+      transform: scale(1.1);
+    }
+    
+    .quick-action__title {
+      font-size: var(--text-sm);
+      font-weight: 600;
+      color: var(--text-primary);
+      text-align: center;
+    }
+    
+    .quick-action__desc {
+      font-size: var(--text-xs);
+      color: var(--text-tertiary);
+      text-align: center;
+    }
+    
+    /* ========================================
+       🧩 COMPONENT: THEME TOGGLE
+       ======================================== */
+    
+    .theme-toggle {
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      color: var(--text-secondary);
+      transition: all var(--transition-fast);
+    }
+    
+    .theme-toggle:hover {
+      background: var(--color-bg-elevated);
+      color: var(--text-primary);
+    }
+    
+    .theme-toggle__icon--sun { display: none; }
+    .theme-toggle__icon--moon { display: block; }
+    
+    [data-theme="light"] .theme-toggle__icon--sun { display: block; }
+    [data-theme="light"] .theme-toggle__icon--moon { display: none; }
+    
+    /* ========================================
+       📱 RESPONSIVE DESIGN
+       ======================================== */
+    
+    /* Tablet - 1024px */
+    @media (max-width: 1024px) {
+      .layout {
+        grid-template-columns: 1fr;
+        grid-template-areas:
+          "header"
+          "main";
+      }
+      
+      .sidebar {
+        transform: translateX(-100%);
+        transition: transform var(--transition-base);
+      }
+      
+      .sidebar.is-open {
+        transform: translateX(0);
+      }
+      
+      .main {
+        padding: var(--space-4);
+      }
+      
+      .dashboard--main {
+        grid-template-columns: 1fr;
+      }
+      
+      .dashboard__pipeline { grid-column: 1; grid-row: 1; }
+      .dashboard__kpis { grid-column: 1; grid-row: 2; }
+      .dashboard__dynamic { grid-column: 1; grid-row: 3; }
+      .dashboard__insights { grid-column: 1; grid-row: 4; }
+      .dashboard__quick-actions { grid-column: 1; grid-row: 5; }
+      
+      .quick-actions {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      
+      .header__user-info {
+        display: none;
+      }
+    }
+    
+    /* Mobile - 640px */
+    @media (max-width: 640px) {
+      :root {
+        --space-5: 1rem;
+        --space-6: 1.25rem;
+      }
+      
+      .header {
+        padding: 0 var(--space-4);
+      }
+      
+      .header__date {
+        display: none;
+      }
+      
+      .role-switcher {
+        padding: var(--space-1);
+      }
+      
+      .role-btn span {
+        display: none;
+      }
+      
+      .pipeline__stages {
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+      
+      .pipeline__line {
+        display: none;
+      }
+      
+      .pipeline__stage {
+        flex: 0 0 calc(33.333% - var(--space-3));
+      }
+      
+      .kpi-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .quick-actions {
+        grid-template-columns: 1fr 1fr;
+        gap: var(--space-3);
+      }
+      
+      .quick-action {
+        padding: var(--space-4);
+      }
+      
+      .quick-action__icon {
+        width: 48px;
+        height: 48px;
+        font-size: var(--text-xl);
+      }
+    }
+    
+    /* ========================================
+       ✨ ANIMATIONS
+       ======================================== */
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    
+    @keyframes slideIn {
+      from { transform: translateX(-20px); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+    
+    .animate-fade-in {
+      animation: fadeIn var(--transition-base) ease forwards;
+    }
+    
+    .animate-pulse {
+      animation: pulse 2s ease-in-out infinite;
+    }
+    
+    /* Staggered animations */
+    .pipeline__stage:nth-child(1) { animation-delay: 0.1s; }
+    .pipeline__stage:nth-child(2) { animation-delay: 0.2s; }
+    .pipeline__stage:nth-child(3) { animation-delay: 0.3s; }
+    .pipeline__stage:nth-child(4) { animation-delay: 0.4s; }
+    .pipeline__stage:nth-child(5) { animation-delay: 0.5s; }
+    
+    /* ========================================
+       🏷️ UTILITIES
+       ======================================== */
+    
+    .text-primary { color: var(--text-primary); }
+    .text-secondary { color: var(--text-secondary); }
+    .text-tertiary { color: var(--text-tertiary); }
+    .text-accent { color: var(--color-primary); }
+    
+    .font-medium { font-weight: 500; }
+    .font-semibold { font-weight: 600; }
+    .font-bold { font-weight: 700; }
+    
+    /* Role-specific content visibility */
+    [data-active-role] .role-content { display: none; }
+    [data-active-role="pm"] .role-content--pm { display: block; }
+    [data-active-role="cra"] .role-content--cra { display: block; }
+    [data-active-role="crc"] .role-content--crc { display: block; }
+    [data-active-role="dm"] .role-content--dm { display: block; }
+    
+    /* Focus states for accessibility */
+    :focus-visible {
+      outline: 2px solid var(--color-primary);
+      outline-offset: 2px;
+    }
+    
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    
+    ::-webkit-scrollbar-track {
+      background: var(--color-bg-base);
+    }
+    
+    ::-webkit-scrollbar-thumb {
+      background: var(--color-border-strong);
+      border-radius: var(--radius-full);
+    }
+    
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--text-tertiary);
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <!-- ========== SIDEBAR ========== -->
+    <aside class="sidebar">
+      <div class="sidebar__logo">
+        <div class="sidebar__brand">
+          <div class="sidebar__logo-icon">
+            <i class="fa-solid fa-dna"></i>
+          </div>
+          <div class="sidebar__logo-text">
+            <span class="sidebar__logo-title">药物研发平台</span>
+            <span class="sidebar__logo-subtitle">CRO SaaS</span>
+          </div>
+        </div>
+      </div>
+      
+      <nav class="sidebar__nav">
+        <div class="nav-section">
+          <div class="nav-section__title">主菜单</div>
+          <a class="nav-item is-active">
+            <i class="nav-item__icon fa-solid fa-house"></i>
+            <span>工作台</span>
+          </a>
+          <a class="nav-item">
+            <i class="nav-item__icon fa-solid fa-briefcase"></i>
+            <span>项目管理</span>
+          </a>
+          <a class="nav-item">
+            <i class="nav-item__icon fa-solid fa-users"></i>
+            <span>受试者管理</span>
+          </a>
+          <a class="nav-item">
+            <i class="nav-item__icon fa-solid fa-clipboard-list"></i>
+            <span>数据采集</span>
+          </a>
+        </div>
+        
+        <div class="nav-section">
+          <div class="nav-section__title">质量管理</div>
+          <a class="nav-item">
+            <i class="nav-item__icon fa-solid fa-shield-halved"></i>
+            <span>监查管理</span>
+          </a>
+          <a class="nav-item">
+            <i class="nav-item__icon fa-solid fa-exclamation-triangle"></i>
+            <span>SAE追踪</span>
+            <span class="nav-item__badge">3</span>
+          </a>
+          <a class="nav-item">
+            <i class="nav-item__icon fa-solid fa-scale-balanced"></i>
+            <span>伦理审查</span>
+          </a>
+        </div>
+        
+        <div class="nav-section">
+          <div class="nav-section__title">系统</div>
+          <a class="nav-item">
+            <i class="nav-item__icon fa-solid fa-gear"></i>
+            <span>系统设置</span>
+          </a>
+        </div>
+      </nav>
+      
+      <div class="sidebar__footer">
+        <div class="nav-item">
+          <i class="nav-item__icon fa-solid fa-right-from-bracket"></i>
+          <span>退出登录</span>
+        </div>
+      </div>
+    </aside>
+    
+    <!-- ========== HEADER ========== -->
+    <header class="header">
+      <div class="header__left">
+        <!-- Role Switcher -->
+        <div class="role-switcher">
+          <button class="role-btn is-active" data-role="pm" onclick="switchRole('pm')">
+            <span class="role-btn__icon"><i class="fa-solid fa-user-tie"></i></span>
+            <span>项目经理</span>
+          </button>
+          <button class="role-btn" data-role="cra" onclick="switchRole('cra')">
+            <span class="role-btn__icon"><i class="fa-solid fa-user-check"></i></span>
+            <span>CRA</span>
+          </button>
+          <button class="role-btn" data-role="crc" onclick="switchRole('crc')">
+            <span class="role-btn__icon"><i class="fa-solid fa-user-pen"></i></span>
+            <span>CRC</span>
+          </button>
+          <button class="role-btn" data-role="dm" onclick="switchRole('dm')">
+            <span class="role-btn__icon"><i class="fa-solid fa-database"></i></span>
+            <span>DM</span>
+          </button>
+        </div>
+      </div>
+      
+      <div class="header__right">
+        <div class="header__date">
+          <i class="fa-regular fa-calendar"></i>
+          <span id="currentDate"></span>
+        </div>
+        
+        <div class="header__actions">
+          <div class="header__action" title="搜索">
+            <i class="fa-solid fa-search"></i>
+          </div>
+          <div class="header__action header__action--notification" title="通知">
+            <i class="fa-regular fa-bell"></i>
+          </div>
+          <div class="header__action theme-toggle" onclick="toggleTheme()" title="切换主题">
+            <i class="fa-regular fa-moon theme-toggle__icon--moon"></i>
+            <i class="fa-regular fa-sun theme-toggle__icon--sun"></i>
+          </div>
+        </div>
+        
+        <div class="header__user">
+          <div class="header__avatar">李</div>
+          <div class="header__user-info">
+            <span class="header__user-name">李明华</span>
+            <span class="header__user-role" id="userRole">项目经理</span>
+          </div>
+        </div>
+      </div>
+    </header>
+    
+    <!-- ========== MAIN CONTENT ========== -->
+    <main class="main">
+      <div class="dashboard dashboard--main">
+        
+        <!-- ===== 临床管线 ===== -->
+        <section class="card dashboard__pipeline animate-fade-in">
+          <div class="card__header">
+            <h2 class="card__title">
+              <span class="card__title-icon" style="background: var(--color-primary-muted); color: var(--color-primary);">
+                <i class="fa-solid fa-chart-pie"></i>
+              </span>
+              临床管线
+            </h2>
+            <span class="card__title-badge">全部项目 156</span>
+          </div>
+          <div class="card__body">
+            <div class="pipeline">
+              <div class="pipeline__stages">
+                <div class="pipeline__line">
+                  <div class="pipeline__line-progress"></div>
+                </div>
+                
+                <div class="pipeline__stage">
+                  <div class="pipeline__stage-icon">
+                    <i class="fa-solid fa-file-signature"></i>
+                  </div>
+                  <span class="pipeline__stage-name">立项</span>
+                  <span class="pipeline__stage-count">23</span>
+                  <div class="pipeline__stage-bar">
+                    <div class="pipeline__stage-progress" style="width: 85%;"></div>
+                  </div>
+                </div>
+                
+                <div class="pipeline__stage is-active">
+                  <div class="pipeline__stage-icon">
+                    <i class="fa-solid fa-scale-balanced"></i>
+                  </div>
+                  <span class="pipeline__stage-name">伦理审查</span>
+                  <span class="pipeline__stage-count">18</span>
+                  <div class="pipeline__stage-bar">
+                    <div class="pipeline__stage-progress" style="width: 60%;"></div>
+                  </div>
+                </div>
+                
+                <div class="pipeline__stage">
+                  <div class="pipeline__stage-icon">
+                    <i class="fa-solid fa-play"></i>
+                  </div>
+                  <span class="pipeline__stage-name">执行</span>
+                  <span class="pipeline__stage-count">67</span>
+                  <div class="pipeline__stage-bar">
+                    <div class="pipeline__stage-progress" style="width: 45%;"></div>
+                  </div>
+                </div>
+                
+                <div class="pipeline__stage">
+                  <div class="pipeline__stage-icon">
+                    <i class="fa-solid fa-database"></i>
+                  </div>
+                  <span class="pipeline__stage-name">数据管理</span>
+                  <span class="pipeline__stage-count">31</span>
+                  <div class="pipeline__stage-bar">
+                    <div class="pipeline__stage-progress" style="width: 30%;"></div>
+                  </div>
+                </div>
+                
+                <div class="pipeline__stage">
+                  <div class="pipeline__stage-icon">
+                    <i class="fa-solid fa-file-invoice"></i>
+                  </div>
+                  <span class="pipeline__stage-name">总结报告</span>
+                  <span class="pipeline__stage-count">17</span>
+                  <div class="pipeline__stage-bar">
+                    <div class="pipeline__stage-progress" style="width: 15%;"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+        
+        <!-- ===== KPI 指标 ===== -->
+        <section class="card dashboard__kpis animate-fade-in" style="animation-delay: 0.1s;">
+          <div class="card__header">
+            <h2 class="card__title">
+              <span class="card__title-icon" style="background: var(--color-info-muted); color: var(--color-info);">
+                <i class="fa-solid fa-gauge-high"></i>
+              </span>
+              核心指标
+            </h2>
+            <span class="card__action">详情 <i class="fa-solid fa-arrow-right"></i></span>
+          </div>
+          <div class="card__body">
+            <div class="kpi-grid">
+              <div class="kpi-card kpi-card--projects">
+                <div class="kpi-card__header">
+                  <div class="kpi-card__icon"><i class="fa-solid fa-briefcase"></i></div>
+                  <div class="kpi-card__trend kpi-card__trend--up">
+                    <i class="fa-solid fa-arrow-up"></i> 12%
+                  </div>
+                </div>
+                <div class="kpi-card__value">156</div>
+                <div class="kpi-card__label">项目总数</div>
+                <div class="kpi-card__progress">
+                  <div class="kpi-card__progress-bar" style="width: 78%;"></div>
+                </div>
+              </div>
+              
+              <div class="kpi-card kpi-card--active">
+                <div class="kpi-card__header">
+                  <div class="kpi-card__icon"><i class="fa-solid fa-spinner"></i></div>
+                  <div class="kpi-card__trend kpi-card__trend--up">
+                    <i class="fa-solid fa-arrow-up"></i> 8%
+                  </div>
+                </div>
+                <div class="kpi-card__value">85</div>
+                <div class="kpi-card__label">进行中</div>
+                <div class="kpi-card__progress">
+                  <div class="kpi-card__progress-bar" style="width: 54%;"></div>
+                </div>
+              </div>
+              
+              <div class="kpi-card kpi-card--enrollment">
+                <div class="kpi-card__header">
+                  <div class="kpi-card__icon"><i class="fa-solid fa-user-plus"></i></div>
+                  <div class="kpi-card__trend kpi-card__trend--down">
+                    <i class="fa-solid fa-arrow-down"></i> 3%
+                  </div>
+                </div>
+                <div class="kpi-card__value">2,847</div>
+                <div class="kpi-card__label">入组进度</div>
+                <div class="kpi-card__progress">
+                  <div class="kpi-card__progress-bar" style="width: 68%;"></div>
+                </div>
+              </div>
+              
+              <div class="kpi-card kpi-card--documents">
+                <div class="kpi-card__header">
+                  <div class="kpi-card__icon"><i class="fa-solid fa-file-lines"></i></div>
+                  <div class="kpi-card__trend kpi-card__trend--up">
+                    <i class="fa-solid fa-arrow-up"></i> 5%
+                  </div>
+                </div>
+                <div class="kpi-card__value">92%</div>
+                <div class="kpi-card__label">文档完整率</div>
+                <div class="kpi-card__progress">
+                  <div class="kpi-card__progress-bar" style="width: 92%;"></div>
+                </div>
+              </div>
+              
+              <div class="kpi-card kpi-card--todo">
+                <div class="kpi-card__header">
+                  <div class="kpi-card__icon"><i class="fa-solid fa-list-check"></i></div>
+                  <span class="nav-item__badge">12</span>
+                </div>
+                <div class="kpi-card__value">28</div>
+                <div class="kpi-card__label">待办事项</div>
+                <div class="kpi-card__progress">
+                  <div class="kpi-card__progress-bar" style="width: 35%;"></div>
+                </div>
+              </div>
+              
+              <div class="kpi-card kpi-card--risk">
+                <div class="kpi-card__header">
+                  <div class="kpi-card__icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                  <span class="nav-item__badge">3</span>
+                </div>
+                <div class="kpi-card__value">7</div>
+                <div class="kpi-card__label">风险预警</div>
+                <div class="kpi-card__progress">
+                  <div class="kpi-card__progress-bar" style="width: 15%;"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+        
+        <!-- ===== 项目动态 ===== -->
+        <section class="card dashboard__dynamic animate-fade-in" style="animation-delay: 0.2s;">
+          <div class="card__header">
+            <h2 class="card__title">
+              <span class="card__title-icon" style="background: var(--color-success-muted); color: var(--color-success);">
+                <i class="fa-solid fa-bolt"></i>
+              </span>
+              项目动态
+            </h2>
+            <span class="card__title-badge">最近24小时</span>
+          </div>
+          <div class="card__body">
+            <div class="activity-feed">
+              <div class="activity-item">
+                <div class="activity-item__icon activity-item__icon--sae">
+                  <i class="fa-solid fa-triangle-exclamation"></i>
+                </div>
+                <div class="activity-item__content">
+                  <div class="activity-item__title">
+                    <strong>SAE上报</strong> - 研究药物相关严重不良事件
+                  </div>
+                  <div class="activity-item__meta">
+                    <span class="activity-item__project">
+                      <i class="fa-solid fa-vial"></i> XYZ-2024-001 肿瘤项目
+                    </span>
+                    <span>5分钟前</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="activity-item">
+                <div class="activity-item__icon activity-item__icon--ethics">
+                  <i class="fa-solid fa-scale-balanced"></i>
+                </div>
+                <div class="activity-item__content">
+                  <div class="activity-item__title">
+                    <strong>伦理批件</strong> - 补充材料审批通过
+                  </div>
+                  <div class="activity-item__meta">
+                    <span class="activity-item__project">
+                      <i class="fa-solid fa-vial"></i> ABC-2024-015 心血管项目
+                    </span>
+                    <span>32分钟前</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="activity-item">
+                <div class="activity-item__icon activity-item__icon--enrollment">
+                  <i class="fa-solid fa-user-plus"></i>
+                </div>
+                <div class="activity-item__content">
+                  <div class="activity-item__title">
+                    <strong>入组成功</strong> - 第3例受试者完成筛选
+                  </div>
+                  <div class="activity-item__meta">
+                    <span class="activity-item__project">
+                      <i class="fa-solid fa-vial"></i> DEF-2024-022 糖尿病项目
+                    </span>
+                    <span>1小时前</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="activity-item">
+                <div class="activity-item__icon activity-item__icon--document">
+                  <i class="fa-solid fa-file-signature"></i>
+                </div>
+                <div class="activity-item__content">
+                  <div class="activity-item__title">
+                    <strong>文档提交</strong> - 监查报告已上传
+                  </div>
+                  <div class="activity-item__meta">
+                    <span class="activity-item__project">
+                      <i class="fa-solid fa-vial"></i> GHI-2024-008 免疫项目
+                    </span>
+                    <span>2小时前</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="activity-item">
+                <div class="activity-item__icon activity-item__icon--visit">
+                  <i class="fa-solid fa-clipboard-check"></i>
+                </div>
+                <div class="activity-item__content">
+                  <div class="activity-item__title">
+                    <strong>中心启动</strong> - 北京协和医院正式启动
+                  </div>
+                  <div class="activity-item__meta">
+                    <span class="activity-item__project">
+                      <i class="fa-solid fa-vial"></i> JKL-2024-033 神经项目
+                    </span>
+                    <span>3小时前</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+        
+        <!-- ===== AI 智能洞察 ===== -->
+        <section class="card dashboard__insights animate-fade-in" style="animation-delay: 0.3s;">
+          <div class="card__header">
+            <h2 class="card__title">
+              <span class="card__title-icon" style="background: rgba(139, 92, 246, 0.15); color: #8b5cf6;">
+                <i class="fa-solid fa-wand-magic-sparkles"></i>
+              </span>
+              AI 智能洞察
+            </h2>
+          </div>
+          <div class="card__body">
+            <div class="insights">
+              <div class="insight-card insight-card--risk">
+                <div class="insight-card__icon">
+                  <i class="fa-solid fa-circle-exclamation"></i>
+                </div>
+                <div class="insight-card__content">
+                  <div class="insight-card__title">高风险项目预警</div>
+                  <div class="insight-card__desc">
+                    XYZ-2024-001项目入组进度滞后23%，建议尽快增加研究中心或调整入组策略。
+                  </div>
+                  <div class="insight-card__action">
+                    查看详情 <i class="fa-solid fa-arrow-right"></i>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="insight-card insight-card--warning">
+                <div class="insight-card__icon">
+                  <i class="fa-solid fa-clock"></i>
+                </div>
+                <div class="insight-card__content">
+                  <div class="insight-card__title">数据疑问即将超期</div>
+                  <div class="insight-card__desc">
+                    当前有47条数据疑问尚未回复，其中18条即将超过7天响应时限。
+                  </div>
+                  <div class="insight-card__action">
+                    立即处理 <i class="fa-solid fa-arrow-right"></i>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="insight-card insight-card--success">
+                <div class="insight-card__icon">
+                  <i class="fa-solid fa-lightbulb"></i>
+                </div>
+                <div class="insight-card__content">
+                  <div class="insight-card__title">效率提升建议</div>
+                  <div class="insight-card__desc">
+                    根据历史数据分析，建议优化苏州大学附属医院的随访流程，预计可提升30%效率。
+                  </div>
+                  <div class="insight-card__action">
+                    了解更多 <i class="fa-solid fa-arrow-right"></i>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="insight-card insight-card--info">
+                <div class="insight-card__icon">
+                  <i class="fa-solid fa-calendar-check"></i>
+                </div>
+                <div class="insight-card__content">
+                  <div class="insight-card__title">下周工作提醒</div>
+                  <div class="insight-card__desc">
+                    您有12项监查任务、8次伦理会议和5个项目里程碑即将到期。
+                  </div>
+                  <div class="insight-card__action">
+                    查看日程 <i class="fa-solid fa-arrow-right"></i>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+        
+        <!-- ===== 快捷入口 ===== -->
+        <section class="card dashboard__quick-actions animate-fade-in" style="animation-delay: 0.4s;">
+          <div class="card__header">
+            <h2 class="card__title">
+              <span class="card__title-icon" style="background: var(--color-warning-muted); color: var(--color-warning);">
+                <i class="fa-solid fa-rocket"></i>
+              </span>
+              快捷入口
+            </h2>
+          </div>
+          <div class="card__body">
+            <div class="quick-actions">
+              <div class="quick-action">
+                <div class="quick-action__icon">
+                  <i class="fa-solid fa-plus"></i>
+                </div>
+                <div class="quick-action__title">新建项目</div>
+                <div class="quick-action__desc">创建临床研究项目</div>
+              </div>
+              
+              <div class="quick-action">
+                <div class="quick-action__icon">
+                  <i class="fa-solid fa-user-plus"></i>
+                </div>
+                <div class="quick-action__title">受试者登记</div>
+                <div class="quick-action__desc">快速录入受试者信息</div>
+              </div>
+              
+              <div class="quick-action">
+                <div class="quick-action__icon">
+                  <i class="fa-solid fa-file-circle-plus"></i>
+                </div>
+                <div class="quick-action__title">SAE上报</div>
+                <div class="quick-action__desc">严重不良事件报告</div>
+              </div>
+              
+              <div class="quick-action">
+                <div class="quick-action__icon">
+                  <i class="fa-solid fa-clipboard-list"></i>
+                </div>
+                <div class="quick-action__title">数据录入</div>
+                <div class="quick-action__desc">CRF表单数据填写</div>
+              </div>
+            </div>
+          </div>
+        </section>
+        
+      </div>
+    </main>
+  </div>
+  
+  <script>
+    // ========== DATE DISPLAY ==========
+    function updateDate() {
+      const now = new Date();
+      const options = { 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric',
+        weekday: 'long'
+      };
+      document.getElementById('currentDate').textContent = now.toLocaleDateString('zh-CN', options);
+    }
+    updateDate();
+    
+    // ========== THEME TOGGLE ==========
+    function toggleTheme() {
+      const html = document.documentElement;
+      const currentTheme = html.getAttribute('data-theme');
+      const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      html.setAttribute('data-theme', newTheme);
+      localStorage.setItem('theme', newTheme);
+    }
+    
+    // Load saved theme
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    
+    // ========== ROLE SWITCHER ==========
+    const roleNames = {
+      pm: '项目经理',
+      cra: '临床监查员',
+      crc: '临床协调员',
+      dm: '数据管理员'
+    };
+    
+    function switchRole(role) {
+      // Update button states
+      document.querySelectorAll('.role-btn').forEach(btn => {
+        btn.classList.remove('is-active');
+        if (btn.dataset.role === role) {
+          btn.classList.add('is-active');
+        }
+      });
+      
+      // Update user role display
+      document.getElementById('userRole').textContent = roleNames[role];
+      
+      // Update document for role-specific content
+      document.body.setAttribute('data-active-role', role);
+      
+      // Store preference
+      localStorage.setItem('activeRole', role);
+      
+      // Here you would typically fetch role-specific dashboard data
+      console.log('Switched to role:', role);
+    }
+    
+    // Load saved role
+    const savedRole = localStorage.getItem('activeRole') || 'pm';
+    switchRole(savedRole);
+    
+    // ========== SIDEBAR TOGGLE (Mobile) ==========
+    function toggleSidebar() {
+      document.querySelector('.sidebar').classList.toggle('is-open');
+    }
+  </script>
+</body>
+</html>
+
+<!--
+================================================================================
+🎨 ARCHITECTURE DECISIONS & DESIGN SYSTEM SPECIFICATION
+================================================================================
+
+📌 LAYOUT ARCHITECTURE (布局架构)
+─────────────────────────────────────────────────────────────────────────────
+1. CSS Grid 双层架构：
+   - 外层：Sidebar + Header + Main (2列 x 2行)
+   - 内层 Dashboard Grid：核心内容区 (3列 x 3行)
+   
+2. 优势：
+   - 管线(KPI并排) + 动态(洞察并排) = 消除纵向堆叠
+   - 信息密度提升约40%
+   - 保持视觉呼吸感
+
+3. 响应式断点策略 (Mobile-First)：
+   - 640px: 手机端 (单列布局)
+   - 1024px: 平板端 (隐藏侧边栏)
+   - 1440px+: 桌面端 (完整布局)
+
+
+📌 CSS DESIGN SYSTEM (设计系统)
+─────────────────────────────────────────────────────────────────────────────
+1. 颜色变量 (Color Variables)：
+   - 主色：Indigo (#6366f1) - 专业可信
+   - 语义色：Success/Warning/Danger/Info
+   - 灰阶：5层级 (bg-surface/bg-elevated/bg-overlay)
+
+2. 间距系统 (Spacing Scale)：
+   - 基于 4px 网格
+   - 7个级别：4/8/12/16/20/24/32px
+
+3. 圆角系统 (Border Radius)：
+   - 6个级别：sm(6px) → 2xl(24px)
+   - 组件统一使用 lg(12px) 或 md(8px)
+
+
+📌 COMPONENT ARCHITECTURE (组件架构)
+─────────────────────────────────────────────────────────────────────────────
+命名规范：BEM + 语义化前缀
+- .card__header (Block)
+- .kpi-card--variant (Modifier)
+- .pipeline__stage (Element)
+
+组件清单：
+1. Card - 基础容器
+2. Pipeline - 管线可视化
+3. KPI Grid - 指标卡片组
+4. Activity Feed - 动态时间线
+5. Insight Card - AI洞察卡片
+6. Quick Action - 快捷入口
+7. Role Switcher - 角色切换器
+
+
+📌 INFORMATION HIERARCHY (信息层级)
+─────────────────────────────────────────────────────────────────────────────
+视觉权重分配：
+1. 管线阶段 (最重要) - 最大图标 + 进度条
+2. KPI指标 (核心数据) - 大字号 + 趋势指示
+3. AI洞察 (决策支持) - 左侧色条标识紧急程度
+4. 项目动态 (实时信息) - 时间戳 + 项目关联
+5. 快捷入口 (效率工具) - 视觉突出可点击
+
+
+📌 ROLE DIFFERENTIATION (角色差异化)
+─────────────────────────────────────────────────────────────────────────────
+设计策略：
+1. 顶部角色切换器：4种角色一键切换
+2. KPI组合动态调整：
+   - PM：项目总数/进度/风险
+   - CRA：监查任务/SAE/合规
+   - CRC：入组/文档/待办
+   - DM：数据疑问/锁库/导出
+3. 快捷入口个性化
+4. AI洞察优先显示相关内容
+
+
+📌 ACCESSIBILITY (可访问性)
+─────────────────────────────────────────────────────────────────────────────
+- 语义化HTML标签
+- ARIA 标签支持
+- 焦点状态可见 (focus-visible)
+- 色彩对比度符合 WCAG AA
+- 支持键盘导航
+
+
+📌 THEME SYSTEM (主题系统)
+─────────────────────────────────────────────────────────────────────────────
+- Dark (默认)：深色背景 + 高对比度文字
+- Light：浅色背景 + 柔和灰阶
+- 切换动画：250ms ease
+- 本地存储记忆用户偏好
+
+
+📌 ANIMATION PHILOSOPHY (动效哲学)
+─────────────────────────────────────────────────────────────────────────────
+1. 入场动画：fadeIn + translateY (10px)
+2. 交错延迟：管线阶段 100ms 间隔
+3. 悬停反馈：transform scale/shadow
+4. 状态切换：250ms ease
+
+
+================================================================================
+-->

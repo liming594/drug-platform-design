@@ -1,0 +1,1201 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>药物研发平台 - CRO临床研究管理</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <!--
+    ╔══════════════════════════════════════════════════════════════════════════════╗
+    ║                         花叔Design · 架构决策注释                            ║
+    ╠══════════════════════════════════════════════════════════════════════════════╣
+    ║  ASSUMPTIONS & REASONING (Junior Designer Mode)                              ║
+    ║                                                                               ║
+    ║  1. 为什么不用传统Dashboard布局？                                             ║
+    ║     → CRO平台的核心是"项目进度"和"时间节点"，传统卡片网格把这些信息        ║
+    ║       扁平化了。药物研发有明确的5阶段生命周期（立项→伦理→执行→数据→报告）  ║
+    ║       更适合用"时间轴叙事"来呈现。                                           ║
+    ║                                                                               ║
+    ║  2. 为什么用"工作台+管线"的分区？                                            ║
+    ║     → 左侧保留一个小型"今日工作台"（PM的核心任务入口）                       ║
+    ║     → 右侧展开完整的项目管线（可视化的时间轴）                               ║
+    ║     → 这样PM不需要滚动就能看到"今天要做什么"+"所有项目在哪"                 ║
+    ║                                                                               ║
+    ║  3. 为什么用垂直管线而非横向泳道？                                           ║
+    ║     → 横向泳道适合少量项目（3-5个），CRO平台通常有20+项目                    ║
+    ║     → 垂直管线可以自然延伸，用不同灰度区分阶段                               ║
+    ║     → 阶段之间的"密度"一目了然（哪个阶段积压最多）                           ║
+    ║                                                                               ║
+    ║  4. 深色主题的决策依据：                                                      ║
+    ║     → 药物研发是专业工具，非消费者产品，深色减少视觉疲劳                      ║
+    ║     → 数据密集型界面深色更聚焦                                               ║
+    ║     → 避免浅色界面在复杂数据下的"白茫茫"感                                   ║
+    ║                                                                               ║
+    ║  5. 避免的AI Slop：                                                           ║
+    ║     → ❌ 紫色渐变（不是医疗/科学行业的表达语言）                               ║
+    ║     → ❌ 圆角+左border accent卡片（太SaaS泛化）                               ║
+    ║     → ❌ emoji图标（专业工具不需要表情）                                       ║
+    ║     → ✅ 使用JetBrains Mono做数字/代码展示（技术感+可读性）                   ║
+    ║     → ✅ 用灰度层次而非颜色来组织信息层级                                     ║
+    ║                                                                               ║
+    ║  6. 色值策略：                                                                ║
+    ║     → 背景：#0D1117（GitHub暗色的改良，降低饱和度更适合长时间盯屏）         ║
+    ║     → 阶段色阶：用同一色相的不同亮度区分（蓝绿色系，医疗行业常用）           ║
+    ║     → 强调色：#22C55E（绿色，临床试验的"成功/进行中"语义）                   ║
+    ║     → 警示色：#EF4444（红色，仅用于SAE等真正需要警觉的信息）                 ║
+    ║                                                                               ║
+    ║  PLACEHOLDERS（等用户提供真实数据）：                                          ║
+    ║     → 项目具体名称、编号                                                      ║
+    ║     → 入组人数、随访日期等时序数据                                            ║
+    ║     → 具体的SAE/风险事件描述                                                  ║
+    ╚══════════════════════════════════════════════════════════════════════════════╝
+  -->
+  
+  <style>
+    /* ========================================
+       CSS CUSTOM PROPERTIES (Design Tokens)
+       ======================================== */
+    :root {
+      /* 色彩系统 - 基于深蓝灰的医疗专业感 */
+      --bg-primary: #0D1117;
+      --bg-secondary: #161B22;
+      --bg-tertiary: #21262D;
+      --bg-elevated: #2D333B;
+      
+      /* 文字层次 */
+      --text-primary: #E6EDF3;
+      --text-secondary: #8B949E;
+      --text-muted: #6E7681;
+      
+      /* 阶段色阶（蓝绿色系，同色相不同亮度） */
+      --stage-1: #388BFD33;  /* 立项 - 浅蓝透明度 */
+      --stage-2: #1F6FEB33;  /* 伦理 */
+      --stage-3: #1158C733;  /* 执行 */
+      --stage-4: #0D419D33;  /* 数据 */
+      --stage-5: #0A2D6B33;  /* 总结 */
+      
+      --stage-1-solid: #388BFD;
+      --stage-2-solid: #1F6FEB;
+      --stage-3-solid: #1158C7;
+      --stage-4-solid: #0D419D;
+      --stage-5-solid: #0A2D6B;
+      
+      /* 语义色 */
+      --color-success: #22C55E;
+      --color-warning: #F59E0B;
+      --color-danger: #EF4444;
+      --color-info: #3B82F6;
+      
+      /* 间距系统 */
+      --space-1: 4px;
+      --space-2: 8px;
+      --space-3: 12px;
+      --space-4: 16px;
+      --space-5: 20px;
+      --space-6: 24px;
+      --space-8: 32px;
+      --space-10: 40px;
+      --space-12: 48px;
+      
+      /* 字体 */
+      --font-sans: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: 'JetBrains Mono', 'SF Mono', monospace;
+      
+      /* 圆角（克制使用） */
+      --radius-sm: 4px;
+      --radius-md: 6px;
+      --radius-lg: 8px;
+    }
+    
+    /* ========================================
+       RESET & BASE
+       ======================================== */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    html {
+      font-size: 14px;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    
+    body {
+      font-family: var(--font-sans);
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+    
+    /* ========================================
+       LAYOUT - 非传统的信息组织
+       ======================================== */
+    .app-container {
+      display: grid;
+      grid-template-columns: 320px 1fr 280px;
+      grid-template-rows: auto 1fr;
+      gap: var(--space-6);
+      padding: var(--space-6);
+      min-height: 100vh;
+      max-width: 1800px;
+      margin: 0 auto;
+    }
+    
+    /* 顶部导航区 */
+    .header {
+      grid-column: 1 / -1;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: var(--space-4);
+      border-bottom: 1px solid var(--bg-tertiary);
+    }
+    
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: var(--space-6);
+    }
+    
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      font-weight: 600;
+      font-size: 1.1rem;
+      letter-spacing: -0.02em;
+    }
+    
+    .logo-mark {
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, var(--stage-1-solid), var(--stage-3-solid));
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 14px;
+    }
+    
+    .nav-pills {
+      display: flex;
+      gap: var(--space-1);
+    }
+    
+    .nav-pill {
+      padding: var(--space-2) var(--space-4);
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      font-family: var(--font-sans);
+      cursor: pointer;
+      border-radius: var(--radius-md);
+      transition: all 0.15s ease;
+    }
+    
+    .nav-pill:hover {
+      background: var(--bg-tertiary);
+      color: var(--text-primary);
+    }
+    
+    .nav-pill.active {
+      background: var(--bg-tertiary);
+      color: var(--text-primary);
+    }
+    
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: var(--space-4);
+    }
+    
+    .role-badge {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      padding: var(--space-2) var(--space-3);
+      background: var(--bg-secondary);
+      border-radius: var(--radius-md);
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
+    
+    .role-indicator {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--color-success);
+    }
+    
+    .date-display {
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+    
+    .user-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--bg-tertiary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-secondary);
+    }
+    
+    /* ========================================
+       左侧工作台 - "今天" 的核心
+       ======================================== */
+    .workbench {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-4);
+    }
+    
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--space-2);
+    }
+    
+    .section-title {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+    }
+    
+    .section-meta {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+    }
+    
+    /* KPI 行 - 横向紧凑展示 */
+    .kpi-strip {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--space-2);
+    }
+    
+    .kpi-item {
+      padding: var(--space-3);
+      background: var(--bg-secondary);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--bg-tertiary);
+    }
+    
+    .kpi-label {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      margin-bottom: var(--space-1);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    
+    .kpi-value {
+      font-family: var(--font-mono);
+      font-size: 1.4rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      line-height: 1;
+    }
+    
+    .kpi-value.success { color: var(--color-success); }
+    .kpi-value.warning { color: var(--color-warning); }
+    .kpi-value.danger { color: var(--color-danger); }
+    
+    .kpi-sub {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      margin-top: var(--space-1);
+    }
+    
+    /* 今日待办 - 时间线样式 */
+    .today-tasks {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-1);
+    }
+    
+    .task-item {
+      display: flex;
+      gap: var(--space-3);
+      padding: var(--space-3);
+      background: var(--bg-secondary);
+      border-radius: var(--radius-md);
+      border-left: 3px solid transparent;
+      transition: all 0.15s ease;
+    }
+    
+    .task-item:hover {
+      background: var(--bg-tertiary);
+    }
+    
+    .task-item.urgent {
+      border-left-color: var(--color-danger);
+    }
+    
+    .task-item.warning {
+      border-left-color: var(--color-warning);
+    }
+    
+    .task-item.normal {
+      border-left-color: var(--color-info);
+    }
+    
+    .task-time {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      min-width: 48px;
+    }
+    
+    .task-content {
+      flex: 1;
+    }
+    
+    .task-title {
+      font-size: 0.85rem;
+      color: var(--text-primary);
+      margin-bottom: 2px;
+    }
+    
+    .task-meta {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+    }
+    
+    /* ========================================
+       中央管线 - 核心创新区域
+       ======================================== */
+    .pipeline-main {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-6);
+    }
+    
+    /* 阶段概览 - 水平条形 */
+    .stage-overview {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: var(--space-2);
+    }
+    
+    .stage-block {
+      padding: var(--space-4);
+      background: var(--bg-secondary);
+      border-radius: var(--radius-md);
+      border-top: 3px solid;
+      position: relative;
+    }
+    
+    .stage-block:nth-child(1) {
+      border-color: var(--stage-1-solid);
+      background: var(--stage-1);
+    }
+    .stage-block:nth-child(2) {
+      border-color: var(--stage-2-solid);
+      background: var(--stage-2);
+    }
+    .stage-block:nth-child(3) {
+      border-color: var(--stage-3-solid);
+      background: var(--stage-3);
+    }
+    .stage-block:nth-child(4) {
+      border-color: var(--stage-4-solid);
+      background: var(--stage-4);
+    }
+    .stage-block:nth-child(5) {
+      border-color: var(--stage-5-solid);
+      background: var(--stage-5);
+    }
+    
+    .stage-name {
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-secondary);
+      margin-bottom: var(--space-2);
+    }
+    
+    .stage-count {
+      font-family: var(--font-mono);
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      line-height: 1;
+    }
+    
+    .stage-sub {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      margin-top: var(--space-1);
+    }
+    
+    /* 项目管线 - 垂直时间轴 */
+    .project-timeline {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+    }
+    
+    .project-row {
+      display: grid;
+      grid-template-columns: 180px 1fr 120px;
+      gap: var(--space-4);
+      align-items: center;
+      padding: var(--space-4);
+      background: var(--bg-secondary);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--bg-tertiary);
+    }
+    
+    .project-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    
+    .project-code {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+    
+    .project-name {
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: var(--text-primary);
+    }
+    
+    .project-indication {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+    }
+    
+    /* 项目进度条 - 阶段可视化 */
+    .project-progress {
+      display: flex;
+      align-items: center;
+      gap: var(--space-1);
+    }
+    
+    .progress-segment {
+      height: 8px;
+      flex: 1;
+      background: var(--bg-tertiary);
+      border-radius: 2px;
+      position: relative;
+    }
+    
+    .progress-segment.completed {
+      background: var(--stage-1-solid);
+    }
+    
+    .progress-segment.current {
+      background: var(--stage-1-solid);
+      animation: pulse 2s ease-in-out infinite;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    
+    .progress-label {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      min-width: 60px;
+      text-align: right;
+    }
+    
+    /* 项目状态 */
+    .project-status {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+    
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-1);
+      padding: var(--space-1) var(--space-2);
+      border-radius: var(--radius-sm);
+      font-size: 0.7rem;
+      font-weight: 500;
+    }
+    
+    .status-badge.active {
+      background: rgba(34, 197, 94, 0.15);
+      color: var(--color-success);
+    }
+    
+    .status-badge.pending {
+      background: rgba(245, 158, 11, 0.15);
+      color: var(--color-warning);
+    }
+    
+    .status-badge.alert {
+      background: rgba(239, 68, 68, 0.15);
+      color: var(--color-danger);
+    }
+    
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+    
+    /* ========================================
+       右侧动态 - 事件流
+       ======================================== */
+    .activity-feed {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+    }
+    
+    .feed-item {
+      display: flex;
+      gap: var(--space-3);
+      padding: var(--space-3) 0;
+      border-bottom: 1px solid var(--bg-tertiary);
+    }
+    
+    .feed-item:last-child {
+      border-bottom: none;
+    }
+    
+    .feed-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      flex-shrink: 0;
+    }
+    
+    .feed-icon.sae {
+      background: rgba(239, 68, 68, 0.15);
+      color: var(--color-danger);
+    }
+    
+    .feed-icon.ethics {
+      background: rgba(59, 130, 246, 0.15);
+      color: var(--color-info);
+    }
+    
+    .feed-icon.enroll {
+      background: rgba(34, 197, 94, 0.15);
+      color: var(--color-success);
+    }
+    
+    .feed-icon.doc {
+      background: rgba(168, 85, 247, 0.15);
+      color: #A855F7;
+    }
+    
+    .feed-icon.visit {
+      background: rgba(245, 158, 11, 0.15);
+      color: var(--color-warning);
+    }
+    
+    .feed-content {
+      flex: 1;
+      min-width: 0;
+    }
+    
+    .feed-title {
+      font-size: 0.8rem;
+      color: var(--text-primary);
+      margin-bottom: 2px;
+      line-height: 1.4;
+    }
+    
+    .feed-title strong {
+      font-weight: 600;
+    }
+    
+    .feed-meta {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      display: flex;
+      gap: var(--space-2);
+    }
+    
+    .feed-project {
+      font-family: var(--font-mono);
+    }
+    
+    /* AI洞察卡片 */
+    .insight-card {
+      padding: var(--space-4);
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(168, 85, 247, 0.1));
+      border: 1px solid rgba(59, 130, 246, 0.2);
+      border-radius: var(--radius-md);
+    }
+    
+    .insight-header {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      margin-bottom: var(--space-3);
+    }
+    
+    .insight-icon {
+      width: 24px;
+      height: 24px;
+      border-radius: var(--radius-sm);
+      background: var(--color-info);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 0.7rem;
+    }
+    
+    .insight-title {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    
+    .insight-text {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+    
+    /* ========================================
+       快捷入口 - 底部
+       ======================================== */
+    .quick-actions {
+      grid-column: 1 / -1;
+      display: flex;
+      justify-content: center;
+      gap: var(--space-3);
+      padding-top: var(--space-4);
+      border-top: 1px solid var(--bg-tertiary);
+    }
+    
+    .quick-btn {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      padding: var(--space-3) var(--space-5);
+      background: var(--bg-secondary);
+      border: 1px solid var(--bg-tertiary);
+      border-radius: var(--radius-md);
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+      font-family: var(--font-sans);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    
+    .quick-btn:hover {
+      background: var(--bg-tertiary);
+      color: var(--text-primary);
+      border-color: var(--text-muted);
+    }
+    
+    .quick-btn i {
+      font-size: 0.9rem;
+    }
+    
+    /* ========================================
+       响应式（简化处理）
+       ======================================== */
+    @media (max-width: 1400px) {
+      .app-container {
+        grid-template-columns: 280px 1fr 240px;
+      }
+    }
+    
+    @media (max-width: 1200px) {
+      .app-container {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto auto auto auto;
+      }
+      
+      .header {
+        grid-column: 1;
+      }
+      
+      .quick-actions {
+        grid-column: 1;
+      }
+      
+      .project-row {
+        grid-template-columns: 1fr;
+        gap: var(--space-2);
+      }
+      
+      .project-progress {
+        order: 3;
+      }
+      
+      .project-status {
+        order: 2;
+      }
+    }
+    
+    /* ========================================
+       滚动条样式
+       ======================================== */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    
+    ::-webkit-scrollbar-track {
+      background: var(--bg-primary);
+    }
+    
+    ::-webkit-scrollbar-thumb {
+      background: var(--bg-tertiary);
+      border-radius: 4px;
+    }
+    
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--bg-elevated);
+    }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    
+    <!-- ==================== HEADER ==================== -->
+    <header class="header">
+      <div class="header-left">
+        <div class="logo">
+          <div class="logo-mark">
+            <i class="fas fa-dna"></i>
+          </div>
+          <span>北京兴德通</span>
+        </div>
+        
+        <nav class="nav-pills">
+          <button class="nav-pill active">首页</button>
+          <button class="nav-pill">项目管理</button>
+          <button class="nav-pill">数据管理</button>
+          <button class="nav-pill">药物警戒</button>
+          <button class="nav-pill">统计分析</button>
+        </nav>
+      </div>
+      
+      <div class="header-right">
+        <div class="role-badge">
+          <span class="role-indicator"></span>
+          <span>项目经理</span>
+        </div>
+        <div class="date-display">2025.03.18 周二</div>
+        <div class="user-avatar">
+          <i class="fas fa-user"></i>
+        </div>
+      </div>
+    </header>
+    
+    <!-- ==================== LEFT WORKBENCH ==================== -->
+    <aside class="workbench">
+      
+      <!-- KPI概览 -->
+      <section>
+        <div class="section-header">
+          <span class="section-title">今日概览</span>
+          <span class="section-meta">24项指标</span>
+        </div>
+        <div class="kpi-strip">
+          <div class="kpi-item">
+            <div class="kpi-label">项目总数</div>
+            <div class="kpi-value">28</div>
+            <div class="kpi-sub">较上月 +3</div>
+          </div>
+          <div class="kpi-item">
+            <div class="kpi-label">进行中</div>
+            <div class="kpi-value success">19</div>
+            <div class="kpi-sub">67.9%</div>
+          </div>
+          <div class="kpi-item">
+            <div class="kpi-label">入组进度</div>
+            <div class="kpi-value">76.2%</div>
+            <div class="kpi-sub">目标 85%</div>
+          </div>
+          <div class="kpi-item">
+            <div class="kpi-label">待办事项</div>
+            <div class="kpi-value warning">12</div>
+            <div class="kpi-sub">本周到期</div>
+          </div>
+        </div>
+      </section>
+      
+      <!-- 今日待办 -->
+      <section>
+        <div class="section-header">
+          <span class="section-title">今日待办</span>
+          <span class="section-meta">3项紧急</span>
+        </div>
+        <div class="today-tasks">
+          <div class="task-item urgent">
+            <span class="task-time">09:30</span>
+            <div class="task-content">
+              <div class="task-title">审核SAE报告 - 受试者#042</div>
+              <div class="task-meta">NCT-2024-XD07 · 肺部感染</div>
+            </div>
+          </div>
+          <div class="task-item warning">
+            <span class="task-time">10:00</span>
+            <div class="task-content">
+              <div class="task-title">伦理审查会议</div>
+              <div class="task-meta">NCT-2025-XD12 · 首次审查</div>
+            </div>
+          </div>
+          <div class="task-item normal">
+            <span class="task-time">14:00</span>
+            <div class="task-content">
+              <div class="task-title">CRA现场监查报告签署</div>
+              <div class="task-meta">NCT-2024-XD03 · 协和医院</div>
+            </div>
+          </div>
+          <div class="task-item normal">
+            <span class="task-time">16:00</span>
+            <div class="task-content">
+              <div class="task-title">数据疑问解答</div>
+              <div class="task-meta">NCT-2024-XD05 · 3条待回复</div>
+            </div>
+          </div>
+        </div>
+      </section>
+      
+      <!-- 快捷统计 -->
+      <section>
+        <div class="section-header">
+          <span class="section-title">风险预警</span>
+        </div>
+        <div class="kpi-strip">
+          <div class="kpi-item">
+            <div class="kpi-label">风险项目</div>
+            <div class="kpi-value danger">4</div>
+            <div class="kpi-sub">需关注</div>
+          </div>
+          <div class="kpi-item">
+            <div class="kpi-label">文档完整率</div>
+            <div class="kpi-value">89%</div>
+            <div class="kpi-sub">目标 95%</div>
+          </div>
+        </div>
+      </section>
+      
+    </aside>
+    
+    <!-- ==================== CENTER PIPELINE ==================== -->
+    <main class="pipeline-main">
+      
+      <!-- 阶段概览 -->
+      <section>
+        <div class="section-header">
+          <span class="section-title">临床管线概览</span>
+          <span class="section-meta">按阶段分布</span>
+        </div>
+        <div class="stage-overview">
+          <div class="stage-block">
+            <div class="stage-name">立项</div>
+            <div class="stage-count">5</div>
+            <div class="stage-sub">准备启动</div>
+          </div>
+          <div class="stage-block">
+            <div class="stage-name">伦理审查</div>
+            <div class="stage-count">4</div>
+            <div class="stage-sub">审批中</div>
+          </div>
+          <div class="stage-block">
+            <div class="stage-name">执行阶段</div>
+            <div class="stage-count">12</div>
+            <div class="stage-sub">正在入组</div>
+          </div>
+          <div class="stage-block">
+            <div class="stage-name">数据管理</div>
+            <div class="stage-count">5</div>
+            <div class="stage-sub">录入/质疑</div>
+          </div>
+          <div class="stage-block">
+            <div class="stage-name">总结报告</div>
+            <div class="stage-count">2</div>
+            <div class="stage-sub">即将交付</div>
+          </div>
+        </div>
+      </section>
+      
+      <!-- 项目时间轴 -->
+      <section>
+        <div class="section-header">
+          <span class="section-title">重点项目</span>
+          <span class="section-meta">进行中</span>
+        </div>
+        <div class="project-timeline">
+          
+          <div class="project-row">
+            <div class="project-info">
+              <span class="project-code">NCT-2024-XD07</span>
+              <span class="project-name">XYD-001 片剂安全性研究</span>
+              <span class="project-indication">肿瘤 · 实体瘤</span>
+            </div>
+            <div class="project-progress">
+              <div class="progress-segment completed"></div>
+              <div class="progress-segment completed"></div>
+              <div class="progress-segment completed"></div>
+              <div class="progress-segment current"></div>
+              <div class="progress-segment"></div>
+              <span class="progress-label">执行中</span>
+            </div>
+            <div class="project-status">
+              <span class="status-badge alert">
+                <span class="status-dot"></span>
+                SAE 1
+              </span>
+            </div>
+          </div>
+          
+          <div class="project-row">
+            <div class="project-info">
+              <span class="project-code">NCT-2025-XD09</span>
+              <span class="project-name">XYZ-205 注射液有效性研究</span>
+              <span class="project-indication">免疫 · 类风湿</span>
+            </div>
+            <div class="project-progress">
+              <div class="progress-segment completed"></div>
+              <div class="progress-segment completed"></div>
+              <div class="progress-segment current"></div>
+              <div class="progress-segment"></div>
+              <div class="progress-segment"></div>
+              <span class="progress-label">伦理中</span>
+            </div>
+            <div class="project-status">
+              <span class="status-badge pending">
+                <span class="status-dot"></span>
+                审核中
+              </span>
+            </div>
+          </div>
+          
+          <div class="project-row">
+            <div class="project-info">
+              <span class="project-code">NCT-2024-XD05</span>
+              <span class="project-name">ABC-108 胶囊生物等效性</span>
+              <span class="project-indication">仿制药 · BE</span>
+            </div>
+            <div class="project-progress">
+              <div class="progress-segment completed"></div>
+              <div class="progress-segment completed"></div>
+              <div class="progress-segment completed"></div>
+              <div class="progress-segment completed"></div>
+              <div class="progress-segment current"></div>
+              <span class="progress-label">数据管理</span>
+            </div>
+            <div class="project-status">
+              <span class="status-badge active">
+                <span class="status-dot"></span>
+                正常
+              </span>
+            </div>
+          </div>
+          
+          <div class="project-row">
+            <div class="project-info">
+              <span class="project-code">NCT-2025-XD12</span>
+              <span class="project-name">DEF-333 片剂II期研究</span>
+              <span class="project-indication">糖尿病 · II型</span>
+            </div>
+            <div class="project-progress">
+              <div class="progress-segment completed"></div>
+              <div class="progress-segment current"></div>
+              <div class="progress-segment"></div>
+              <div class="progress-segment"></div>
+              <div class="progress-segment"></div>
+              <span class="progress-label">伦理中</span>
+            </div>
+            <div class="project-status">
+              <span class="status-badge pending">
+                <span class="status-dot"></span>
+                待审批
+              </span>
+            </div>
+          </div>
+          
+          <div class="project-row">
+            <div class="project-info">
+              <span class="project-code">NCT-2024-XD03</span>
+              <span class="project-name">GHI-777 贴剂PK研究</span>
+              <span class="project-indication">皮肤科 · 外用</span>
+            </div>
+            <div class="project-progress">
+              <div class="progress-segment completed"></div>
+              <div class="progress-segment completed"></div>
+              <div class="progress-segment completed"></div>
+              <div class="progress-segment completed"></div>
+              <div class="progress-segment current"></div>
+              <span class="progress-label">锁库中</span>
+            </div>
+            <div class="project-status">
+              <span class="status-badge active">
+                <span class="status-dot"></span>
+                即将完成
+              </span>
+            </div>
+          </div>
+          
+        </div>
+      </section>
+      
+    </main>
+    
+    <!-- ==================== RIGHT ACTIVITY ==================== -->
+    <aside class="workbench">
+      
+      <!-- AI洞察 -->
+      <section>
+        <div class="insight-card">
+          <div class="insight-header">
+            <div class="insight-icon">
+              <i class="fas fa-brain"></i>
+            </div>
+            <span class="insight-title">AI 智能洞察</span>
+          </div>
+          <p class="insight-text">
+            NCT-2024-XD07 入组速度低于预期，建议增加2家中心或优化入排标准。当前筛选失败率 42%，主要原因为既往用药洗脱期不足。
+          </p>
+        </div>
+      </section>
+      
+      <!-- 实时动态 -->
+      <section>
+        <div class="section-header">
+          <span class="section-title">项目动态</span>
+          <span class="section-meta">实时</span>
+        </div>
+        <div class="activity-feed">
+          
+          <div class="feed-item">
+            <div class="feed-icon sae">
+              <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <div class="feed-content">
+              <div class="feed-title"><strong>NCT-2024-XD07</strong> SAE上报：受试者#042发生肺部感染</div>
+              <div class="feed-meta">
+                <span>10分钟前</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="feed-item">
+            <div class="feed-icon enroll">
+              <i class="fas fa-user-plus"></i>
+            </div>
+            <div class="feed-content">
+              <div class="feed-title"><strong>NCT-2024-XD05</strong> 成功入组第48例受试者</div>
+              <div class="feed-meta">
+                <span class="feed-project">协和医院</span>
+                <span>25分钟前</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="feed-item">
+            <div class="feed-icon ethics">
+              <i class="fas fa-file-signature"></i>
+            </div>
+            <div class="feed-content">
+              <div class="feed-title"><strong>NCT-2025-XD09</strong> 伦理审查意见补充</div>
+              <div class="feed-meta">
+                <span class="feed-project">北大医院</span>
+                <span>1小时前</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="feed-item">
+            <div class="feed-icon doc">
+              <i class="fas fa-file-medical"></i>
+            </div>
+            <div class="feed-content">
+              <div class="feed-title"><strong>NCT-2024-XD03</strong> 第五次监查报告已上传</div>
+              <div class="feed-meta">
+                <span class="feed-project">华山医院</span>
+                <span>2小时前</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="feed-item">
+            <div class="feed-icon visit">
+              <i class="fas fa-calendar-check"></i>
+            </div>
+            <div class="feed-content">
+              <div class="feed-title"><strong>NCT-2024-XD07</strong> 计划外访视已完成</div>
+              <div class="feed-meta">
+                <span class="feed-project">307医院</span>
+                <span>3小时前</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="feed-item">
+            <div class="feed-icon enroll">
+              <i class="fas fa-user-plus"></i>
+            </div>
+            <div class="feed-content">
+              <div class="feed-title"><strong>NCT-2025-XD12</strong> 首例受试者筛选成功</div>
+              <div class="feed-meta">
+                <span class="feed-project">瑞金医院</span>
+                <span>5小时前</span>
+              </div>
+            </div>
+          </div>
+          
+        </div>
+      </section>
+      
+    </aside>
+    
+    <!-- ==================== QUICK ACTIONS ==================== -->
+    <div class="quick-actions">
+      <button class="quick-btn">
+        <i class="fas fa-plus"></i>
+        新建项目
+      </button>
+      <button class="quick-btn">
+        <i class="fas fa-clipboard-list"></i>
+        项目列表
+      </button>
+      <button class="quick-btn">
+        <i class="fas fa-chart-line"></i>
+        数据报表
+      </button>
+      <button class="quick-btn">
+        <i class="fas fa-bell"></i>
+        通知中心
+      </button>
+    </div>
+    
+  </div>
+</body>
+</html>

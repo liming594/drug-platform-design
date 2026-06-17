@@ -1,0 +1,1835 @@
+<!DOCTYPE html>
+<html lang="zh-CN" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="dark">
+    <title>药物研发平台 - 工作台</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <style>
+        /* ========== CSS Custom Properties (基于Web规范暗色主题) ========== */
+        :root {
+            /* 颜色系统 - 医学/科研风格深色主题 */
+            --color-bg: #0d1117;
+            --color-surface: #161b22;
+            --color-surface-elevated: #21262d;
+            --color-border: #30363d;
+            --color-border-subtle: #21262d;
+            
+            --color-text-primary: #e6edf3;
+            --color-text-secondary: #8b949e;
+            --color-text-tertiary: #6e7681;
+            
+            --color-primary: #58a6ff;
+            --color-primary-hover: #79b8ff;
+            --color-primary-muted: rgba(88, 166, 255, 0.15);
+            
+            --color-success: #3fb950;
+            --color-success-muted: rgba(63, 185, 80, 0.15);
+            --color-warning: #d29922;
+            --color-warning-muted: rgba(210, 153, 34, 0.15);
+            --color-danger: #f85149;
+            --color-danger-muted: rgba(248, 81, 73, 0.15);
+            
+            /* 阶段颜色 - 临床管线 */
+            --color-phase-1: #8b5cf6; /* 立项 - 紫色 */
+            --color-phase-2: #3b82f6; /* 伦理审查 - 蓝色 */
+            --color-phase-3: #10b981; /* 执行 - 绿色 */
+            --color-color-4: #f59e0b; /* 数据管理 - 橙色 */
+            --color-phase-5: #ef4444; /* 总结报告 - 红色 */
+            
+            /* 间距系统 - 8pt网格 */
+            --space-1: 0.25rem;
+            --space-2: 0.5rem;
+            --space-3: 0.75rem;
+            --space-4: 1rem;
+            --space-5: 1.25rem;
+            --space-6: 1.5rem;
+            --space-8: 2rem;
+            --space-10: 2.5rem;
+            --space-12: 3rem;
+            
+            /* 圆角 */
+            --radius-sm: 6px;
+            --radius-md: 8px;
+            --radius-lg: 12px;
+            --radius-xl: 16px;
+            
+            /* 阴影 */
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+            --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
+            --shadow-lg: 0 10px 20px rgba(0, 0, 0, 0.5);
+            
+            /* 字体 */
+            --font-sans: 'Inter', 'Noto Sans SC', system-ui, -apple-system, sans-serif;
+            
+            /* 过渡 */
+            --transition-fast: 150ms ease;
+            --transition-base: 250ms ease;
+        }
+        
+        /* ========== 重置与基础样式 (基于Web规范) ========== */
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        html {
+            font-size: 16px;
+            scroll-behavior: smooth;
+        }
+        
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                transition-duration: 0.01ms !important;
+            }
+            html {
+                scroll-behavior: auto;
+            }
+        }
+        
+        body {
+            font-family: var(--font-sans);
+            background-color: var(--color-bg);
+            color: var(--color-text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        
+        /* 跳过导航链接 (WCAG 2.4.1) */
+        .skip-link {
+            position: absolute;
+            top: -100%;
+            left: 0;
+            z-index: 1000;
+            padding: var(--space-3) var(--space-6);
+            background: var(--color-primary);
+            color: var(--color-bg);
+            text-decoration: none;
+            font-weight: 600;
+            border-radius: 0 0 var(--radius-md) 0;
+        }
+        
+        .skip-link:focus {
+            top: 0;
+            outline: 3px solid var(--color-primary);
+            outline-offset: 2px;
+        }
+        
+        /* ========== 布局容器 (响应式CSS Grid) ========== */
+        .app-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            grid-template-rows: auto 1fr auto;
+            min-height: 100vh;
+        }
+        
+        /* 响应式断点 - 基于内容而非设备 */
+        @media (min-width: 48rem) {
+            .app-container {
+                grid-template-columns: 240px 1fr;
+                grid-template-rows: auto 1fr;
+            }
+        }
+        
+        /* ========== 头部区域 ========== */
+        .app-header {
+            grid-column: 1 / -1;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: var(--space-4) var(--space-6);
+            background: var(--color-surface);
+            border-bottom: 1px solid var(--color-border);
+            gap: var(--space-4);
+            flex-wrap: wrap;
+        }
+        
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: var(--space-4);
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+            text-decoration: none;
+            color: var(--color-text-primary);
+        }
+        
+        .logo-icon {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--color-primary), #1f6feb);
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.125rem;
+        }
+        
+        .logo-text {
+            font-size: 1.125rem;
+            font-weight: 700;
+            letter-spacing: -0.025em;
+        }
+        
+        @media (max-width: 48rem) {
+            .logo-text {
+                display: none;
+            }
+        }
+        
+        .header-center {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+        }
+        
+        /* 角色切换器 - 差异化展示关键 */
+        .role-switcher {
+            display: flex;
+            gap: var(--space-1);
+            background: var(--color-surface-elevated);
+            padding: var(--space-1);
+            border-radius: var(--radius-lg);
+        }
+        
+        .role-btn {
+            padding: var(--space-2) var(--space-4);
+            background: transparent;
+            border: none;
+            color: var(--color-text-secondary);
+            font-family: inherit;
+            font-size: 0.875rem;
+            font-weight: 500;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            min-height: 44px;
+            min-width: 44px;
+        }
+        
+        .role-btn:hover {
+            color: var(--color-text-primary);
+            background: var(--color-border-subtle);
+        }
+        
+        .role-btn:focus-visible {
+            outline: 2px solid var(--color-primary);
+            outline-offset: 2px;
+        }
+        
+        .role-btn.active {
+            background: var(--color-primary);
+            color: white;
+        }
+        
+        .role-btn[aria-pressed="true"] {
+            background: var(--color-primary);
+            color: white;
+        }
+        
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+        }
+        
+        .header-date {
+            color: var(--color-text-secondary);
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+        }
+        
+        @media (max-width: 48rem) {
+            .header-date {
+                display: none;
+            }
+        }
+        
+        .icon-btn {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: transparent;
+            border: 1px solid var(--color-border);
+            color: var(--color-text-secondary);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            position: relative;
+        }
+        
+        .icon-btn:hover {
+            background: var(--color-surface-elevated);
+            color: var(--color-text-primary);
+            border-color: var(--color-text-tertiary);
+        }
+        
+        .icon-btn:focus-visible {
+            outline: 2px solid var(--color-primary);
+            outline-offset: 2px;
+        }
+        
+        .icon-btn .badge {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            min-width: 18px;
+            height: 18px;
+            padding: 0 4px;
+            background: var(--color-danger);
+            color: white;
+            font-size: 0.625rem;
+            font-weight: 600;
+            border-radius: 9px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* ========== 侧边栏导航 ========== */
+        .sidebar {
+            display: none;
+            background: var(--color-surface);
+            border-right: 1px solid var(--color-border);
+            padding: var(--space-4) 0;
+            overflow-y: auto;
+        }
+        
+        @media (min-width: 48rem) {
+            .sidebar {
+                display: block;
+                grid-row: 2;
+            }
+        }
+        
+        .sidebar-section {
+            margin-bottom: var(--space-6);
+        }
+        
+        .sidebar-title {
+            padding: var(--space-2) var(--space-4);
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--color-text-tertiary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .sidebar-nav {
+            list-style: none;
+        }
+        
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+            padding: var(--space-3) var(--space-4);
+            color: var(--color-text-secondary);
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all var(--transition-fast);
+            border-left: 3px solid transparent;
+        }
+        
+        .sidebar-link:hover {
+            background: var(--color-surface-elevated);
+            color: var(--color-text-primary);
+        }
+        
+        .sidebar-link:focus-visible {
+            outline: none;
+            background: var(--color-surface-elevated);
+            border-left-color: var(--color-primary);
+        }
+        
+        .sidebar-link.active {
+            background: var(--color-primary-muted);
+            color: var(--color-primary);
+            border-left-color: var(--color-primary);
+        }
+        
+        .sidebar-link i {
+            width: 20px;
+            text-align: center;
+        }
+        
+        .sidebar-link .count {
+            margin-left: auto;
+            font-size: 0.75rem;
+            color: var(--color-text-tertiary);
+            background: var(--color-surface-elevated);
+            padding: 2px 8px;
+            border-radius: 10px;
+        }
+        
+        /* ========== 主内容区 ========== */
+        .main-content {
+            padding: var(--space-6);
+            overflow-y: auto;
+        }
+        
+        @media (min-width: 64rem) {
+            .main-content {
+                padding: var(--space-8);
+            }
+        }
+        
+        /* 页面标题 */
+        .page-header {
+            margin-bottom: var(--space-6);
+        }
+        
+        .page-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--color-text-primary);
+            margin-bottom: var(--space-2);
+        }
+        
+        .page-subtitle {
+            color: var(--color-text-secondary);
+            font-size: 0.9375rem;
+        }
+        
+        /* ========== 仪表盘网格布局 ========== */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: var(--space-6);
+        }
+        
+        @media (min-width: 48rem) {
+            .dashboard-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (min-width: 80rem) {
+            .dashboard-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            
+            .dashboard-grid .card-full {
+                grid-column: 1 / -1;
+            }
+            
+            .dashboard-grid .card-wide {
+                grid-column: span 2;
+            }
+        }
+        
+        /* ========== 卡片组件 (Material Design启发) ========== */
+        .card {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-lg);
+            padding: var(--space-5);
+            transition: all var(--transition-base);
+        }
+        
+        .card:hover {
+            border-color: var(--color-text-tertiary);
+        }
+        
+        .card:focus-within {
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 1px var(--color-primary);
+        }
+        
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: var(--space-4);
+        }
+        
+        .card-title {
+            font-size: 0.9375rem;
+            font-weight: 600;
+            color: var(--color-text-primary);
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+        }
+        
+        .card-title i {
+            color: var(--color-text-secondary);
+        }
+        
+        .card-action {
+            font-size: 0.8125rem;
+            color: var(--color-primary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: var(--space-1);
+        }
+        
+        .card-action:hover {
+            color: var(--color-primary-hover);
+        }
+        
+        .card-action:focus-visible {
+            outline: 2px solid var(--color-primary);
+            outline-offset: 2px;
+            border-radius: var(--radius-sm);
+        }
+        
+        /* ========== KPI指标卡片 ========== */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: var(--space-4);
+        }
+        
+        @media (min-width: 30rem) {
+            .kpi-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+        
+        .kpi-card {
+            background: var(--color-surface-elevated);
+            border-radius: var(--radius-md);
+            padding: var(--space-4);
+            text-align: center;
+            transition: all var(--transition-fast);
+        }
+        
+        .kpi-card:hover {
+            background: var(--color-border-subtle);
+        }
+        
+        .kpi-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--color-text-primary);
+            line-height: 1.2;
+            font-variant-numeric: tabular-nums;
+        }
+        
+        .kpi-value.success { color: var(--color-success); }
+        .kpi-value.warning { color: var(--color-warning); }
+        .kpi-value.danger { color: var(--color-danger); }
+        .kpi-value.primary { color: var(--color-primary); }
+        
+        .kpi-label {
+            font-size: 0.8125rem;
+            color: var(--color-text-secondary);
+            margin-top: var(--space-1);
+        }
+        
+        .kpi-trend {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.75rem;
+            margin-top: var(--space-2);
+            padding: 2px 6px;
+            border-radius: var(--radius-sm);
+        }
+        
+        .kpi-trend.up {
+            color: var(--color-success);
+            background: var(--color-success-muted);
+        }
+        
+        .kpi-trend.down {
+            color: var(--color-danger);
+            background: var(--color-danger-muted);
+        }
+        
+        /* ========== 临床管线 ========== */
+        .pipeline-container {
+            background: var(--color-surface-elevated);
+            border-radius: var(--radius-md);
+            padding: var(--space-4);
+        }
+        
+        .pipeline-track {
+            display: flex;
+            gap: var(--space-2);
+            overflow-x: auto;
+            padding-bottom: var(--space-2);
+            scrollbar-width: thin;
+            scrollbar-color: var(--color-border) transparent;
+        }
+        
+        .pipeline-phase {
+            flex: 0 0 auto;
+            min-width: 100px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: var(--space-2);
+        }
+        
+        .phase-dot {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: white;
+            position: relative;
+            cursor: pointer;
+            transition: transform var(--transition-fast);
+        }
+        
+        .phase-dot:hover {
+            transform: scale(1.1);
+        }
+        
+        .phase-dot:focus-visible {
+            outline: 2px solid var(--color-primary);
+            outline-offset: 2px;
+        }
+        
+        .phase-dot::after {
+            content: '';
+            position: absolute;
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            border: 2px dashed currentColor;
+            opacity: 0.3;
+            animation: pulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.3; }
+            50% { transform: scale(1.15); opacity: 0; }
+        }
+        
+        .phase-1 { background: var(--color-phase-1); }
+        .phase-2 { background: var(--color-phase-2); }
+        .phase-3 { background: var(--color-phase-3); }
+        .phase-4 { background: var(--color-warning); }
+        .phase-5 { background: var(--color-danger); }
+        
+        .phase-1::after { color: var(--color-phase-1); }
+        .phase-2::after { color: var(--color-phase-2); }
+        .phase-3::after { color: var(--color-phase-3); }
+        .phase-4::after { color: var(--color-warning); }
+        .phase-5::after { color: var(--color-danger); }
+        
+        .phase-name {
+            font-size: 0.75rem;
+            color: var(--color-text-secondary);
+            text-align: center;
+            white-space: nowrap;
+        }
+        
+        .phase-count {
+            font-size: 0.6875rem;
+            color: var(--color-text-tertiary);
+        }
+        
+        /* ========== 项目动态 ========== */
+        .activity-list {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-3);
+            max-height: 320px;
+            overflow-y: auto;
+        }
+        
+        .activity-item {
+            display: flex;
+            gap: var(--space-3);
+            padding: var(--space-3);
+            background: var(--color-surface-elevated);
+            border-radius: var(--radius-md);
+            transition: background var(--transition-fast);
+        }
+        
+        .activity-item:hover {
+            background: var(--color-border-subtle);
+        }
+        
+        .activity-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.875rem;
+            flex-shrink: 0;
+        }
+        
+        .activity-icon.sae {
+            background: var(--color-danger-muted);
+            color: var(--color-danger);
+        }
+        
+        .activity-icon.ethics {
+            background: var(--color-primary-muted);
+            color: var(--color-primary);
+        }
+        
+        .activity-icon.enroll {
+            background: var(--color-success-muted);
+            color: var(--color-success);
+        }
+        
+        .activity-icon.doc {
+            background: var(--color-warning-muted);
+            color: var(--color-warning);
+        }
+        
+        .activity-icon.visit {
+            background: rgba(139, 92, 246, 0.15);
+            color: #8b5cf6;
+        }
+        
+        .activity-content {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .activity-title {
+            font-size: 0.875rem;
+            color: var(--color-text-primary);
+            line-height: 1.4;
+        }
+        
+        .activity-meta {
+            font-size: 0.75rem;
+            color: var(--color-text-tertiary);
+            margin-top: var(--space-1);
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+        }
+        
+        .activity-project {
+            color: var(--color-primary);
+        }
+        
+        /* ========== AI洞察 ========== */
+        .insight-list {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-3);
+        }
+        
+        .insight-item {
+            display: flex;
+            gap: var(--space-3);
+            padding: var(--space-3);
+            background: var(--color-surface-elevated);
+            border-radius: var(--radius-md);
+            border-left: 3px solid;
+            transition: all var(--transition-fast);
+        }
+        
+        .insight-item:hover {
+            transform: translateX(4px);
+        }
+        
+        .insight-item.risk {
+            border-left-color: var(--color-danger);
+        }
+        
+        .insight-item.progress {
+            border-left-color: var(--color-warning);
+        }
+        
+        .insight-item.suggestion {
+            border-left-color: var(--color-success);
+        }
+        
+        .insight-icon {
+            width: 28px;
+            height: 28px;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.875rem;
+            flex-shrink: 0;
+        }
+        
+        .insight-item.risk .insight-icon {
+            background: var(--color-danger-muted);
+            color: var(--color-danger);
+        }
+        
+        .insight-item.progress .insight-icon {
+            background: var(--color-warning-muted);
+            color: var(--color-warning);
+        }
+        
+        .insight-item.suggestion .insight-icon {
+            background: var(--color-success-muted);
+            color: var(--color-success);
+        }
+        
+        .insight-content {
+            flex: 1;
+        }
+        
+        .insight-title {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--color-text-primary);
+        }
+        
+        .insight-desc {
+            font-size: 0.8125rem;
+            color: var(--color-text-secondary);
+            margin-top: 2px;
+        }
+        
+        .insight-action {
+            font-size: 0.75rem;
+            color: var(--color-primary);
+            margin-top: var(--space-2);
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+        }
+        
+        .insight-action:hover {
+            color: var(--color-primary-hover);
+        }
+        
+        /* ========== 快捷入口 ========== */
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: var(--space-3);
+        }
+        
+        @media (min-width: 30rem) {
+            .quick-actions {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+        
+        .quick-action {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: var(--space-2);
+            padding: var(--space-4);
+            background: var(--color-surface-elevated);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-md);
+            text-decoration: none;
+            color: var(--color-text-secondary);
+            transition: all var(--transition-fast);
+            cursor: pointer;
+            min-height: 88px;
+        }
+        
+        .quick-action:hover {
+            background: var(--color-border-subtle);
+            border-color: var(--color-text-tertiary);
+            color: var(--color-text-primary);
+            transform: translateY(-2px);
+        }
+        
+        .quick-action:focus-visible {
+            outline: 2px solid var(--color-primary);
+            outline-offset: 2px;
+        }
+        
+        .quick-action i {
+            font-size: 1.5rem;
+            color: var(--color-primary);
+        }
+        
+        .quick-action span {
+            font-size: 0.8125rem;
+            font-weight: 500;
+            text-align: center;
+        }
+        
+        /* ========== 角色专属内容 ========== */
+        .role-content {
+            display: none;
+        }
+        
+        .role-content.active {
+            display: block;
+        }
+        
+        /* PM专属 */
+        .pm-tasks .task-item {
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+            padding: var(--space-3);
+            background: var(--color-surface-elevated);
+            border-radius: var(--radius-md);
+            margin-bottom: var(--space-2);
+        }
+        
+        .task-priority {
+            width: 4px;
+            height: 32px;
+            border-radius: 2px;
+        }
+        
+        .task-priority.high { background: var(--color-danger); }
+        .task-priority.medium { background: var(--color-warning); }
+        .task-priority.low { background: var(--color-success); }
+        
+        .task-info {
+            flex: 1;
+        }
+        
+        .task-title {
+            font-size: 0.875rem;
+            color: var(--color-text-primary);
+        }
+        
+        .task-project {
+            font-size: 0.75rem;
+            color: var(--color-text-tertiary);
+        }
+        
+        .task-deadline {
+            font-size: 0.75rem;
+            color: var(--color-text-secondary);
+            white-space: nowrap;
+        }
+        
+        /* CRA专属 */
+        .cra-sites .site-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: var(--space-3);
+            background: var(--color-surface-elevated);
+            border-radius: var(--radius-md);
+            margin-bottom: var(--space-2);
+        }
+        
+        .site-info {
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+        }
+        
+        .site-status {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+        
+        .site-status.active { background: var(--color-success); }
+        .site-status.pending { background: var(--color-warning); }
+        .site-status.issue { background: var(--color-danger); }
+        
+        .site-name {
+            font-size: 0.875rem;
+            color: var(--color-text-primary);
+        }
+        
+        .site-code {
+            font-size: 0.75rem;
+            color: var(--color-text-tertiary);
+        }
+        
+        .site-action {
+            font-size: 0.75rem;
+            color: var(--color-primary);
+            cursor: pointer;
+        }
+        
+        /* ========== 页脚 ========== */
+        .app-footer {
+            grid-column: 1 / -1;
+            padding: var(--space-4) var(--space-6);
+            background: var(--color-surface);
+            border-top: 1px solid var(--color-border);
+            text-align: center;
+            font-size: 0.75rem;
+            color: var(--color-text-tertiary);
+        }
+        
+        /* ========== 移动端底部导航 ========== */
+        .mobile-nav {
+            display: flex;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--color-surface);
+            border-top: 1px solid var(--color-border);
+            padding: var(--space-2) 0;
+            padding-bottom: max(var(--space-2), env(safe-area-inset-bottom));
+            z-index: 100;
+        }
+        
+        @media (min-width: 48rem) {
+            .mobile-nav {
+                display: none;
+            }
+        }
+        
+        .mobile-nav-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            padding: var(--space-2);
+            color: var(--color-text-secondary);
+            text-decoration: none;
+            font-size: 0.625rem;
+            transition: color var(--transition-fast);
+            min-height: 44px;
+        }
+        
+        .mobile-nav-item:hover,
+        .mobile-nav-item.active {
+            color: var(--color-primary);
+        }
+        
+        .mobile-nav-item:focus-visible {
+            outline: 2px solid var(--color-primary);
+            outline-offset: -2px;
+        }
+        
+        .mobile-nav-item i {
+            font-size: 1.25rem;
+        }
+        
+        /* 占位底部空间 */
+        @media (max-width: 48rem) {
+            .main-content {
+                padding-bottom: calc(60px + env(safe-area-inset-bottom));
+            }
+        }
+        
+        /* ========== 滚动条样式 ========== */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--color-border);
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--color-text-tertiary);
+        }
+        
+        /* ========== 打印样式 ========== */
+        @media print {
+            .sidebar,
+            .mobile-nav,
+            .icon-btn,
+            .quick-actions {
+                display: none !important;
+            }
+            
+            .main-content {
+                padding: 0;
+            }
+            
+            body {
+                background: white;
+                color: black;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 跳过导航链接 (WCAG 2.4.1) -->
+    <a href="#main-content" class="skip-link">跳转到主内容</a>
+    
+    <div class="app-container">
+        <!-- ========== 头部 ========== -->
+        <header class="app-header" role="banner">
+            <div class="header-left">
+                <a href="#" class="logo" aria-label="药物研发平台首页">
+                    <div class="logo-icon" aria-hidden="true">
+                        <i class="fas fa-flask"></i>
+                    </div>
+                    <span class="logo-text">CRO平台</span>
+                </a>
+            </div>
+            
+            <div class="header-center">
+                <nav class="role-switcher" role="group" aria-label="选择角色视图">
+                    <button class="role-btn active" data-role="pm" aria-pressed="true">
+                        <i class="fas fa-user-tie" aria-hidden="true"></i>
+                        <span>PM</span>
+                    </button>
+                    <button class="role-btn" data-role="cra" aria-pressed="false">
+                        <i class="fas fa-user-doctor" aria-hidden="true"></i>
+                        <span>CRA</span>
+                    </button>
+                    <button class="role-btn" data-role="crc" aria-pressed="false">
+                        <i class="fas fa-user-nurse" aria-hidden="true"></i>
+                        <span>CRC</span>
+                    </button>
+                    <button class="role-btn" data-role="dm" aria-pressed="false">
+                        <i class="fas fa-user-pen" aria-hidden="true"></i>
+                        <span>DM</span>
+                    </button>
+                </nav>
+            </div>
+            
+            <div class="header-right">
+                <time class="header-date" datetime="2024-01-15">
+                    <i class="fas fa-calendar" aria-hidden="true"></i>
+                    <span>2024年1月15日 周一</span>
+                </time>
+                <button class="icon-btn" aria-label="消息通知">
+                    <i class="fas fa-bell" aria-hidden="true"></i>
+                    <span class="badge">5</span>
+                </button>
+                <button class="icon-btn" aria-label="用户菜单">
+                    <i class="fas fa-circle-user" aria-hidden="true"></i>
+                </button>
+            </div>
+        </header>
+        
+        <!-- ========== 侧边栏 ========== -->
+        <aside class="sidebar" role="navigation" aria-label="主导航">
+            <div class="sidebar-section">
+                <h2 class="sidebar-title">工作台</h2>
+                <ul class="sidebar-nav">
+                    <li>
+                        <a href="#" class="sidebar-link active" aria-current="page">
+                            <i class="fas fa-home" aria-hidden="true"></i>
+                            <span>首页概览</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="sidebar-link">
+                            <i class="fas fa-clipboard-list" aria-hidden="true"></i>
+                            <span>我的待办</span>
+                            <span class="count">12</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            
+            <div class="sidebar-section">
+                <h2 class="sidebar-title">项目管理</h2>
+                <ul class="sidebar-nav">
+                    <li>
+                        <a href="#" class="sidebar-link">
+                            <i class="fas fa-folder-open" aria-hidden="true"></i>
+                            <span>全部项目</span>
+                            <span class="count">48</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="sidebar-link">
+                            <i class="fas fa-chart-line" aria-hidden="true"></i>
+                            <span>项目进度</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="sidebar-link">
+                            <i class="fas fa-triangle-exclamation" aria-hidden="true"></i>
+                            <span>风险预警</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            
+            <div class="sidebar-section">
+                <h2 class="sidebar-title">临床管理</h2>
+                <ul class="sidebar-nav">
+                    <li>
+                        <a href="#" class="sidebar-link">
+                            <i class="fas fa-hospital" aria-hidden="true"></i>
+                            <span>研究中心</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="sidebar-link">
+                            <i class="fas fa-user-injured" aria-hidden="true"></i>
+                            <span>受试者</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="sidebar-link">
+                            <i class="fas fa-file-medical" aria-hidden="true"></i>
+                            <span>文档管理</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            
+            <div class="sidebar-section">
+                <h2 class="sidebar-title">数据分析</h2>
+                <ul class="sidebar-nav">
+                    <li>
+                        <a href="#" class="sidebar-link">
+                            <i class="fas fa-chart-pie" aria-hidden="true"></i>
+                            <span>数据概览</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="sidebar-link">
+                            <i class="fas fa-file-contract" aria-hidden="true"></i>
+                            <span>报表中心</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </aside>
+        
+        <!-- ========== 主内容区 ========== -->
+        <main id="main-content" class="main-content" role="main">
+            <!-- PM视图 -->
+            <div class="role-content active" data-role-content="pm">
+                <header class="page-header">
+                    <h1 class="page-title">欢迎回来，张经理</h1>
+                    <p class="page-subtitle">以下是您负责项目的整体概况</p>
+                </header>
+                
+                <div class="dashboard-grid">
+                    <!-- KPI指标 -->
+                    <article class="card card-full">
+                        <div class="card-header">
+                            <h2 class="card-title">
+                                <i class="fas fa-chart-simple" aria-hidden="true"></i>
+                                关键指标
+                            </h2>
+                            <a href="#" class="card-action">
+                                详情 <i class="fas fa-arrow-right" aria-hidden="true"></i>
+                            </a>
+                        </div>
+                        <div class="kpi-grid">
+                            <div class="kpi-card">
+                                <div class="kpi-value primary">48</div>
+                                <div class="kpi-label">项目总数</div>
+                                <span class="kpi-trend up">
+                                    <i class="fas fa-arrow-up" aria-hidden="true"></i>
+                                    +3 本月
+                                </span>
+                            </div>
+                            <div class="kpi-card">
+                                <div class="kpi-value success">32</div>
+                                <div class="kpi-label">进行中</div>
+                            </div>
+                            <div class="kpi-card">
+                                <div class="kpi-value">78%</div>
+                                <div class="kpi-label">平均入组进度</div>
+                                <span class="kpi-trend down">
+                                    <i class="fas fa-arrow-down" aria-hidden="true"></i>
+                                    -2%
+                                </span>
+                            </div>
+                            <div class="kpi-card">
+                                <div class="kpi-value">92%</div>
+                                <div class="kpi-label">文档完成率</div>
+                            </div>
+                            <div class="kpi-card">
+                                <div class="kpi-value warning">18</div>
+                                <div class="kpi-label">待办事项</div>
+                            </div>
+                            <div class="kpi-card">
+                                <div class="kpi-value danger">5</div>
+                                <div class="kpi-label">风险预警</div>
+                            </div>
+                        </div>
+                    </article>
+                    
+                    <!-- 临床管线 -->
+                    <article class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">
+                                <i class="fas fa-code-branch" aria-hidden="true"></i>
+                                临床管线
+                            </h2>
+                            <a href="#" class="card-action">
+                                查看全部 <i class="fas fa-arrow-right" aria-hidden="true"></i>
+                            </a>
+                        </div>
+                        <div class="pipeline-container">
+                            <nav class="pipeline-track" aria-label="临床试验阶段">
+                                <div class="pipeline-phase">
+                                    <button class="phase-dot phase-1" aria-label="立项阶段，8个项目">8</button>
+                                    <span class="phase-name">立项</span>
+                                    <span class="phase-count">8 项目</span>
+                                </div>
+                                <div class="pipeline-phase">
+                                    <button class="phase-dot phase-2" aria-label="伦理审查阶段，12个项目">12</button>
+                                    <span class="phase-name">伦理审查</span>
+                                    <span class="phase-count">12 项目</span>
+                                </div>
+                                <div class="pipeline-phase">
+                                    <button class="phase-dot phase-3" aria-label="执行阶段，15个项目">15</button>
+                                    <span class="phase-name">执行</span>
+                                    <span class="phase-count">15 项目</span>
+                                </div>
+                                <div class="pipeline-phase">
+                                    <button class="phase-dot phase-4" aria-label="数据管理阶段，10个项目">10</button>
+                                    <span class="phase-name">数据管理</span>
+                                    <span class="phase-count">10 项目</span>
+                                </div>
+                                <div class="pipeline-phase">
+                                    <button class="phase-dot phase-5" aria-label="总结报告阶段，3个项目">3</button>
+                                    <span class="phase-name">总结报告</span>
+                                    <span class="phase-count">3 项目</span>
+                                </div>
+                            </nav>
+                        </div>
+                    </article>
+                    
+                    <!-- 快捷入口 -->
+                    <article class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">
+                                <i class="fas fa-bolt" aria-hidden="true"></i>
+                                快捷操作
+                            </h2>
+                        </div>
+                        <div class="quick-actions" role="group" aria-label="常用功能">
+                            <button class="quick-action" type="button">
+                                <i class="fas fa-plus" aria-hidden="true"></i>
+                                <span>新建项目</span>
+                            </button>
+                            <button class="quick-action" type="button">
+                                <i class="fas fa-clipboard-check" aria-hidden="true"></i>
+                                <span>审批流程</span>
+                            </button>
+                            <button class="quick-action" type="button">
+                                <i class="fas fa-file-circle-plus" aria-hidden="true"></i>
+                                <span>上传文档</span>
+                            </button>
+                            <button class="quick-action" type="button">
+                                <i class="fas fa-chart-bar" aria-hidden="true"></i>
+                                <span>生成报告</span>
+                            </button>
+                        </div>
+                    </article>
+                    
+                    <!-- 项目动态 -->
+                    <article class="card card-wide">
+                        <div class="card-header">
+                            <h2 class="card-title">
+                                <i class="fas fa-clock-rotate-left" aria-hidden="true"></i>
+                                项目动态
+                            </h2>
+                            <a href="#" class="card-action">
+                                更多 <i class="fas fa-arrow-right" aria-hidden="true"></i>
+                            </a>
+                        </div>
+                        <div class="activity-list" role="feed" aria-label="最近项目活动">
+                            <article class="activity-item">
+                                <div class="activity-icon sae" aria-hidden="true">
+                                    <i class="fas fa-triangle-exclamation"></i>
+                                </div>
+                                <div class="activity-content">
+                                    <p class="activity-title">SAE上报：XXXX-001项目 发生严重不良事件</p>
+                                    <div class="activity-meta">
+                                        <span class="activity-project">XXXX-001</span>
+                                        <span>10分钟前</span>
+                                    </div>
+                                </div>
+                            </article>
+                            <article class="activity-item">
+                                <div class="activity-icon ethics" aria-hidden="true">
+                                    <i class="fas fa-stamp"></i>
+                                </div>
+                                <div class="activity-content">
+                                    <p class="activity-title">伦理批件已获取：YYYY-002项目</p>
+                                    <div class="activity-meta">
+                                        <span class="activity-project">YYYY-002</span>
+                                        <span>30分钟前</span>
+                                    </div>
+                                </div>
+                            </article>
+                            <article class="activity-item">
+                                <div class="activity-icon enroll" aria-hidden="true">
+                                    <i class="fas fa-user-plus"></i>
+                                </div>
+                                <div class="activity-content">
+                                    <p class="activity-title">受试者入组成功：ZZZZ-003 第12例</p>
+                                    <div class="activity-meta">
+                                        <span class="activity-project">ZZZZ-003</span>
+                                        <span>1小时前</span>
+                                    </div>
+                                </div>
+                            </article>
+                            <article class="activity-item">
+                                <div class="activity-icon doc" aria-hidden="true">
+                                    <i class="fas fa-file-signature"></i>
+                                </div>
+                                <div class="activity-content">
+                                    <p class="activity-title">知情同意书已签署：WWWW-004</p>
+                                    <div class="activity-meta">
+                                        <span class="activity-project">WWWW-004</span>
+                                        <span>2小时前</span>
+                                    </div>
+                                </div>
+                            </article>
+                            <article class="activity-item">
+                                <div class="activity-icon visit" aria-hidden="true">
+                                    <i class="fas fa-calendar-check"></i>
+                                </div>
+                                <div class="activity-content">
+                                    <p class="activity-title">计划访视完成：VVVV-005 4周随访</p>
+                                    <div class="activity-meta">
+                                        <span class="activity-project">VVVV-005</span>
+                                        <span>3小时前</span>
+                                    </div>
+                                </div>
+                            </article>
+                        </div>
+                    </article>
+                    
+                    <!-- AI洞察 -->
+                    <article class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">
+                                <i class="fas fa-robot" aria-hidden="true"></i>
+                                AI智能洞察
+                            </h2>
+                            <button class="card-action" type="button" aria-label="刷新洞察">
+                                <i class="fas fa-rotate" aria-hidden="true"></i>
+                            </button>
+                        </div>
+                        <div class="insight-list" role="region" aria-label="智能建议">
+                            <article class="insight-item risk">
+                                <div class="insight-icon" aria-hidden="true">
+                                    <i class="fas fa-exclamation-circle"></i>
+                                </div>
+                                <div class="insight-content">
+                                    <h3 class="insight-title">项目延期风险预警</h3>
+                                    <p class="insight-desc">XXXX-001项目入组进度落后计划15%，建议增加研究中心</p>
+                                    <button class="insight-action" type="button">
+                                        查看详情 <i class="fas fa-arrow-right" aria-hidden="true"></i>
+                                    </button>
+                                </div>
+                            </article>
+                            <article class="insight-item progress">
+                                <div class="insight-icon" aria-hidden="true">
+                                    <i class="fas fa-hourglass-half"></i>
+                                </div>
+                                <div class="insight-content">
+                                    <h3 class="insight-title">里程碑临近</h3>
+                                    <p class="insight-desc">YYYY-002项目的伦理审查将在3天后截止</p>
+                                    <button class="insight-action" type="button">
+                                        处理 <i class="fas fa-arrow-right" aria-hidden="true"></i>
+                                    </button>
+                                </div>
+                            </article>
+                            <article class="insight-item suggestion">
+                                <div class="insight-icon" aria-hidden="true">
+                                    <i class="fas fa-lightbulb"></i>
+                                </div>
+                                <div class="insight-content">
+                                    <h3 class="insight-title">效率优化建议</h3>
+                                    <p class="insight-desc">ZZZZ-003项目可复用历史项目模板，预计节省30%文档时间</p>
+                                    <button class="insight-action" type="button">
+                                        立即应用 <i class="fas fa-arrow-right" aria-hidden="true"></i>
+                                    </button>
+                                </div>
+                            </article>
+                        </div>
+                    </article>
+                    
+                    <!-- PM专属：待审批 -->
+                    <article class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">
+                                <i class="fas fa-list-check" aria-hidden="true"></i>
+                                待审批事项
+                            </h2>
+                            <span class="count-badge">8</span>
+                        </div>
+                        <div class="pm-tasks">
+                            <div class="task-item">
+                                <div class="task-priority high" aria-label="高优先级"></div>
+                                <div class="task-info">
+                                    <p class="task-title">XXXX-001项目预算变更审批</p>
+                                    <p class="task-project">申请人：李明</p>
+                                </div>
+                                <time class="task-deadline">今天</time>
+                            </div>
+                            <div class="task-item">
+                                <div class="task-priority high" aria-label="高优先级"></div>
+                                <div class="task-info">
+                                    <p class="task-title">YYYY-002方案偏离报告</p>
+                                    <p class="task-project">申请人：王芳</p>
+                                </div>
+                                <time class="task-deadline">明天</time>
+                            </div>
+                            <div class="task-item">
+                                <div class="task-priority medium" aria-label="中优先级"></div>
+                                <div class="task-info">
+                                    <p class="task-title">ZZZZ-003分中心启动申请</p>
+                                    <p class="task-project">申请人：赵强</p>
+                                </div>
+                                <time class="task-deadline">1月17日</time>
+                            </div>
+                        </div>
+                    </article>
+                </div>
+            </div>
+            
+            <!-- CRA视图 -->
+            <div class="role-content" data-role-content="cra">
+                <header class="page-header">
+                    <h1 class="page-title">CRA工作台</h1>
+                    <p class="page-subtitle">监查任务与研究中心状态</p>
+                </header>
+                <div class="dashboard-grid">
+                    <article class="card card-full">
+                        <div class="card-header">
+                            <h2 class="card-title">
+                                <i class="fas fa-hospital" aria-hidden="true"></i>
+                                我的研究中心
+                            </h2>
+                        </div>
+                        <div class="cra-sites">
+                            <div class="site-item">
+                                <div class="site-info">
+                                    <span class="site-status active" aria-label="状态正常"></span>
+                                    <div>
+                                        <p class="site-name">北京协和医院</p>
+                                        <p class="site-code">Site-001</p>
+                                    </div>
+                                </div>
+                                <button class="site-action">开始监查</button>
+                            </div>
+                            <div class="site-item">
+                                <div class="site-info">
+                                    <span class="site-status pending" aria-label="待解决"></span>
+                                    <div>
+                                        <p class="site-name">上海瑞金医院</p>
+                                        <p class="site-code">Site-002</p>
+                                    </div>
+                                </div>
+                                <button class="site-action">查看问题</button>
+                            </div>
+                            <div class="site-item">
+                                <div class="site-info">
+                                    <span class="site-status issue" aria-label="有问题"></span>
+                                    <div>
+                                        <p class="site-name">广州中山医院</p>
+                                        <p class="site-code">Site-003</p>
+                                    </div>
+                                </div>
+                                <button class="site-action">待处理 3</button>
+                            </div>
+                        </div>
+                    </article>
+                </div>
+            </div>
+            
+            <!-- CRC视图 -->
+            <div class="role-content" data-role-content="crc">
+                <header class="page-header">
+                    <h1 class="page-title">CRC工作台</h1>
+                    <p class="page-subtitle">日常执行与待办任务</p>
+                </header>
+                <div class="dashboard-grid">
+                    <article class="card card-full">
+                        <div class="card-header">
+                            <h2 class="card-title">
+                                <i class="fas fa-clipboard-list" aria-hidden="true"></i>
+                                今日待办
+                            </h2>
+                        </div>
+                        <div class="activity-list">
+                            <article class="activity-item">
+                                <div class="activity-icon enroll" aria-hidden="true">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                                <div class="activity-content">
+                                    <p class="activity-title">协助受试者访视 - 001-003</p>
+                                    <div class="activity-meta">
+                                        <span>09:00</span>
+                                    </div>
+                                </div>
+                            </article>
+                            <article class="activity-item">
+                                <div class="activity-icon doc" aria-hidden="true">
+                                    <i class="fas fa-file-alt"></i>
+                                </div>
+                                <div class="activity-content">
+                                    <p class="activity-title">录入CRF数据</p>
+                                    <div class="activity-meta">
+                                        <span>10:30</span>
+                                    </div>
+                                </div>
+                            </article>
+                        </div>
+                    </article>
+                </div>
+            </div>
+            
+            <!-- DM视图 -->
+            <div class="role-content" data-role-content="dm">
+                <header class="page-header">
+                    <h1 class="page-title">DM工作台</h1>
+                    <p class="page-subtitle">数据管理与质量控制</p>
+                </header>
+                <div class="dashboard-grid">
+                    <article class="card card-full">
+                        <div class="card-header">
+                            <h2 class="card-title">
+                                <i class="fas fa-database" aria-hidden="true"></i>
+                                数据质量概览
+                            </h2>
+                        </div>
+                        <div class="kpi-grid">
+                            <div class="kpi-card">
+                                <div class="kpi-value">92%</div>
+                                <div class="kpi-label">数据录入完成率</div>
+                            </div>
+                            <div class="kpi-card">
+                                <div class="kpi-value warning">156</div>
+                                <div class="kpi-label">待解答疑问</div>
+                            </div>
+                            <div class="kpi-card">
+                                <div class="kpi-value success">3</div>
+                                <div class="kpi-label">进行中的锁库</div>
+                            </div>
+                        </div>
+                    </article>
+                </div>
+            </div>
+        </main>
+        
+        <!-- ========== 页脚 ========== -->
+        <footer class="app-footer" role="contentinfo">
+            <p>© 2024 北京兴德通医药科技 · 药物研发平台 v2.1</p>
+        </footer>
+    </div>
+    
+    <!-- ========== 移动端底部导航 ========== -->
+    <nav class="mobile-nav" role="navigation" aria-label="移动端导航">
+        <a href="#" class="mobile-nav-item active" aria-current="page">
+            <i class="fas fa-home" aria-hidden="true"></i>
+            <span>首页</span>
+        </a>
+        <a href="#" class="mobile-nav-item">
+            <i class="fas fa-folder" aria-hidden="true"></i>
+            <span>项目</span>
+        </a>
+        <a href="#" class="mobile-nav-item">
+            <i class="fas fa-clipboard-list" aria-hidden="true"></i>
+            <span>待办</span>
+        </a>
+        <a href="#" class="mobile-nav-item">
+            <i class="fas fa-user" aria-hidden="true"></i>
+            <span>我的</span>
+        </a>
+    </nav>
+    
+    <!-- ========== JavaScript ========== -->
+    <script>
+        // 角色切换功能
+        const roleButtons = document.querySelectorAll('.role-btn');
+        const roleContents = document.querySelectorAll('.role-content');
+        
+        roleButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const role = button.dataset.role;
+                
+                // 更新按钮状态
+                roleButtons.forEach(btn => {
+                    btn.classList.remove('active');
+                    btn.setAttribute('aria-pressed', 'false');
+                });
+                button.classList.add('active');
+                button.setAttribute('aria-pressed', 'true');
+                
+                // 更新内容显示
+                roleContents.forEach(content => {
+                    content.classList.remove('active');
+                    if (content.dataset.roleContent === role) {
+                        content.classList.add('active');
+                    }
+                });
+            });
+        });
+        
+        // 键盘导航支持
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Tab') {
+                document.body.classList.add('keyboard-nav');
+            }
+        });
+        
+        document.addEventListener('mousedown', () => {
+            document.body.classList.remove('keyboard-nav');
+        });
+        
+        // ARIA live region 用于动态内容更新通知
+        function announceToScreenReader(message) {
+            const announcement = document.createElement('div');
+            announcement.setAttribute('role', 'status');
+            announcement.setAttribute('aria-live', 'polite');
+            announcement.setAttribute('aria-atomic', 'true');
+            announcement.className = 'sr-only';
+            announcement.textContent = message;
+            document.body.appendChild(announcement);
+            
+            setTimeout(() => {
+                document.body.removeChild(announcement);
+            }, 1000);
+        }
+        
+        // 隐藏式屏幕阅读器内容样式
+        const srOnlyStyle = document.createElement('style');
+        srOnlyStyle.textContent = `
+            .sr-only {
+                position: absolute;
+                width: 1px;
+                height: 1px;
+                padding: 0;
+                margin: -1px;
+                overflow: hidden;
+                clip: rect(0, 0, 0, 0);
+                white-space: nowrap;
+                border: 0;
+            }
+        `;
+        document.head.appendChild(srOnlyStyle);
+    </script>
+</body>
+</html>
+
+<!--
+================================================================================
+平台设计规范参考说明
+================================================================================
+
+一、参考的规范文件
+--------------------------------------------------------------------------------
+1. Web平台规范 (skills/web/SKILL.md, skills/web/rules/_sections.md)
+   - WCAG 2.2 无障碍标准
+   - 响应式设计最佳实践
+   - 暗色主题实现指南
+   - 语义化HTML规范
+   - 触摸目标尺寸要求
+
+2. iOS Human Interface Guidelines (skills/ios/SKILL.md)
+   - 信息层级设计
+   - 触控目标最小44pt
+   - 8pt网格间距系统
+   - 导航模式选择
+
+3. Android Material Design 3 (skills/android/SKILL.md)
+   - 颜色角色语义化定义
+   - 组件层级关系
+   - 卡片组件设计
+
+二、提取的设计规则
+--------------------------------------------------------------------------------
+【响应式布局】
+- 规则1: 移动优先策略，使用min-width媒体查询
+- 规则2: CSS Grid实现自适应网格布局
+- 规则3: 内容驱动断点，非设备驱动
+  → 应用: 使用48rem、64rem、80rem断点，内容在1280px+时自动扩展为3列
+
+【信息层级】
+- 规则1: KPI指标和快捷入口作为最高权重信息
+- 规则2: 临床管线和项目动态作为中等权重
+- 规则3: AI洞察作为辅助决策
+  → 应用: KPI卡片占据顶部整行宽度，管道图和动态左右并排
+
+【角色差异化】
+- 规则1: 不同角色看到不同的首页视图
+- 规则2: 通过角色切换器动态展示相关内容
+- 规则3: 底部导航用于移动端层级导航
+  → 应用: PM视图包含待审批事项，CRA视图包含研究中心状态
+
+【暗色主题】
+- 规则1: 使用CSS自定义属性定义颜色系统
+- 规则2: 颜色方案元标签声明支持
+- 规则3: prefers-color-scheme媒体查询
+  → 应用: 深色主题为默认，深灰蓝色调符合医学/科研专业感
+
+【无障碍设计】
+- 规则1: 跳过导航链接 (WCAG 2.4.1)
+- 规则2: 语义化HTML元素 (main, nav, header, article, aside)
+- 规则3: ARIA标签和aria-pressed状态
+- 规则4: 44x44px最小触摸目标
+- 规则5: 可见焦点指示器 (:focus-visible)
+- 规则6: ARIA live region用于动态更新
+  → 应用: 
+  - 添加skip-link跳转到main-content
+  - 所有按钮使用role="button"，图标按钮有aria-label
+  - 角色切换器使用aria-pressed状态
+  - 活动列表使用role="feed"
+  - 移动端底部导航固定44px高度
+
+【交互设计】
+- 规则1: prefers-reduced-motion尊重用户偏好
+- 规则2: 过渡动画仅用于状态变化
+- 规则3: 卡片hover和focus效果一致
+  → 应用: 所有transition封装在@media (prefers-reduced-motion: reduce)查询中
+
+【排版系统】
+- 规则1: 使用rem相对单位
+- 规则2: 行高1.5倍确保可读性
+- 规则3: 数字使用tabular-nums等宽显示
+  → 应用: 所有字号和间距使用rem，KPI数字使用font-variant-numeric: tabular-nums
+
+【医学配色】
+- 规则1: 阶段颜色采用语义化设计
+- 规则2: 风险等级使用红/黄/绿系统
+- 规则3: 成功/警告/危险状态需配合图标
+  → 应用:
+  - 5个临床阶段使用紫/蓝/绿/橙/红色系
+  - 风险预警图标+颜色双重标识
+  - SAE/伦理/入组/文档使用不同颜色图标
+
+三、设计亮点
+--------------------------------------------------------------------------------
+1. CSS Grid 2-3列自适应布局，解决原6区域纵向堆叠问题
+2. 角色切换器实现PM/CRA/CRC/DM差异化视图
+3. 临床管线可视化展示5个阶段进度
+4. 暗色主题采用深灰蓝色调，专业不刺眼
+5. 完整无障碍支持，包括跳过链接、ARIA标签、键盘导航
+6. 移动端采用底部Tab导航，符合触屏操作习惯
+7. AI洞察区域采用左侧色条区分风险/进度/建议类型
+
+四、待优化方向
+--------------------------------------------------------------------------------
+1. 响应式容器查询 (container-type) 用于卡片内部布局
+2. 服务端渲染 (SSR) 支持SEO和首屏加载
+3. 主题切换功能支持用户自定义
+4. 数据虚拟化处理长列表性能
+5. 图表组件集成ECharts/Chart.js
+
+================================================================================
+-->

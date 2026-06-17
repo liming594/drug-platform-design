@@ -1,0 +1,1621 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CRO药物研发平台 - 工作台</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    /* ==================== CSS Variables ==================== */
+    :root {
+      /* Base Colors - Dark Theme */
+      --bg-primary: #0f172a;
+      --bg-secondary: #1e293b;
+      --bg-tertiary: #334155;
+      --bg-card: #1e293b;
+      --bg-card-hover: #283548;
+      
+      /* Text Colors */
+      --text-primary: #f8fafc;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+      
+      /* Brand & Accent */
+      --accent-primary: #0ea5e9;
+      --accent-secondary: #06b6d4;
+      --accent-glow: rgba(14, 165, 233, 0.15);
+      
+      /* Status Colors */
+      --status-success: #10b981;
+      --status-warning: #f59e0b;
+      --status-danger: #ef4444;
+      --status-info: #3b82f6;
+      --status-purple: #8b5cf6;
+      
+      /* Pipeline Stage Colors */
+      --stage-1: #6366f1;
+      --stage-2: #8b5cf6;
+      --stage-3: #0ea5e9;
+      --stage-4: #06b6d4;
+      --stage-5: #10b981;
+      
+      /* Borders */
+      --border-color: #334155;
+      --border-light: #475569;
+      
+      /* Shadows */
+      --shadow-sm: 0 1px 2px rgba(0,0,0,0.3);
+      --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.4);
+      --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.5);
+      --shadow-glow: 0 0 20px rgba(14, 165, 233, 0.3);
+      
+      /* Spacing */
+      --space-xs: 4px;
+      --space-sm: 8px;
+      --space-md: 16px;
+      --space-lg: 24px;
+      --space-xl: 32px;
+      
+      /* Border Radius */
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 16px;
+      --radius-full: 9999px;
+      
+      /* Typography */
+      --font-sans: 'Inter', 'Noto Sans SC', -apple-system, sans-serif;
+    }
+    
+    /* ==================== Reset & Base ==================== */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      font-family: var(--font-sans);
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+    
+    /* ==================== Layout ==================== */
+    .app-container {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+    
+    /* ==================== Header ==================== */
+    .header {
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border-color);
+      padding: 0 var(--space-lg);
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: var(--space-xl);
+    }
+    
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+      font-weight: 700;
+      font-size: 18px;
+      color: var(--text-primary);
+    }
+    
+    .logo-icon {
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 16px;
+    }
+    
+    /* Role Switcher */
+    .role-switcher {
+      display: flex;
+      background: var(--bg-tertiary);
+      border-radius: var(--radius-md);
+      padding: 4px;
+      gap: 2px;
+    }
+    
+    .role-btn {
+      padding: 8px 16px;
+      border: none;
+      background: transparent;
+      color: var(--text-secondary);
+      font-size: 13px;
+      font-weight: 500;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: inherit;
+    }
+    
+    .role-btn:hover {
+      color: var(--text-primary);
+      background: var(--bg-card-hover);
+    }
+    
+    .role-btn.active {
+      background: var(--accent-primary);
+      color: white;
+      box-shadow: var(--shadow-sm);
+    }
+    
+    /* Header Right */
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+    }
+    
+    .search-box {
+      position: relative;
+      width: 280px;
+    }
+    
+    .search-box input {
+      width: 100%;
+      padding: 10px 16px 10px 40px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      color: var(--text-primary);
+      font-size: 14px;
+      font-family: inherit;
+      transition: all 0.2s ease;
+    }
+    
+    .search-box input::placeholder {
+      color: var(--text-muted);
+    }
+    
+    .search-box input:focus {
+      outline: none;
+      border-color: var(--accent-primary);
+      box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+    
+    .search-box i {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      font-size: 14px;
+    }
+    
+    .search-box kbd {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: var(--bg-card);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 11px;
+      color: var(--text-muted);
+      border: 1px solid var(--border-color);
+    }
+    
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+    }
+    
+    .header-btn {
+      width: 40px;
+      height: 40px;
+      border: none;
+      background: transparent;
+      color: var(--text-secondary);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+    
+    .header-btn:hover {
+      background: var(--bg-tertiary);
+      color: var(--text-primary);
+    }
+    
+    .header-btn .badge {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      width: 8px;
+      height: 8px;
+      background: var(--status-danger);
+      border-radius: 50%;
+      border: 2px solid var(--bg-secondary);
+    }
+    
+    .user-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--status-purple), var(--accent-primary));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+    
+    .user-avatar:hover {
+      transform: scale(1.05);
+    }
+    
+    /* ==================== Main Content ==================== */
+    .main-content {
+      flex: 1;
+      padding: var(--space-lg);
+      display: grid;
+      grid-template-columns: 1fr 380px;
+      grid-template-rows: auto auto;
+      gap: var(--space-lg);
+    }
+    
+    /* ==================== Cards Base ==================== */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: var(--space-lg);
+      transition: all 0.2s ease;
+    }
+    
+    .card:hover {
+      border-color: var(--border-light);
+    }
+    
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: var(--space-md);
+    }
+    
+    .card-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+    }
+    
+    .card-title i {
+      color: var(--accent-primary);
+    }
+    
+    .card-action {
+      font-size: 13px;
+      color: var(--accent-primary);
+      text-decoration: none;
+      cursor: pointer;
+      transition: color 0.2s ease;
+    }
+    
+    .card-action:hover {
+      color: var(--accent-secondary);
+    }
+    
+    /* ==================== Pipeline Card ==================== */
+    .pipeline-card {
+      grid-column: 1;
+    }
+    
+    .pipeline-visual {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: relative;
+      padding: var(--space-lg) 0;
+    }
+    
+    .pipeline-line {
+      position: absolute;
+      top: 50%;
+      left: 24px;
+      right: 24px;
+      height: 4px;
+      background: var(--bg-tertiary);
+      border-radius: 2px;
+      transform: translateY(-50%);
+      z-index: 0;
+    }
+    
+    .pipeline-progress {
+      position: absolute;
+      top: 50%;
+      left: 24px;
+      height: 4px;
+      background: linear-gradient(90deg, var(--stage-1), var(--stage-2), var(--stage-3));
+      border-radius: 2px;
+      transform: translateY(-50%);
+      z-index: 1;
+      width: 60%;
+    }
+    
+    .pipeline-stages {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      position: relative;
+      z-index: 2;
+    }
+    
+    .pipeline-stage {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-sm);
+    }
+    
+    .stage-dot {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      position: relative;
+      transition: all 0.3s ease;
+    }
+    
+    .stage-dot.completed {
+      background: linear-gradient(135deg, var(--stage-5), #059669);
+      color: white;
+      box-shadow: 0 0 20px rgba(16, 185, 129, 0.4);
+    }
+    
+    .stage-dot.active {
+      background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+      color: white;
+      box-shadow: var(--shadow-glow);
+      animation: pulse 2s infinite;
+    }
+    
+    .stage-dot.pending {
+      background: var(--bg-tertiary);
+      color: var(--text-muted);
+      border: 2px dashed var(--border-color);
+    }
+    
+    @keyframes pulse {
+      0%, 100% { box-shadow: var(--shadow-glow); }
+      50% { box-shadow: 0 0 30px rgba(14, 165, 233, 0.5); }
+    }
+    
+    .stage-label {
+      font-size: 12px;
+      color: var(--text-secondary);
+      text-align: center;
+      max-width: 70px;
+    }
+    
+    .stage-count {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+    
+    .stage-dot.completed .stage-count,
+    .stage-dot.active .stage-count {
+      color: var(--text-secondary);
+    }
+    
+    /* Pipeline Stats Row */
+    .pipeline-stats {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: var(--space-md);
+      margin-top: var(--space-lg);
+      padding-top: var(--space-lg);
+      border-top: 1px solid var(--border-color);
+    }
+    
+    .pipeline-stat {
+      text-align: center;
+    }
+    
+    .pipeline-stat .value {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+    
+    .pipeline-stat .label {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+    
+    /* ==================== KPI Cards Grid ==================== */
+    .kpi-section {
+      grid-column: 1;
+    }
+    
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: var(--space-md);
+    }
+    
+    .kpi-card {
+      background: var(--bg-tertiary);
+      border-radius: var(--radius-md);
+      padding: var(--space-md);
+      display: flex;
+      align-items: flex-start;
+      gap: var(--space-md);
+      transition: all 0.2s ease;
+      border: 1px solid transparent;
+    }
+    
+    .kpi-card:hover {
+      background: var(--bg-card-hover);
+      border-color: var(--border-color);
+    }
+    
+    .kpi-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+    
+    .kpi-icon.blue {
+      background: rgba(59, 130, 246, 0.15);
+      color: #3b82f6;
+    }
+    
+    .kpi-icon.green {
+      background: rgba(16, 185, 129, 0.15);
+      color: #10b981;
+    }
+    
+    .kpi-icon.yellow {
+      background: rgba(245, 158, 11, 0.15);
+      color: #f59e0b;
+    }
+    
+    .kpi-icon.red {
+      background: rgba(239, 68, 68, 0.15);
+      color: #ef4444;
+    }
+    
+    .kpi-content {
+      flex: 1;
+      min-width: 0;
+    }
+    
+    .kpi-value {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--text-primary);
+      line-height: 1.2;
+    }
+    
+    .kpi-label {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-top: 4px;
+    }
+    
+    .kpi-trend {
+      font-size: 12px;
+      margin-top: 6px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    
+    .kpi-trend.up {
+      color: var(--status-success);
+    }
+    
+    .kpi-trend.down {
+      color: var(--status-danger);
+    }
+    
+    /* ==================== Right Column ==================== */
+    .right-column {
+      grid-column: 2;
+      grid-row: 1 / 3;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-lg);
+    }
+    
+    /* AI Insights Card */
+    .insights-card {
+      background: linear-gradient(135deg, var(--bg-card), #1a2744);
+      border: 1px solid var(--accent-primary);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .insights-card::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -50%;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle, var(--accent-glow), transparent 70%);
+      pointer-events: none;
+    }
+    
+    .insight-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--accent-primary);
+      color: white;
+      padding: 4px 10px;
+      border-radius: var(--radius-full);
+      font-size: 11px;
+      font-weight: 600;
+      margin-bottom: var(--space-md);
+    }
+    
+    .insight-item {
+      padding: var(--space-md);
+      background: var(--bg-tertiary);
+      border-radius: var(--radius-md);
+      margin-bottom: var(--space-sm);
+      border-left: 3px solid;
+      transition: all 0.2s ease;
+    }
+    
+    .insight-item:hover {
+      background: var(--bg-card-hover);
+    }
+    
+    .insight-item.danger {
+      border-left-color: var(--status-danger);
+    }
+    
+    .insight-item.warning {
+      border-left-color: var(--status-warning);
+    }
+    
+    .insight-item.info {
+      border-left-color: var(--status-info);
+    }
+    
+    .insight-item.success {
+      border-left-color: var(--status-success);
+    }
+    
+    .insight-header {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+      margin-bottom: 6px;
+    }
+    
+    .insight-icon {
+      font-size: 14px;
+    }
+    
+    .insight-item.danger .insight-icon { color: var(--status-danger); }
+    .insight-item.warning .insight-icon { color: var(--status-warning); }
+    .insight-item.info .insight-icon { color: var(--status-info); }
+    .insight-item.success .insight-icon { color: var(--status-success); }
+    
+    .insight-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    
+    .insight-desc {
+      font-size: 12px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+    
+    /* Quick Actions Card */
+    .quick-actions {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--space-sm);
+    }
+    
+    .quick-action {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-sm);
+      padding: var(--space-md);
+      background: var(--bg-tertiary);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border: 1px solid transparent;
+      text-decoration: none;
+      color: inherit;
+    }
+    
+    .quick-action:hover {
+      background: var(--bg-card-hover);
+      border-color: var(--accent-primary);
+      transform: translateY(-2px);
+    }
+    
+    .quick-action i {
+      font-size: 24px;
+      color: var(--accent-primary);
+    }
+    
+    .quick-action span {
+      font-size: 12px;
+      color: var(--text-secondary);
+      text-align: center;
+    }
+    
+    /* Activity Feed */
+    .activity-feed {
+      max-height: 320px;
+      overflow-y: auto;
+    }
+    
+    .activity-feed::-webkit-scrollbar {
+      width: 4px;
+    }
+    
+    .activity-feed::-webkit-scrollbar-track {
+      background: var(--bg-tertiary);
+      border-radius: 2px;
+    }
+    
+    .activity-feed::-webkit-scrollbar-thumb {
+      background: var(--border-color);
+      border-radius: 2px;
+    }
+    
+    .activity-item {
+      display: flex;
+      gap: var(--space-md);
+      padding: var(--space-md) 0;
+      border-bottom: 1px solid var(--border-color);
+      transition: background 0.2s ease;
+    }
+    
+    .activity-item:last-child {
+      border-bottom: none;
+    }
+    
+    .activity-item:hover {
+      background: rgba(255,255,255,0.02);
+      margin: 0 calc(var(--space-md) * -1);
+      padding-left: var(--space-md);
+      padding-right: var(--space-md);
+      border-radius: var(--radius-sm);
+    }
+    
+    .activity-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+    
+    .activity-icon.sae {
+      background: rgba(239, 68, 68, 0.15);
+      color: var(--status-danger);
+    }
+    
+    .activity-icon.ethics {
+      background: rgba(139, 92, 246, 0.15);
+      color: var(--status-purple);
+    }
+    
+    .activity-icon.enroll {
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--status-success);
+    }
+    
+    .activity-icon.document {
+      background: rgba(59, 130, 246, 0.15);
+      color: var(--status-info);
+    }
+    
+    .activity-icon.alert {
+      background: rgba(245, 158, 11, 0.15);
+      color: var(--status-warning);
+    }
+    
+    .activity-content {
+      flex: 1;
+      min-width: 0;
+    }
+    
+    .activity-title {
+      font-size: 13px;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+    
+    .activity-meta {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+    
+    .activity-project {
+      color: var(--accent-primary);
+    }
+    
+    .activity-time {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    
+    /* ==================== Bottom Section ==================== */
+    .projects-section {
+      grid-column: 1;
+    }
+    
+    .projects-tabs {
+      display: flex;
+      gap: var(--space-sm);
+      margin-bottom: var(--space-md);
+    }
+    
+    .tab-btn {
+      padding: 8px 16px;
+      background: transparent;
+      border: 1px solid var(--border-color);
+      color: var(--text-secondary);
+      font-size: 13px;
+      font-weight: 500;
+      border-radius: var(--radius-full);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: inherit;
+    }
+    
+    .tab-btn:hover {
+      border-color: var(--accent-primary);
+      color: var(--accent-primary);
+    }
+    
+    .tab-btn.active {
+      background: var(--accent-primary);
+      border-color: var(--accent-primary);
+      color: white;
+    }
+    
+    .projects-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    
+    .projects-table th {
+      text-align: left;
+      padding: var(--space-sm) var(--space-md);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-bottom: 1px solid var(--border-color);
+    }
+    
+    .projects-table td {
+      padding: var(--space-md);
+      font-size: 13px;
+      color: var(--text-secondary);
+      border-bottom: 1px solid var(--border-color);
+    }
+    
+    .projects-table tr:hover td {
+      background: var(--bg-tertiary);
+    }
+    
+    .projects-table tr:last-child td {
+      border-bottom: none;
+    }
+    
+    .project-name {
+      color: var(--text-primary);
+      font-weight: 500;
+    }
+    
+    .project-id {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+    
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: var(--radius-full);
+      font-size: 12px;
+      font-weight: 500;
+    }
+    
+    .status-badge.active {
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--status-success);
+    }
+    
+    .status-badge.pending {
+      background: rgba(245, 158, 11, 0.15);
+      color: var(--status-warning);
+    }
+    
+    .status-badge.paused {
+      background: rgba(139, 92, 246, 0.15);
+      color: var(--status-purple);
+    }
+    
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+    
+    .progress-bar {
+      width: 100px;
+      height: 6px;
+      background: var(--bg-tertiary);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    
+    .progress-fill {
+      height: 100%;
+      border-radius: 3px;
+      transition: width 0.3s ease;
+    }
+    
+    .progress-fill.green { background: var(--status-success); }
+    .progress-fill.blue { background: var(--accent-primary); }
+    .progress-fill.yellow { background: var(--status-warning); }
+    
+    /* ==================== Floating AI Button ==================== */
+    .floating-ai {
+      position: fixed;
+      bottom: var(--space-xl);
+      right: var(--space-xl);
+      width: 56px;
+      height: 56px;
+      background: linear-gradient(135deg, var(--accent-primary), var(--status-purple));
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 24px;
+      cursor: pointer;
+      box-shadow: var(--shadow-lg), var(--shadow-glow);
+      transition: all 0.3s ease;
+      z-index: 99;
+    }
+    
+    .floating-ai:hover {
+      transform: scale(1.1);
+      box-shadow: var(--shadow-lg), 0 0 40px rgba(14, 165, 233, 0.5);
+    }
+    
+    /* ==================== Responsive ==================== */
+    @media (max-width: 1200px) {
+      .main-content {
+        grid-template-columns: 1fr;
+      }
+      
+      .right-column {
+        grid-column: 1;
+        grid-row: auto;
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+      }
+      
+      .kpi-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+    
+    @media (max-width: 768px) {
+      .role-switcher {
+        display: none;
+      }
+      
+      .search-box {
+        width: 200px;
+      }
+      
+      .main-content {
+        padding: var(--space-md);
+      }
+      
+      .right-column {
+        grid-template-columns: 1fr;
+      }
+    }
+    
+    /* ==================== Animations ==================== */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .card {
+      animation: fadeIn 0.4s ease forwards;
+    }
+    
+    .pipeline-card { animation-delay: 0.1s; }
+    .kpi-section { animation-delay: 0.2s; }
+    .insights-card { animation-delay: 0.3s; }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <!-- ==================== Header ==================== -->
+    <header class="header">
+      <div class="header-left">
+        <div class="logo">
+          <div class="logo-icon">
+            <i class="fas fa-flask"></i>
+          </div>
+          <span>CRO药物研发平台</span>
+        </div>
+        
+        <!-- Role Switcher -->
+        <div class="role-switcher">
+          <button class="role-btn active" data-role="pm">项目经理</button>
+          <button class="role-btn" data-role="cra">临床监查员</button>
+          <button class="role-btn" data-role="crc">临床协调员</button>
+          <button class="role-btn" data-role="dm">数据管理员</button>
+        </div>
+      </div>
+      
+      <div class="header-right">
+        <div class="search-box">
+          <i class="fas fa-search"></i>
+          <input type="text" placeholder="搜索项目、受试者、文档...">
+          <kbd>⌘K</kbd>
+        </div>
+        
+        <div class="header-actions">
+          <button class="header-btn">
+            <i class="fas fa-bell"></i>
+            <span class="badge"></span>
+          </button>
+          <button class="header-btn">
+            <i class="fas fa-question-circle"></i>
+          </button>
+        </div>
+        
+        <div class="user-avatar">李</div>
+      </div>
+    </header>
+    
+    <!-- ==================== Main Content ==================== -->
+    <main class="main-content">
+      <!-- Pipeline Card -->
+      <section class="card pipeline-card">
+        <div class="card-header">
+          <h2 class="card-title">
+            <i class="fas fa-project-diagram"></i>
+            临床管线全景
+          </h2>
+          <a class="card-action">查看全部 <i class="fas fa-arrow-right"></i></a>
+        </div>
+        
+        <div class="pipeline-visual">
+          <div class="pipeline-line"></div>
+          <div class="pipeline-progress"></div>
+          <div class="pipeline-stages">
+            <div class="pipeline-stage">
+              <div class="stage-dot completed">
+                <i class="fas fa-clipboard-check"></i>
+              </div>
+              <span class="stage-label">立项</span>
+              <span class="stage-count">12个项目</span>
+            </div>
+            <div class="pipeline-stage">
+              <div class="stage-dot completed">
+                <i class="fas fa-balance-scale"></i>
+              </div>
+              <span class="stage-label">伦理审查</span>
+              <span class="stage-count">8个项目</span>
+            </div>
+            <div class="pipeline-stage">
+              <div class="stage-dot active">
+                <i class="fas fa-heartbeat"></i>
+              </div>
+              <span class="stage-label">执行中</span>
+              <span class="stage-count">15个项目</span>
+            </div>
+            <div class="pipeline-stage">
+              <div class="stage-dot pending">
+                <i class="fas fa-database"></i>
+              </div>
+              <span class="stage-label">数据管理</span>
+              <span class="stage-count">6个项目</span>
+            </div>
+            <div class="pipeline-stage">
+              <div class="stage-dot pending">
+                <i class="fas fa-file-alt"></i>
+              </div>
+              <span class="stage-label">总结报告</span>
+              <span class="stage-count">3个项目</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="pipeline-stats">
+          <div class="pipeline-stat">
+            <div class="value">44</div>
+            <div class="label">总项目数</div>
+          </div>
+          <div class="pipeline-stat">
+            <div class="value" style="color: var(--status-success)">15</div>
+            <div class="label">进行中</div>
+          </div>
+          <div class="pipeline-stat">
+            <div class="value" style="color: var(--accent-primary)">326</div>
+            <div class="label">入组人数</div>
+          </div>
+          <div class="pipeline-stat">
+            <div class="value" style="color: var(--status-warning)">87.3%</div>
+            <div class="label">文档完整率</div>
+          </div>
+          <div class="pipeline-stat">
+            <div class="value" style="color: var(--status-danger)">3</div>
+            <div class="label">风险预警</div>
+          </div>
+        </div>
+      </section>
+      
+      <!-- KPI Section -->
+      <section class="kpi-section">
+        <div class="card-header">
+          <h2 class="card-title">
+            <i class="fas fa-chart-line"></i>
+            关键指标
+          </h2>
+          <a class="card-action">指标详情 <i class="fas fa-arrow-right"></i></a>
+        </div>
+        
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-icon blue">
+              <i class="fas fa-folder-open"></i>
+            </div>
+            <div class="kpi-content">
+              <div class="kpi-value">44</div>
+              <div class="kpi-label">在研项目</div>
+              <div class="kpi-trend up">
+                <i class="fas fa-arrow-up"></i> 较上月 +3
+              </div>
+            </div>
+          </div>
+          
+          <div class="kpi-card">
+            <div class="kpi-icon green">
+              <i class="fas fa-user-plus"></i>
+            </div>
+            <div class="kpi-content">
+              <div class="kpi-value">326</div>
+              <div class="kpi-label">入组总数</div>
+              <div class="kpi-trend up">
+                <i class="fas fa-arrow-up"></i> 本月 +28
+              </div>
+            </div>
+          </div>
+          
+          <div class="kpi-card">
+            <div class="kpi-icon yellow">
+              <i class="fas fa-clipboard-list"></i>
+            </div>
+            <div class="kpi-content">
+              <div class="kpi-value">18</div>
+              <div class="kpi-label">待办事项</div>
+              <div class="kpi-trend down">
+                <i class="fas fa-arrow-down"></i> 待处理 5
+              </div>
+            </div>
+          </div>
+          
+          <div class="kpi-card">
+            <div class="kpi-icon red">
+              <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <div class="kpi-content">
+              <div class="kpi-value">3</div>
+              <div class="kpi-label">风险预警</div>
+              <div class="kpi-trend down">
+                <i class="fas fa-arrow-down"></i> 需关注
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      
+      <!-- Right Column -->
+      <div class="right-column">
+        <!-- AI Insights -->
+        <section class="card insights-card">
+          <div class="card-header">
+            <h2 class="card-title">
+              <i class="fas fa-brain"></i>
+              AI智能洞察
+            </h2>
+          </div>
+          
+          <div class="insight-badge">
+            <i class="fas fa-robot"></i>
+            实时风险监测
+          </div>
+          
+          <div class="insight-item danger">
+            <div class="insight-header">
+              <i class="insight-icon fas fa-exclamation-circle"></i>
+              <span class="insight-title">SAE超时上报风险</span>
+            </div>
+            <p class="insight-desc">项目「SH-001 肝癌II期」中心07发生SAE，已超24小时未上报，请立即跟进。</p>
+          </div>
+          
+          <div class="insight-item warning">
+            <div class="insight-header">
+              <i class="insight-icon fas fa-clock"></i>
+              <span class="insight-title">伦理批件即将到期</span>
+            </div>
+            <p class="insight-desc">3个项目伦理批件将在15天内到期，请提前准备续审材料。</p>
+          </div>
+          
+          <div class="insight-item info">
+            <div class="insight-header">
+              <i class="insight-icon fas fa-chart-bar"></i>
+              <span class="insight-title">入组效率提示</span>
+            </div>
+            <p class="insight-desc">「LZ-003 肺癌III期」近两周入组速度提升30%，可考虑扩大筛选范围。</p>
+          </div>
+          
+          <div class="insight-item success">
+            <div class="insight-header">
+              <i class="insight-icon fas fa-check-circle"></i>
+              <span class="insight-title">数据质量良好</span>
+            </div>
+            <p class="insight-desc">本周数据疑问解答率达95%，无遗留超期疑问。</p>
+          </div>
+        </section>
+        
+        <!-- Quick Actions -->
+        <section class="card">
+          <div class="card-header">
+            <h2 class="card-title">
+              <i class="fas fa-bolt"></i>
+              快捷操作
+            </h2>
+          </div>
+          
+          <div class="quick-actions">
+            <a href="#" class="quick-action">
+              <i class="fas fa-plus-circle"></i>
+              <span>新建项目</span>
+            </a>
+            <a href="#" class="quick-action">
+              <i class="fas fa-user-plus"></i>
+              <span>入组登记</span>
+            </a>
+            <a href="#" class="quick-action">
+              <i class="fas fa-file-medical"></i>
+              <span>SAE上报</span>
+            </a>
+            <a href="#" class="quick-action">
+              <i class="fas fa-upload"></i>
+              <span>文档上传</span>
+            </a>
+            <a href="#" class="quick-action">
+              <i class="fas fa-search"></i>
+              <span>受试者查询</span>
+            </a>
+            <a href="#" class="quick-action">
+              <i class="fas fa-calendar-check"></i>
+              <span>预约访视</span>
+            </a>
+          </div>
+        </section>
+        
+        <!-- Activity Feed -->
+        <section class="card">
+          <div class="card-header">
+            <h2 class="card-title">
+              <i class="fas fa-stream"></i>
+              项目动态
+            </h2>
+            <a class="card-action">全部动态</a>
+          </div>
+          
+          <div class="activity-feed">
+            <div class="activity-item">
+              <div class="activity-icon sae">
+                <i class="fas fa-exclamation-triangle"></i>
+              </div>
+              <div class="activity-content">
+                <div class="activity-title">SAE上报：项目SH-001 中心03发生重度皮疹</div>
+                <div class="activity-meta">
+                  <span class="activity-project">SH-001</span>
+                  <span>•</span>
+                  <span class="activity-time"><i class="far fa-clock"></i> 15分钟前</span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="activity-item">
+              <div class="activity-icon enroll">
+                <i class="fas fa-user-plus"></i>
+              </div>
+              <div class="activity-content">
+                <div class="activity-title">受试者入组：LZ-003-042 完成筛选入组</div>
+                <div class="activity-meta">
+                  <span class="activity-project">LZ-003</span>
+                  <span>•</span>
+                  <span class="activity-time"><i class="far fa-clock"></i> 32分钟前</span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="activity-item">
+              <div class="activity-icon ethics">
+                <i class="fas fa-stamp"></i>
+              </div>
+              <div class="activity-content">
+                <div class="activity-title">伦理批件：「XG-007」补充材料审查通过</div>
+                <div class="activity-meta">
+                  <span class="activity-project">XG-007</span>
+                  <span>•</span>
+                  <span class="activity-time"><i class="far fa-clock"></i> 1小时前</span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="activity-item">
+              <div class="activity-icon document">
+                <i class="fas fa-file-signature"></i>
+              </div>
+              <div class="activity-content">
+                <div class="activity-title">知情同意书已签署：YZ-012 第12例受试者</div>
+                <div class="activity-meta">
+                  <span class="activity-project">YZ-012</span>
+                  <span>•</span>
+                  <span class="activity-time"><i class="far fa-clock"></i> 2小时前</span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="activity-item">
+              <div class="activity-icon alert">
+                <i class="fas fa-bell"></i>
+              </div>
+              <div class="activity-content">
+                <div class="activity-title">访视提醒：明天「LZ-003」中心5有3例随访</div>
+                <div class="activity-meta">
+                  <span class="activity-project">LZ-003</span>
+                  <span>•</span>
+                  <span class="activity-time"><i class="far fa-clock"></i> 3小时前</span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="activity-item">
+              <div class="activity-icon enroll">
+                <i class="fas fa-user-check"></i>
+              </div>
+              <div class="activity-content">
+                <div class="activity-title">随机化分配：YZ-012-089 完成随机入组</div>
+                <div class="activity-meta">
+                  <span class="activity-project">YZ-012</span>
+                  <span>•</span>
+                  <span class="activity-time"><i class="far fa-clock"></i> 4小时前</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+      
+      <!-- Projects Table -->
+      <section class="card projects-section">
+        <div class="card-header">
+          <h2 class="card-title">
+            <i class="fas fa-list-alt"></i>
+            重点项目
+          </h2>
+          <a class="card-action">全部项目 <i class="fas fa-arrow-right"></i></a>
+        </div>
+        
+        <div class="projects-tabs">
+          <button class="tab-btn active">全部</button>
+          <button class="tab-btn">我负责的</button>
+          <button class="tab-btn">需协助</button>
+          <button class="tab-btn">即将到期</button>
+        </div>
+        
+        <table class="projects-table">
+          <thead>
+            <tr>
+              <th>项目名称</th>
+              <th>阶段</th>
+              <th>状态</th>
+              <th>入组进度</th>
+              <th>下次访视</th>
+              <th>待办</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>
+                <div class="project-name">SH-001 肝癌II期临床</div>
+                <div class="project-id">CTR-2024-0892</div>
+              </td>
+              <td><span class="status-badge active"><span class="status-dot"></span>执行中</span></td>
+              <td><span class="status-badge active">正常</span></td>
+              <td>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <div class="progress-bar">
+                    <div class="progress-fill green" style="width: 72%;"></div>
+                  </div>
+                  <span>36/50</span>
+                </div>
+              </td>
+              <td>明天 09:00</td>
+              <td>5</td>
+            </tr>
+            <tr>
+              <td>
+                <div class="project-name">LZ-003 肺癌III期临床</div>
+                <div class="project-id">CTR-2024-0756</div>
+              </td>
+              <td><span class="status-badge active"><span class="status-dot"></span>执行中</span></td>
+              <td><span class="status-badge warning">关注</span></td>
+              <td>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <div class="progress-bar">
+                    <div class="progress-fill blue" style="width: 45%;"></div>
+                  </div>
+                  <span>67/150</span>
+                </div>
+              </td>
+              <td>后天 14:00</td>
+              <td>3</td>
+            </tr>
+            <tr>
+              <td>
+                <div class="project-name">YZ-012 乳腺癌IIb期</div>
+                <div class="project-id">CTR-2024-0634</div>
+              </td>
+              <td><span class="status-badge pending"><span class="status-dot"></span>伦理审查</span></td>
+              <td><span class="status-badge active">正常</span></td>
+              <td>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <div class="progress-bar">
+                    <div class="progress-fill yellow" style="width: 15%;"></div>
+                  </div>
+                  <span>6/40</span>
+                </div>
+              </td>
+              <td>—</td>
+              <td>2</td>
+            </tr>
+            <tr>
+              <td>
+                <div class="project-name">XG-007 糖尿病足溃疡</div>
+                <div class="project-id">CTR-2024-0512</div>
+              </td>
+              <td><span class="status-badge paused"><span class="status-dot"></span>数据管理</span></td>
+              <td><span class="status-badge active">正常</span></td>
+              <td>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <div class="progress-bar">
+                    <div class="progress-fill green" style="width: 95%;"></div>
+                  </div>
+                  <span>38/40</span>
+                </div>
+              </td>
+              <td>—</td>
+              <td>1</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+    </main>
+    
+    <!-- Floating AI Button -->
+    <div class="floating-ai">
+      <i class="fas fa-robot"></i>
+    </div>
+  </div>
+  
+  <script>
+    // Role Switcher
+    document.querySelectorAll('.role-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        
+        // In production, this would trigger dashboard.js role-based view change
+        const role = this.dataset.role;
+        console.log('Switched to role:', role);
+      });
+    });
+    
+    // Tab Switching
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+      });
+    });
+    
+    // Search box focus effect
+    const searchInput = document.querySelector('.search-box input');
+    searchInput.addEventListener('focus', function() {
+      this.parentElement.style.boxShadow = '0 0 0 3px rgba(14, 165, 233, 0.15)';
+    });
+    searchInput.addEventListener('blur', function() {
+      this.parentElement.style.boxShadow = 'none';
+    });
+    
+    // Quick action hover effect
+    document.querySelectorAll('.quick-action').forEach(action => {
+      action.addEventListener('click', function(e) {
+        e.preventDefault();
+        console.log('Quick action clicked:', this.querySelector('span').textContent);
+      });
+    });
+  </script>
+</body>
+</html>
+
+<!--
+================================================================================
+                    架构决策说明 (Architecture Decisions)
+================================================================================
+
+【设计理念】
+采用「控制塔模式」(Command Center) 重新定义CRO平台首页，将原来平铺的6个
+纵向区域重构为以「管线可视化」为核心的Dashboard布局。
+
+【核心决策】
+
+1. 页面信息架构 - 从纵向堆叠到网格布局
+   -----------------------------------------------------------------
+   问题：原版6区纵向排列，用户需要滚动才能看完所有信息
+   方案：采用2列自适应网格，充分利用水平空间
+   - 左列(主列)：管线概览 + KPI指标 + 重点项目表格
+   - 右列(辅助)：AI洞察 + 快捷操作 + 动态信息流
+   
+   依据(来自information-architecture.md):
+   - "Group by user mental models, not org charts" - 按用户工作流组织
+   - "Scannability: Clear headings, short paragraphs, visual breaks"
+   - 渐进式披露：管线可视化聚焦当前执行阶段，其他阶段一目了然
+
+2. 交互模式 - 角色切换 + 标签过滤
+   -----------------------------------------------------------------
+   问题：原版无角色差异化，4种角色看到相同内容
+   方案：顶部角色切换器 + 列表标签筛选
+   - 角色切换：PM/CRA/CRC/DM 一键切换视图
+   - 标签过滤：重点项目列表支持"全部/我负责的/需协助/即将到期"
+   
+   依据(来自interaction-design.md):
+   - "Minimize steps" - 角色切换一步到位，无需重新登录
+   - "Clear progress indicators" - 标签提供清晰的筛选状态
+
+3. 导航方式 - 顶部导航 + 搜索主导
+   -----------------------------------------------------------------
+   问题：原版缺少全局搜索，信息发现困难
+   方案：
+   - 顶部固定导航栏，Logo + 角色切换 + 搜索 + 通知 + 用户
+   - 搜索框支持 ⌘K 快捷键，符合专业SaaS习惯
+   - 右侧悬浮AI助手按钮
+   
+   依据(来自information-architecture.md):
+   - "Search as Navigation" - 50+内容项必须提供搜索
+   - "Top bar: Best for 3-7 primary sections on desktop"
+   - "Hamburger menu: Use sparingly; hides navigation"
+
+4. 视觉层级 - 渐进式强调
+   -----------------------------------------------------------------
+   问题：原版信息权重相同，无法快速识别优先级
+   方案：多层次视觉强调
+   - 第一层：管线概览(最大视觉焦点)
+   - 第二层：KPI指标 + AI洞察(通过颜色/边框区分紧急程度)
+   - 第三层：动态信息流(紧凑但可扫描)
+   - 第四层：详细信息表格(可展开/折叠)
+   
+   依据(来自visual-design.md):
+   - "Size: Larger elements attract attention first"
+   - "Color: Saturated/brand colors for emphasis"
+   - "Position: F-pattern - place key content accordingly"
+
+5. AI洞察设计 - 独立卡片 + 优先级排序
+   -----------------------------------------------------------------
+   方案：AI洞察从辅助区域提升为独立卡片
+   - 使用彩色左边框区分严重程度(危险/警告/信息/成功)
+   - 顶部突出"实时风险监测"标签
+   - 强调色边框 + 微光效果吸引注意力
+   
+   依据(来自interaction-design.md):
+   - "Confirm all destructive actions with clear, specific consequences"
+   - 采用不对称设计：紧急项在最前，可选建议在后
+
+6. 快捷操作 - 2x3 网格
+   -----------------------------------------------------------------
+   问题：原版4个快捷入口纵向排列
+   方案：2x3网格，6个最常用操作
+   - 新建项目 / 入组登记 / SAE上报 / 文档上传 / 受试者查询 / 预约访视
+   
+   依据(来自interaction-design.md):
+   - "Use specific verbs" - 所有按钮使用动词短语
+   - "Allow skipping optional steps" - 快捷操作降低任务启动门槛
+
+【技术实现】
+- 单文件HTML + CSS，无框架依赖
+- CSS Variables 管理主题色，便于后续切换亮/暗主题
+- CSS Grid 实现自适应两列布局
+- 8px 基础间距系统，保持视觉一致性
+- Font Awesome 6.5 图标库
+- Inter + Noto Sans SC 字体组合
+
+【后续迭代建议】
+1. 角色差异化：根据PM/CRA/CRC/DM显示不同的KPI权重和快捷操作
+2. 数据联动：KPI数值从API实时获取
+3. 移动端适配：侧边栏折叠为汉堡菜单
+4. 可访问性：增加ARIA标签和键盘导航支持
+================================================================================
+-->

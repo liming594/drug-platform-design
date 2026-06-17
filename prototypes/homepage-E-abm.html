@@ -1,0 +1,1600 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>药物研发平台 - 首页</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* ==================== CSS变量定义 ==================== */
+        :root {
+            /* 颜色系统 - 深色主题 */
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-tertiary: #21262d;
+            --bg-card: #1c2128;
+            --border-color: #30363d;
+            --border-hover: #484f58;
+            
+            /* 文字颜色 */
+            --text-primary: #f0f6fc;
+            --text-secondary: #8b949e;
+            --text-muted: #6e7681;
+            
+            /* 强调色 */
+            --accent-blue: #58a6ff;
+            --accent-green: #3fb950;
+            --accent-yellow: #d29922;
+            --accent-red: #f85149;
+            --accent-purple: #a371f7;
+            --accent-orange: #db6d28;
+            
+            /* 功能色 */
+            --success: #238636;
+            --warning: #9e6a03;
+            --danger: #da3633;
+            --info: #1f6feb;
+            
+            /* 管线阶段颜色 */
+            --stage-1: #8b5cf6;  /* 立项 */
+            --stage-2: #6366f1;  /* 伦理审查 */
+            --stage-3: #3b82f6;  /* 执行 */
+            --stage-4: #06b6d4;  /* 数据管理 */
+            --stage-5: #10b981;  /* 总结报告 */
+            
+            /* 间距 */
+            --space-xs: 4px;
+            --space-sm: 8px;
+            --space-md: 12px;
+            --space-lg: 16px;
+            --space-xl: 24px;
+            --space-2xl: 32px;
+            
+            /* 圆角 */
+            --radius-sm: 4px;
+            --radius-md: 8px;
+            --radius-lg: 12px;
+            
+            /* 阴影 */
+            --shadow-sm: 0 1px 2px rgba(0,0,0,0.3);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.4);
+            --shadow-lg: 0 8px 24px rgba(0,0,0,0.5);
+            
+            /* 布局 */
+            --header-height: 56px;
+            --sidebar-width: 260px;
+            --sidebar-collapsed: 64px;
+        }
+        
+        /* ==================== 基础重置 ==================== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.5;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        a {
+            color: var(--accent-blue);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        a:hover {
+            color: #79c0ff;
+        }
+        
+        /* ==================== 滚动条样式 ==================== */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--border-hover);
+        }
+        
+        /* ==================== Header导航 ==================== */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: var(--header-height);
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            padding: 0 var(--space-xl);
+            z-index: 1000;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+            width: var(--sidebar-width);
+            flex-shrink: 0;
+        }
+        
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 16px;
+        }
+        
+        .logo-text {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        .logo-sub {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-left: auto;
+        }
+        
+        /* 主导航 */
+        .main-nav {
+            display: flex;
+            align-items: center;
+            gap: var(--space-xs);
+            flex: 1;
+            margin-left: var(--space-lg);
+        }
+        
+        .nav-item {
+            position: relative;
+            padding: var(--space-sm) var(--space-lg);
+            color: var(--text-secondary);
+            font-size: 13px;
+            font-weight: 500;
+            border-radius: var(--radius-md);
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        
+        .nav-item:hover {
+            color: var(--text-primary);
+            background: var(--bg-tertiary);
+        }
+        
+        .nav-item.active {
+            color: var(--accent-blue);
+            background: rgba(88, 166, 255, 0.1);
+        }
+        
+        .nav-item.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 24px;
+            height: 2px;
+            background: var(--accent-blue);
+            border-radius: 1px;
+        }
+        
+        .nav-item i {
+            margin-right: var(--space-sm);
+        }
+        
+        /* Header右侧 */
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: var(--space-lg);
+            margin-left: auto;
+        }
+        
+        .header-date {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            color: var(--text-secondary);
+            font-size: 12px;
+            padding: var(--space-sm) var(--space-md);
+            background: var(--bg-tertiary);
+            border-radius: var(--radius-md);
+        }
+        
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+        
+        .header-btn {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+        
+        .header-btn:hover {
+            color: var(--text-primary);
+            background: var(--bg-tertiary);
+        }
+        
+        .header-btn .badge {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            min-width: 16px;
+            height: 16px;
+            background: var(--accent-red);
+            color: white;
+            font-size: 10px;
+            font-weight: 600;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 4px;
+        }
+        
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        
+        /* ==================== 整体布局 ==================== */
+        .layout {
+            display: flex;
+            padding-top: var(--header-height);
+            min-height: 100vh;
+        }
+        
+        /* ==================== 侧边栏 ==================== */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border-color);
+            position: fixed;
+            top: var(--header-height);
+            left: 0;
+            bottom: 0;
+            overflow-y: auto;
+            z-index: 100;
+            transition: transform 0.3s;
+        }
+        
+        .sidebar-section {
+            padding: var(--space-lg);
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .sidebar-title {
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+            margin-bottom: var(--space-md);
+        }
+        
+        /* 角色切换器 */
+        .role-switcher {
+            display: flex;
+            gap: var(--space-xs);
+            background: var(--bg-tertiary);
+            padding: var(--space-xs);
+            border-radius: var(--radius-md);
+        }
+        
+        .role-tab {
+            flex: 1;
+            padding: var(--space-sm) var(--space-md);
+            font-size: 11px;
+            font-weight: 600;
+            text-align: center;
+            color: var(--text-secondary);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .role-tab:hover {
+            color: var(--text-primary);
+        }
+        
+        .role-tab.active {
+            background: var(--accent-blue);
+            color: white;
+        }
+        
+        /* 快捷入口 */
+        .quick-access {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: var(--space-sm);
+        }
+        
+        .quick-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: var(--space-sm);
+            padding: var(--space-md);
+            background: var(--bg-tertiary);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .quick-item:hover {
+            background: var(--bg-card);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .quick-item i {
+            font-size: 20px;
+            color: var(--accent-blue);
+        }
+        
+        .quick-item span {
+            font-size: 11px;
+            color: var(--text-secondary);
+            text-align: center;
+        }
+        
+        /* 动态列表 */
+        .activity-list {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-sm);
+        }
+        
+        .activity-item {
+            display: flex;
+            gap: var(--space-md);
+            padding: var(--space-sm);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .activity-item:hover {
+            background: var(--bg-tertiary);
+        }
+        
+        .activity-icon {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            flex-shrink: 0;
+        }
+        
+        .activity-icon.sae { background: rgba(248, 81, 73, 0.2); color: var(--accent-red); }
+        .activity-icon.ethics { background: rgba(163, 113, 247, 0.2); color: var(--accent-purple); }
+        .activity-icon.enroll { background: rgba(63, 185, 80, 0.2); color: var(--accent-green); }
+        .activity-icon.doc { background: rgba(88, 166, 255, 0.2); color: var(--accent-blue); }
+        .activity-icon.alert { background: rgba(210, 153, 34, 0.2); color: var(--accent-yellow); }
+        
+        .activity-content {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .activity-title {
+            font-size: 12px;
+            color: var(--text-primary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .activity-meta {
+            font-size: 10px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+        
+        /* ==================== 主内容区 ==================== */
+        .main-content {
+            flex: 1;
+            margin-left: var(--sidebar-width);
+            padding: var(--space-xl);
+            min-height: calc(100vh - var(--header-height));
+        }
+        
+        /* ==================== KPI卡片行 ==================== */
+        .kpi-row {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: var(--space-lg);
+            margin-bottom: var(--space-xl);
+        }
+        
+        .kpi-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: var(--space-lg);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .kpi-card:hover {
+            border-color: var(--accent-blue);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .kpi-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: var(--space-md);
+        }
+        
+        .kpi-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+        
+        .kpi-icon.blue { background: rgba(88, 166, 255, 0.15); color: var(--accent-blue); }
+        .kpi-icon.green { background: rgba(63, 185, 80, 0.15); color: var(--accent-green); }
+        .kpi-icon.yellow { background: rgba(210, 153, 34, 0.15); color: var(--accent-yellow); }
+        .kpi-icon.red { background: rgba(248, 81, 73, 0.15); color: var(--accent-red); }
+        .kpi-icon.purple { background: rgba(163, 113, 247, 0.15); color: var(--accent-purple); }
+        .kpi-icon.orange { background: rgba(219, 109, 40, 0.15); color: var(--accent-orange); }
+        
+        .kpi-trend {
+            font-size: 10px;
+            font-weight: 600;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+        
+        .kpi-trend.up {
+            background: rgba(63, 185, 80, 0.15);
+            color: var(--accent-green);
+        }
+        
+        .kpi-trend.down {
+            background: rgba(248, 81, 73, 0.15);
+            color: var(--accent-red);
+        }
+        
+        .kpi-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: var(--space-xs);
+        }
+        
+        .kpi-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+        
+        .kpi-sub {
+            font-size: 10px;
+            color: var(--text-muted);
+            margin-top: var(--space-xs);
+        }
+        
+        /* ==================== 双栏布局 ==================== */
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr 380px;
+            gap: var(--space-xl);
+        }
+        
+        /* ==================== 管线卡片 ==================== */
+        .pipeline-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: var(--space-xl);
+        }
+        
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: var(--space-xl);
+        }
+        
+        .card-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+        
+        .card-title i {
+            color: var(--accent-blue);
+        }
+        
+        .card-action {
+            font-size: 12px;
+            color: var(--accent-blue);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: var(--space-xs);
+        }
+        
+        .card-action:hover {
+            color: #79c0ff;
+        }
+        
+        /* 管线可视化 */
+        .pipeline {
+            display: flex;
+            gap: var(--space-lg);
+            margin-bottom: var(--space-xl);
+        }
+        
+        .pipeline-stage {
+            flex: 1;
+            position: relative;
+        }
+        
+        .pipeline-stage:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            top: 18px;
+            right: -12px;
+            width: 24px;
+            height: 2px;
+            background: var(--border-color);
+        }
+        
+        .stage-header {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            margin-bottom: var(--space-md);
+        }
+        
+        .stage-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        
+        .stage-1 .stage-dot { background: var(--stage-1); }
+        .stage-2 .stage-dot { background: var(--stage-2); }
+        .stage-3 .stage-dot { background: var(--stage-3); }
+        .stage-4 .stage-dot { background: var(--stage-4); }
+        .stage-5 .stage-dot { background: var(--stage-5); }
+        
+        .stage-name {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+        
+        .stage-count {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: var(--space-sm);
+        }
+        
+        .stage-bar {
+            height: 6px;
+            background: var(--bg-tertiary);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: var(--space-sm);
+        }
+        
+        .stage-bar-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.3s;
+        }
+        
+        .stage-1 .stage-bar-fill { background: var(--stage-1); }
+        .stage-2 .stage-bar-fill { background: var(--stage-2); }
+        .stage-3 .stage-bar-fill { background: var(--stage-3); }
+        .stage-4 .stage-bar-fill { background: var(--stage-4); }
+        .stage-5 .stage-bar-fill { background: var(--stage-5); }
+        
+        .stage-meta {
+            font-size: 10px;
+            color: var(--text-muted);
+        }
+        
+        /* 项目列表 */
+        .project-list {
+            border-top: 1px solid var(--border-color);
+            padding-top: var(--space-lg);
+        }
+        
+        .project-item {
+            display: flex;
+            align-items: center;
+            gap: var(--space-lg);
+            padding: var(--space-md);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .project-item:hover {
+            background: var(--bg-tertiary);
+        }
+        
+        .project-status {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        
+        .project-status.active { background: var(--accent-green); }
+        .project-status.warning { background: var(--accent-yellow); }
+        .project-status.alert { background: var(--accent-red); }
+        
+        .project-info {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .project-name {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-primary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .project-meta {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+        
+        .project-progress {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            flex-shrink: 0;
+        }
+        
+        .progress-bar {
+            width: 60px;
+            height: 4px;
+            background: var(--bg-tertiary);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: var(--accent-blue);
+            border-radius: 2px;
+        }
+        
+        .progress-text {
+            font-size: 11px;
+            color: var(--text-secondary);
+            width: 32px;
+        }
+        
+        /* ==================== 右侧面板 ==================== */
+        .side-panel {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-xl);
+        }
+        
+        /* AI洞察卡片 */
+        .insight-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+        }
+        
+        .insight-header {
+            padding: var(--space-lg);
+            background: linear-gradient(135deg, rgba(163, 113, 247, 0.1), rgba(88, 166, 255, 0.1));
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+        }
+        
+        .insight-ai-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue));
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 18px;
+        }
+        
+        .insight-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        .insight-subtitle {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+        
+        .insight-list {
+            padding: var(--space-lg);
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-md);
+        }
+        
+        .insight-item {
+            display: flex;
+            gap: var(--space-md);
+            padding: var(--space-md);
+            background: var(--bg-tertiary);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .insight-item:hover {
+            background: var(--bg-secondary);
+            transform: translateX(4px);
+        }
+        
+        .insight-type {
+            width: 28px;
+            height: 28px;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            flex-shrink: 0;
+        }
+        
+        .insight-type.risk {
+            background: rgba(248, 81, 73, 0.15);
+            color: var(--accent-red);
+        }
+        
+        .insight-type.progress {
+            background: rgba(88, 166, 255, 0.15);
+            color: var(--accent-blue);
+        }
+        
+        .insight-type.suggestion {
+            background: rgba(63, 185, 80, 0.15);
+            color: var(--accent-green);
+        }
+        
+        .insight-text {
+            flex: 1;
+        }
+        
+        .insight-message {
+            font-size: 12px;
+            color: var(--text-primary);
+            line-height: 1.4;
+        }
+        
+        .insight-project {
+            font-size: 10px;
+            color: var(--text-muted);
+            margin-top: var(--space-xs);
+        }
+        
+        /* 待办卡片 */
+        .todo-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: var(--space-xl);
+        }
+        
+        .todo-tabs {
+            display: flex;
+            gap: var(--space-sm);
+            margin-bottom: var(--space-lg);
+        }
+        
+        .todo-tab {
+            padding: var(--space-sm) var(--space-md);
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .todo-tab:hover {
+            color: var(--text-primary);
+        }
+        
+        .todo-tab.active {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+        
+        .todo-tab .count {
+            margin-left: var(--space-xs);
+            padding: 1px 6px;
+            background: var(--accent-red);
+            color: white;
+            font-size: 10px;
+            font-weight: 600;
+            border-radius: 8px;
+        }
+        
+        .todo-list {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-sm);
+        }
+        
+        .todo-item {
+            display: flex;
+            align-items: flex-start;
+            gap: var(--space-md);
+            padding: var(--space-md);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .todo-item:hover {
+            background: var(--bg-tertiary);
+        }
+        
+        .todo-checkbox {
+            width: 18px;
+            height: 18px;
+            border: 2px solid var(--border-color);
+            border-radius: 4px;
+            flex-shrink: 0;
+            margin-top: 1px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .todo-checkbox:hover {
+            border-color: var(--accent-blue);
+        }
+        
+        .todo-checkbox.checked {
+            background: var(--accent-green);
+            border-color: var(--accent-green);
+        }
+        
+        .todo-content {
+            flex: 1;
+        }
+        
+        .todo-text {
+            font-size: 12px;
+            color: var(--text-primary);
+        }
+        
+        .todo-item.completed .todo-text {
+            text-decoration: line-through;
+            color: var(--text-muted);
+        }
+        
+        .todo-meta {
+            font-size: 10px;
+            color: var(--text-muted);
+            margin-top: var(--space-xs);
+            display: flex;
+            gap: var(--space-md);
+        }
+        
+        .todo-tag {
+            padding: 1px 6px;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+        
+        .todo-tag.urgent {
+            background: rgba(248, 81, 73, 0.15);
+            color: var(--accent-red);
+        }
+        
+        .todo-tag.normal {
+            background: rgba(88, 166, 255, 0.15);
+            color: var(--accent-blue);
+        }
+        
+        /* ==================== 响应式 ==================== */
+        @media (max-width: 1400px) {
+            .kpi-row {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .side-panel {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (max-width: 1200px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .kpi-row {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .side-panel {
+                grid-template-columns: 1fr;
+            }
+            
+            .pipeline {
+                flex-direction: column;
+                gap: var(--space-xl);
+            }
+            
+            .pipeline-stage:not(:last-child)::after {
+                display: none;
+            }
+        }
+        
+        /* ==================== 动画 ==================== */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .animate-in {
+            animation: fadeIn 0.3s ease-out forwards;
+        }
+        
+        /* 延迟动画 */
+        .delay-1 { animation-delay: 0.1s; }
+        .delay-2 { animation-delay: 0.2s; }
+        .delay-3 { animation-delay: 0.3s; }
+        .delay-4 { animation-delay: 0.4s; }
+    </style>
+</head>
+<body>
+    <!-- ==================== Header ==================== -->
+    <header class="header">
+        <div class="logo">
+            <div class="logo-icon">
+                <i class="fas fa-dna"></i>
+            </div>
+            <span class="logo-text">药物研发平台</span>
+            <span class="logo-sub">CRO SaaS</span>
+        </div>
+        
+        <!-- 主导航 -->
+        <nav class="main-nav">
+            <a href="#" class="nav-item active">
+                <i class="fas fa-home"></i>首页概览
+            </a>
+            <a href="#" class="nav-item">
+                <i class="fas fa-folder-open"></i>项目管理
+            </a>
+            <a href="#" class="nav-item">
+                <i class="fas fa-hospital"></i>中心管理
+            </a>
+            <a href="#" class="nav-item">
+                <i class="fas fa-user-injured"></i>受试者
+            </a>
+            <a href="#" class="nav-item">
+                <i class="fas fa-database"></i>数据采集
+            </a>
+            <a href="#" class="nav-item">
+                <i class="fas fa-file-alt"></i>文档中心
+            </a>
+            <a href="#" class="nav-item">
+                <i class="fas fa-chart-bar"></i>统计报告
+            </a>
+        </nav>
+        
+        <div class="header-right">
+            <div class="header-date">
+                <i class="far fa-calendar-alt"></i>
+                <span>2024年1月15日 周一</span>
+            </div>
+            
+            <div class="header-actions">
+                <div class="header-btn">
+                    <i class="fas fa-bell"></i>
+                    <span class="badge">3</span>
+                </div>
+                <div class="header-btn">
+                    <i class="fas fa-envelope"></i>
+                    <span class="badge">5</span>
+                </div>
+                <div class="header-btn">
+                    <i class="fas fa-cog"></i>
+                </div>
+            </div>
+            
+            <div class="user-avatar">
+                <span>李</span>
+            </div>
+        </div>
+    </header>
+    
+    <!-- ==================== 整体布局 ==================== -->
+    <div class="layout">
+        <!-- ==================== 侧边栏 ==================== -->
+        <aside class="sidebar">
+            <!-- 角色切换 -->
+            <div class="sidebar-section">
+                <div class="sidebar-title">当前角色</div>
+                <div class="role-switcher">
+                    <div class="role-tab active">PM</div>
+                    <div class="role-tab">CRA</div>
+                    <div class="role-tab">CRC</div>
+                    <div class="role-tab">DM</div>
+                </div>
+            </div>
+            
+            <!-- 快捷入口 -->
+            <div class="sidebar-section">
+                <div class="sidebar-title">快捷入口</div>
+                <div class="quick-access">
+                    <div class="quick-item">
+                        <i class="fas fa-plus-circle"></i>
+                        <span>新建项目</span>
+                    </div>
+                    <div class="quick-item">
+                        <i class="fas fa-search"></i>
+                        <span>查询中心</span>
+                    </div>
+                    <div class="quick-item">
+                        <i class="fas fa-upload"></i>
+                        <span>数据录入</span>
+                    </div>
+                    <div class="quick-item">
+                        <i class="fas fa-clipboard-check"></i>
+                        <span>待办审批</span>
+                    </div>
+                    <div class="quick-item">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <span>风险预警</span>
+                    </div>
+                    <div class="quick-item">
+                        <i class="fas fa-file-medical"></i>
+                        <span>SAE上报</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 最新动态 -->
+            <div class="sidebar-section">
+                <div class="sidebar-title">最新动态</div>
+                <div class="activity-list">
+                    <div class="activity-item">
+                        <div class="activity-icon sae">
+                            <i class="fas fa-exclamation-circle"></i>
+                        </div>
+                        <div class="activity-content">
+                            <div class="activity-title">严重不良事件(SAE)待审核</div>
+                            <div class="activity-meta">项目A - 10分钟前</div>
+                        </div>
+                    </div>
+                    <div class="activity-item">
+                        <div class="activity-icon ethics">
+                            <i class="fas fa-certificate"></i>
+                        </div>
+                        <div class="activity-content">
+                            <div class="activity-title">伦理批件已上传</div>
+                            <div class="activity-meta">项目B - 30分钟前</div>
+                        </div>
+                    </div>
+                    <div class="activity-item">
+                        <div class="activity-icon enroll">
+                            <i class="fas fa-user-plus"></i>
+                        </div>
+                        <div class="activity-content">
+                            <div class="activity-title">受试者入组成功</div>
+                            <div class="activity-meta">项目C - 1小时前</div>
+                        </div>
+                    </div>
+                    <div class="activity-item">
+                        <div class="activity-icon doc">
+                            <i class="fas fa-file-signature"></i>
+                        </div>
+                        <div class="activity-content">
+                            <div class="activity-title">知情同意书已签署</div>
+                            <div class="activity-meta">项目D - 2小时前</div>
+                        </div>
+                    </div>
+                    <div class="activity-item">
+                        <div class="activity-icon alert">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="activity-content">
+                            <div class="activity-title">方案偏离预警</div>
+                            <div class="activity-meta">项目E - 3小时前</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+        
+        <!-- ==================== 主内容区 ==================== -->
+        <main class="main-content">
+            <!-- ==================== KPI卡片行 ==================== -->
+            <div class="kpi-row">
+                <div class="kpi-card animate-in delay-1">
+                    <div class="kpi-header">
+                        <div class="kpi-icon blue">
+                            <i class="fas fa-folder"></i>
+                        </div>
+                        <span class="kpi-trend up">+2</span>
+                    </div>
+                    <div class="kpi-value">48</div>
+                    <div class="kpi-label">项目总数</div>
+                    <div class="kpi-sub">本月新增 2 个</div>
+                </div>
+                
+                <div class="kpi-card animate-in delay-2">
+                    <div class="kpi-header">
+                        <div class="kpi-icon green">
+                            <i class="fas fa-play-circle"></i>
+                        </div>
+                    </div>
+                    <div class="kpi-value">32</div>
+                    <div class="kpi-label">进行中项目</div>
+                    <div class="kpi-sub">执行阶段 18 个</div>
+                </div>
+                
+                <div class="kpi-card animate-in delay-3">
+                    <div class="kpi-header">
+                        <div class="kpi-icon purple">
+                            <i class="fas fa-user-check"></i>
+                        </div>
+                        <span class="kpi-trend up">8.2%</span>
+                    </div>
+                    <div class="kpi-value">2,847</div>
+                    <div class="kpi-label">入组进度</div>
+                    <div class="kpi-sub">目标 3,200 人</div>
+                </div>
+                
+                <div class="kpi-card animate-in delay-4">
+                    <div class="kpi-header">
+                        <div class="kpi-icon yellow">
+                            <i class="fas fa-file-alt"></i>
+                        </div>
+                    </div>
+                    <div class="kpi-value">89.3%</div>
+                    <div class="kpi-label">文档完整率</div>
+                    <div class="kpi-sub">目标 95%</div>
+                </div>
+                
+                <div class="kpi-card animate-in delay-1">
+                    <div class="kpi-header">
+                        <div class="kpi-icon orange">
+                            <i class="fas fa-tasks"></i>
+                        </div>
+                        <span class="kpi-trend down">+12</span>
+                    </div>
+                    <div class="kpi-value">156</div>
+                    <div class="kpi-label">待办事项</div>
+                    <div class="kpi-sub">今日新增 12 项</div>
+                </div>
+                
+                <div class="kpi-card animate-in delay-2">
+                    <div class="kpi-header">
+                        <div class="kpi-icon red">
+                            <i class="fas fa-exclamation-circle"></i>
+                        </div>
+                    </div>
+                    <div class="kpi-value">7</div>
+                    <div class="kpi-label">风险预警</div>
+                    <div class="kpi-sub">需立即处理 2 项</div>
+                </div>
+            </div>
+            
+            <!-- ==================== 双栏布局 ==================== -->
+            <div class="content-grid">
+                <!-- 左侧：管线可视化 -->
+                <div class="pipeline-card animate-in delay-3">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fas fa-project-diagram"></i>
+                            临床管线总览
+                        </div>
+                        <a href="#" class="card-action">
+                            查看全部 <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                    
+                    <!-- 管线阶段 -->
+                    <div class="pipeline">
+                        <div class="pipeline-stage stage-1">
+                            <div class="stage-header">
+                                <div class="stage-dot"></div>
+                                <span class="stage-name">立项</span>
+                            </div>
+                            <div class="stage-count">8</div>
+                            <div class="stage-bar">
+                                <div class="stage-bar-fill" style="width: 16%"></div>
+                            </div>
+                            <div class="stage-meta">占总项目 16.7%</div>
+                        </div>
+                        
+                        <div class="pipeline-stage stage-2">
+                            <div class="stage-header">
+                                <div class="stage-dot"></div>
+                                <span class="stage-name">伦理审查</span>
+                            </div>
+                            <div class="stage-count">6</div>
+                            <div class="stage-bar">
+                                <div class="stage-bar-fill" style="width: 12%"></div>
+                            </div>
+                            <div class="stage-meta">占总项目 12.5%</div>
+                        </div>
+                        
+                        <div class="pipeline-stage stage-3">
+                            <div class="stage-header">
+                                <div class="stage-dot"></div>
+                                <span class="stage-name">执行</span>
+                            </div>
+                            <div class="stage-count">18</div>
+                            <div class="stage-bar">
+                                <div class="stage-bar-fill" style="width: 37%"></div>
+                            </div>
+                            <div class="stage-meta">占总项目 37.5%</div>
+                        </div>
+                        
+                        <div class="pipeline-stage stage-4">
+                            <div class="stage-header">
+                                <div class="stage-dot"></div>
+                                <span class="stage-name">数据管理</span>
+                            </div>
+                            <div class="stage-count">10</div>
+                            <div class="stage-bar">
+                                <div class="stage-bar-fill" style="width: 21%"></div>
+                            </div>
+                            <div class="stage-meta">占总项目 20.8%</div>
+                        </div>
+                        
+                        <div class="pipeline-stage stage-5">
+                            <div class="stage-header">
+                                <div class="stage-dot"></div>
+                                <span class="stage-name">总结报告</span>
+                            </div>
+                            <div class="stage-count">6</div>
+                            <div class="stage-bar">
+                                <div class="stage-bar-fill" style="width: 12%"></div>
+                            </div>
+                            <div class="stage-meta">占总项目 12.5%</div>
+                        </div>
+                    </div>
+                    
+                    <!-- 重点关注项目 -->
+                    <div class="project-list">
+                        <div class="card-title" style="font-size: 13px; margin-bottom: var(--space-lg);">
+                            <i class="fas fa-star" style="color: var(--accent-yellow);"></i>
+                            重点关注项目
+                        </div>
+                        
+                        <div class="project-item">
+                            <div class="project-status warning"></div>
+                            <div class="project-info">
+                                <div class="project-name">XX药物用于治疗非小细胞肺癌的II期临床研究</div>
+                                <div class="project-meta">项目编号 PRJ-2024-001 | 执行阶段</div>
+                            </div>
+                            <div class="project-progress">
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 72%"></div>
+                                </div>
+                                <span class="progress-text">72%</span>
+                            </div>
+                        </div>
+                        
+                        <div class="project-item">
+                            <div class="project-status alert"></div>
+                            <div class="project-info">
+                                <div class="project-name">YY生物类似药的III期临床试验</div>
+                                <div class="project-meta">项目编号 PRJ-2024-015 | 数据管理</div>
+                            </div>
+                            <div class="project-progress">
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 91%"></div>
+                                </div>
+                                <span class="progress-text">91%</span>
+                            </div>
+                        </div>
+                        
+                        <div class="project-item">
+                            <div class="project-status active"></div>
+                            <div class="project-info">
+                                <div class="project-name">ZZ注射液在健康志愿者中的I期安全性研究</div>
+                                <div class="project-meta">项目编号 PRJ-2024-022 | 伦理审查</div>
+                            </div>
+                            <div class="project-progress">
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 35%"></div>
+                                </div>
+                                <span class="progress-text">35%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 右侧：AI洞察 + 待办 -->
+                <div class="side-panel">
+                    <!-- AI智能洞察 -->
+                    <div class="insight-card animate-in delay-4">
+                        <div class="insight-header">
+                            <div class="insight-ai-icon">
+                                <i class="fas fa-brain"></i>
+                            </div>
+                            <div>
+                                <div class="insight-title">AI 智能洞察</div>
+                                <div class="insight-subtitle">基于数据趋势的智能建议</div>
+                            </div>
+                        </div>
+                        <div class="insight-list">
+                            <div class="insight-item">
+                                <div class="insight-type risk">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                </div>
+                                <div class="insight-text">
+                                    <div class="insight-message">项目A中心07的筛选失败率高达42%，建议加强预筛环节</div>
+                                    <div class="insight-project">项目A · 中心07</div>
+                                </div>
+                            </div>
+                            <div class="insight-item">
+                                <div class="insight-type progress">
+                                    <i class="fas fa-chart-line"></i>
+                                </div>
+                                <div class="insight-text">
+                                    <div class="insight-message">当前入组速度可达成季度目标的118%，考虑增加中心</div>
+                                    <div class="insight-project">项目B · 全局</div>
+                                </div>
+                            </div>
+                            <div class="insight-item">
+                                <div class="insight-type suggestion">
+                                    <i class="fas fa-lightbulb"></i>
+                                </div>
+                                <div class="insight-text">
+                                    <div class="insight-message">D12和D15中心可复用同一位PI，建议合并访视安排</div>
+                                    <div class="insight-project">项目C · 资源优化</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 待办事项 -->
+                    <div class="todo-card animate-in delay-4">
+                        <div class="card-header">
+                            <div class="card-title">
+                                <i class="fas fa-clipboard-list"></i>
+                                我的待办
+                            </div>
+                            <a href="#" class="card-action">
+                                全部 <i class="fas fa-arrow-right"></i>
+                            </a>
+                        </div>
+                        
+                        <div class="todo-tabs">
+                            <div class="todo-tab active">全部<span class="count">12</span></div>
+                            <div class="todo-tab">待审核</div>
+                            <div class="todo-tab">待处理</div>
+                        </div>
+                        
+                        <div class="todo-list">
+                            <div class="todo-item">
+                                <div class="todo-checkbox"></div>
+                                <div class="todo-content">
+                                    <div class="todo-text">审核项目A的SAE报告（重度肝脏损伤）</div>
+                                    <div class="todo-meta">
+                                        <span class="todo-tag urgent">紧急</span>
+                                        <span>截止今天 18:00</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="todo-item">
+                                <div class="todo-checkbox"></div>
+                                <div class="todo-content">
+                                    <div class="todo-text">批准伦理变更申请 #EC-2024-089</div>
+                                    <div class="todo-meta">
+                                        <span class="todo-tag urgent">紧急</span>
+                                        <span>截止今天 17:00</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="todo-item">
+                                <div class="todo-checkbox"></div>
+                                <div class="todo-content">
+                                    <div class="todo-text">确认项目B的数据录入进度</div>
+                                    <div class="todo-meta">
+                                        <span class="todo-tag normal">一般</span>
+                                        <span>截止明天</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="todo-item completed">
+                                <div class="todo-checkbox checked">
+                                    <i class="fas fa-check" style="color: white; font-size: 10px;"></i>
+                                </div>
+                                <div class="todo-content">
+                                    <div class="todo-text">审阅项目C的研究者手册更新</div>
+                                    <div class="todo-meta">
+                                        <span>已完成</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <!-- ==================== 底部固定快捷栏 ==================== -->
+    <div style="position: fixed; bottom: 20px; right: 20px; display: flex; gap: 12px; z-index: 999;">
+        <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 24px; padding: 8px 16px; display: flex; align-items: center; gap: 8px; cursor: pointer; transition: all 0.2s;" 
+             onmouseover="this.style.borderColor='var(--accent-blue)'; this.style.transform='translateY(-2px)'"
+             onmouseout="this.style.borderColor='var(--border-color)'; this.style.transform='translateY(0)'">
+            <i class="fas fa-headset" style="color: var(--accent-blue);"></i>
+            <span style="font-size: 12px; color: var(--text-primary);">帮助中心</span>
+        </div>
+        <div style="background: var(--accent-blue); border-radius: 24px; padding: 8px 16px; display: flex; align-items: center; gap: 8px; cursor: pointer; transition: all 0.2s;"
+             onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='var(--shadow-md)'"
+             onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+            <i class="fas fa-plus" style="color: white;"></i>
+            <span style="font-size: 12px; color: white; font-weight: 500;">新建</span>
+        </div>
+    </div>
+</body>
+</html>
+<!--
+================================================================================
+架构决策说明 (Architecture Decisions)
+================================================================================
+
+一、信息架构重构
+---------------
+1. 【问题诊断】原首页6个区域纵向堆叠，违反"3-Click Rule"和扁平化原则
+2. 【解决方案】采用"Hub-and-Spoke"模型重构：
+   - Hub: 顶部KPI行 + 管线可视化（一眼可览全局）
+   - Spoke: 侧边栏快捷入口 → 各功能模块
+   - Detail: 卡片点击 → 详情页（如点击项目数 → 项目列表）
+
+二、导航层级设计
+---------------
+L0 首页（当前页面）
+├── Header Nav: 7个主功能（项目/中心/受试者/数据/文档/报告）
+├── Sidebar: 角色切换 + 6个快捷入口 + 5条动态
+└── 主内容: KPI行 + 管线可视化 + AI洞察 + 待办
+
+L1 → 项目管理 / 中心管理 / 受试者 / 数据采集 / 文档中心 / 统计报告
+L2 → 项目详情 / 中心详情 / 受试者详情 / 数据录入 / 文档上传 / 报告生成
+
+三、页面区域链接关系
+-------------------
+Header Nav → L1页面（功能入口）
+Sidebar快捷入口 → L2页面（常用操作直达）
+KPI卡片点击 → 项目列表（ drills down）
+管线阶段点击 → 该阶段项目列表（阶段筛选）
+项目列表项点击 → 项目详情页
+AI洞察项点击 → 关联详情页（上下文跳转）
+待办项点击 → 任务处理页
+
+四、扁平化实现策略
+-----------------
+1. 【KPI一行横排】6个指标一字排开，无需滚动即可看到核心数据
+2. 【管线可视化】5阶段进度条替代长列表，减少垂直空间占用
+3. 【左右分栏】左侧管线+右侧洞察，横向利用屏幕空间
+4. 【侧边栏集成】将动态流整合到侧边，释放主内容区
+5. 【底部浮动按钮】高频操作（新建）固定右下角，减少导航深度
+
+五、角色差异化设计
+-----------------
+1. 【角色Tab切换器】侧边栏顶部支持PM/CRA/CRC/DM快速切换
+2. 【角色专属视图】（可扩展）
+   - PM视角: 项目总数↑、风险预警↑、进度甘特图
+   - CRA视角: SAE待审核↑、中心状态↑、监查计划
+   - CRC视角: 待办事项↑、入组进度↑、文档待签署
+   - DM视角: 数据质量↑、疑问数↑、锁库进度
+3. 【快捷入口随角色变化】每个角色看到不同的6个快捷入口
+
+六、URL结构建议（给开发团队）
+-----------------------------
+/                   → 首页 L0
+/projects           → 项目列表 L1
+/projects/:id       → 项目详情 L2
+/projects/:id/centers/:centerId → 中心详情 L3
+/centers            → 中心列表 L1
+/subjects           → 受试者列表 L1
+/subjects/:id       → 受试者详情 L2
+/data               → 数据采集 L1
+/data/entry/:id     → 数据录入 L2
+/documents          → 文档中心 L1
+/reports            → 统计报告 L1
+
+七、可访问性考虑
+---------------
+1. 语义化HTML标签（nav, main, aside, header）
+2. 足够的颜色对比度（WCAG AA级）
+3. 聚焦状态可见（:focus样式）
+4. 动态内容ARIA标注
+
+八、性能优化建议
+---------------
+1. 首屏KPI采用骨架屏加载
+2. 管线数据可懒加载
+3. 侧边动态列表限制显示5条，"查看更多"展开
+4. 图表采用SVG而非Canvas便于CSS控制
+
+================================================================================
+-->
