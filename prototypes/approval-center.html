@@ -1,0 +1,1647 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>审批中心 — 药物研发平台</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        sidebar: '#1e293b',
+        'sidebar-hover': '#334155',
+        'sidebar-active': '#3b82f6',
+        primary: '#3b82f6',
+        'primary-dark': '#2563eb',
+      }
+    }
+  }
+}
+</script>
+<style>
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+.tab-btn.active { background: #3b82f6; color: #fff; border-color: #3b82f6; }
+.tab-btn:not(.active):hover { background: #f1f5f9; }
+/* Modal: only modal-overlay class, NO flex in class. .show controls display */
+.modal-overlay { display: none; position: fixed; inset: 0; z-index: 1000; align-items: center; justify-content: center; background: rgba(0,0,0,0.45); }
+.modal-overlay.show { display: flex; }
+.tag-project { background: #dbeafe; color: #2563eb; border: 1px solid #bfdbfe; }
+.tag-dept { background: #dcfce7; color: #16a34a; border: 1px solid #bbf7d0; }
+.badge-pending { background: #dbeafe; color: #2563eb; border: 1px solid #bfdbfe; }
+.badge-approved { background: #dcfce7; color: #16a34a; border: 1px solid #bbf7d0; }
+.badge-rejected { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+.badge-returned { background: #fff7ed; color: #ea580c; border: 1px solid #fed7aa; }
+.badge-enabled { background: #dcfce7; color: #16a34a; border: 1px solid #bbf7d0; }
+.badge-disabled { background: #f3f4f6; color: #6b7280; border: 1px solid #e5e7eb; }
+.tree-item { cursor: pointer; padding: 6px 10px; border-radius: 6px; transition: all .15s; user-select: none; }
+.tree-item:hover { background: #f1f5f9; }
+.tree-item.selected { background: #eff6ff; color: #2563eb; font-weight: 600; }
+.tree-children { overflow: hidden; transition: max-height .25s ease; }
+.tree-children.collapsed { max-height: 0 !important; }
+.card-select { cursor: pointer; border: 2px solid #e5e7eb; border-radius: 12px; padding: 20px; transition: all .2s; }
+.card-select:hover { border-color: #93c5fd; box-shadow: 0 4px 12px rgba(59,130,246,0.12); }
+.card-select.disabled { border: 2px dashed #d1d5db; background: #f9fafb; opacity: .6; cursor: not-allowed; }
+.step-pulse { animation: pulse 2s infinite; }
+@keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(59,130,246,0.4); } 50% { box-shadow: 0 0 0 8px rgba(59,130,246,0); } }
+.drag-handle { cursor: grab; color: #9ca3af; }
+.drag-handle:active { cursor: grabbing; }
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+.stat-card { background: linear-gradient(135deg, #f0f9ff 0%, #eff6ff 100%); }
+.toast { animation: slideIn .3s ease; }
+@keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+.form-wizard-step { display: none; }
+.form-wizard-step.active { display: block; }
+.wizard-dot { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; border: 2px solid #d1d5db; color: #9ca3af; background: #fff; transition: all .2s; }
+.wizard-dot.active { border-color: #3b82f6; color: #3b82f6; background: #eff6ff; }
+.wizard-dot.done { border-color: #22c55e; color: #fff; background: #22c55e; }
+.wizard-line { height: 2px; flex: 1; background: #e5e7eb; }
+.wizard-line.done { background: #22c55e; }
+input[type="date"], input[type="text"], select, textarea { font-size: 14px; }
+.chart-placeholder { background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); border: 2px dashed #e2e8f0; border-radius: 12px; }
+</style>
+</head>
+<body class="bg-gray-100 h-screen overflow-hidden">
+
+<!-- Toast Container -->
+<div id="toastContainer" class="fixed top-4 right-4 z-[9999] space-y-2"></div>
+
+<!-- Main Layout -->
+<div class="flex h-screen">
+  <!-- Sidebar -->
+  <aside class="w-56 bg-sidebar text-gray-300 flex flex-col shrink-0">
+    <div class="p-4 border-b border-gray-700">
+      <div class="flex items-center gap-2">
+        <div class="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
+          <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        </div>
+        <div>
+          <div class="text-white font-semibold text-sm">审批中心</div>
+          <div class="text-xs text-gray-500">Approval Center</div>
+        </div>
+      </div>
+    </div>
+    <nav class="flex-1 overflow-y-auto py-3">
+      <div class="px-3 mb-2 text-xs text-gray-500 uppercase tracking-wider">导航</div>
+      <a href="#" class="flex items-center gap-3 px-4 py-2.5 bg-sidebar-active text-white rounded-lg mx-2 mb-1">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+        <span class="text-sm">审批中心</span>
+      </a>
+      <a href="#" class="flex items-center gap-3 px-4 py-2.5 text-gray-400 hover:bg-sidebar-hover rounded-lg mx-2 mb-1">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
+        <span class="text-sm">项目中心</span>
+      </a>
+      <a href="#" class="flex items-center gap-3 px-4 py-2.5 text-gray-400 hover:bg-sidebar-hover rounded-lg mx-2 mb-1">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"/></svg>
+        <span class="text-sm">费用管理</span>
+      </a>
+      <a href="#" class="flex items-center gap-3 px-4 py-2.5 text-gray-400 hover:bg-sidebar-hover rounded-lg mx-2 mb-1">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+        <span class="text-sm">合同管理</span>
+      </a>
+      <a href="#" class="flex items-center gap-3 px-4 py-2.5 text-gray-400 hover:bg-sidebar-hover rounded-lg mx-2 mb-1">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5"/></svg>
+        <span class="text-sm">印章管理</span>
+      </a>
+    </nav>
+    <div class="p-4 border-t border-gray-700">
+      <div class="flex items-center gap-2">
+        <div class="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center text-xs text-white font-semibold">张</div>
+        <div class="flex-1 min-w-0">
+          <div class="text-sm text-white truncate">张明远</div>
+          <div class="text-xs text-gray-500">项目管理部</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="flex-1 flex flex-col overflow-hidden">
+    <!-- Top Bar -->
+    <header class="bg-white border-b border-gray-200 px-6 py-3 flex items-center justify-between shrink-0">
+      <div>
+        <h1 class="text-lg font-semibold text-gray-900">审批中心</h1>
+        <p class="text-xs text-gray-500">统一审批入口 · 流程配置 · 审批统计</p>
+      </div>
+      <div class="flex items-center gap-3">
+        <span class="text-xs text-gray-400">角色：管理员</span>
+        <div class="w-px h-4 bg-gray-200"></div>
+        <button class="text-xs text-blue-600 hover:text-blue-800">⟳ 刷新</button>
+      </div>
+    </header>
+
+    <!-- Tab Bar -->
+    <div class="bg-white border-b border-gray-200 px-6 shrink-0">
+      <div class="flex gap-1">
+        <button class="tab-btn active px-4 py-2.5 text-sm font-medium rounded-t-lg border border-b-0 border-transparent transition-colors" data-tab="tab-pending" onclick="switchTab('tab-pending',this)">
+          待我审批 <span class="ml-1 px-1.5 py-0.5 text-xs bg-red-500 text-white rounded-full">6</span>
+        </button>
+        <button class="tab-btn px-4 py-2.5 text-sm font-medium rounded-t-lg border border-b-0 border-transparent text-gray-600 transition-colors" data-tab="tab-done" onclick="switchTab('tab-done',this)">
+          我已审批
+        </button>
+        <button class="tab-btn px-4 py-2.5 text-sm font-medium rounded-t-lg border border-b-0 border-transparent text-gray-600 transition-colors" data-tab="tab-mine" onclick="switchTab('tab-mine',this)">
+          我发起的
+        </button>
+        <button class="tab-btn px-4 py-2.5 text-sm font-medium rounded-t-lg border border-b-0 border-transparent text-gray-600 transition-colors" data-tab="tab-new" onclick="switchTab('tab-new',this)">
+          新建申请
+        </button>
+        <button class="tab-btn px-4 py-2.5 text-sm font-medium rounded-t-lg border border-b-0 border-transparent text-gray-600 transition-colors" data-tab="tab-config" onclick="switchTab('tab-config',this)">
+          流程配置
+        </button>
+        <button class="tab-btn px-4 py-2.5 text-sm font-medium rounded-t-lg border border-b-0 border-transparent text-gray-600 transition-colors" data-tab="tab-stats" onclick="switchTab('tab-stats',this)">
+          审批统计
+        </button>
+      </div>
+    </div>
+
+    <!-- Tab Content -->
+    <div class="flex-1 overflow-y-auto p-6">
+
+      <!-- ==================== Tab1 待我审批 ==================== -->
+      <div id="tab-pending" class="tab-content">
+        <!-- Filters -->
+        <div class="bg-white rounded-xl border border-gray-200 p-4 mb-4 flex items-end gap-4 flex-wrap">
+          <div class="flex flex-col gap-1">
+            <label class="text-xs text-gray-500">申请类型</label>
+            <select class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-200 focus:border-blue-400 outline-none min-w-[140px]">
+              <option value="">全部类型</option>
+              <option>项目类</option>
+              <option>部门类</option>
+            </select>
+          </div>
+          <div class="flex flex-col gap-1">
+            <label class="text-xs text-gray-500">项目</label>
+            <select class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-200 focus:border-blue-400 outline-none min-w-[160px]">
+              <option value="">全部项目</option>
+              <option>XJL-2026-001 帕博利珠单抗III期</option>
+              <option>XJL-2026-003 奥希替尼II期</option>
+              <option>XJL-2026-005 阿替利珠单抗I期</option>
+              <option>非项目</option>
+            </select>
+          </div>
+          <div class="flex flex-col gap-1">
+            <label class="text-xs text-gray-500">时间范围</label>
+            <input type="date" class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-200 focus:border-blue-400 outline-none" value="2026-06-01">
+          </div>
+          <div class="flex items-center gap-1 text-gray-400 text-sm">—</div>
+          <div class="flex flex-col gap-1">
+            <label class="text-xs text-gray-500">&nbsp;</label>
+            <input type="date" class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-200 focus:border-blue-400 outline-none" value="2026-06-17">
+          </div>
+          <button class="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors">查询</button>
+          <button class="px-4 py-2 bg-white text-gray-600 text-sm rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors">重置</button>
+        </div>
+
+        <!-- Table -->
+        <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="bg-gray-50 text-gray-600 text-left">
+                <th class="px-4 py-3 font-medium">申请编号</th>
+                <th class="px-4 py-3 font-medium">申请类型</th>
+                <th class="px-4 py-3 font-medium">标题</th>
+                <th class="px-4 py-3 font-medium">发起人</th>
+                <th class="px-4 py-3 font-medium">发起部门</th>
+                <th class="px-4 py-3 font-medium">项目</th>
+                <th class="px-4 py-3 font-medium">提交时间</th>
+                <th class="px-4 py-3 font-medium text-center">操作</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+              <tr class="hover:bg-gray-50 transition-colors">
+                <td class="px-4 py-3 font-mono text-blue-600 text-xs">AP-PRJ-003-20260617-001</td>
+                <td class="px-4 py-3"><span class="tag-project text-xs px-2 py-0.5 rounded-full font-medium">项目类</span></td>
+                <td class="px-4 py-3">帕博利珠单抗III期—借款申请 ¥50,000</td>
+                <td class="px-4 py-3">王五</td>
+                <td class="px-4 py-3">临床运营部</td>
+                <td class="px-4 py-3 text-xs">XJL-2026-001</td>
+                <td class="px-4 py-3 text-gray-500">2026-06-17 10:30</td>
+                <td class="px-4 py-3 text-center"><button class="px-3 py-1 bg-blue-50 text-blue-600 rounded-lg text-xs font-medium hover:bg-blue-100" onclick="openApprovalDetail()">审批</button></td>
+              </tr>
+              <tr class="hover:bg-gray-50 transition-colors">
+                <td class="px-4 py-3 font-mono text-blue-600 text-xs">AP-PRJ-004-20260617-001</td>
+                <td class="px-4 py-3"><span class="tag-project text-xs px-2 py-0.5 rounded-full font-medium">项目类</span></td>
+                <td class="px-4 py-3">奥希替尼II期—合同用印申请</td>
+                <td class="px-4 py-3">李梅</td>
+                <td class="px-4 py-3">法务部</td>
+                <td class="px-4 py-3 text-xs">XJL-2026-003</td>
+                <td class="px-4 py-3 text-gray-500">2026-06-17 09:15</td>
+                <td class="px-4 py-3 text-center"><button class="px-3 py-1 bg-blue-50 text-blue-600 rounded-lg text-xs font-medium hover:bg-blue-100" onclick="openApprovalDetail()">审批</button></td>
+              </tr>
+              <tr class="hover:bg-gray-50 transition-colors">
+                <td class="px-4 py-3 font-mono text-blue-600 text-xs">AP-DEPT-003-20260616-002</td>
+                <td class="px-4 py-3"><span class="tag-dept text-xs px-2 py-0.5 rounded-full font-medium">部门类</span></td>
+                <td class="px-4 py-3">6月部门借款申请 ¥30,000</td>
+                <td class="px-4 py-3">张伟</td>
+                <td class="px-4 py-3">行政部</td>
+                <td class="px-4 py-3 text-xs text-gray-400">非项目</td>
+                <td class="px-4 py-3 text-gray-500">2026-06-16 14:20</td>
+                <td class="px-4 py-3 text-center"><button class="px-3 py-1 bg-blue-50 text-blue-600 rounded-lg text-xs font-medium hover:bg-blue-100" onclick="openApprovalDetail()">审批</button></td>
+              </tr>
+              <tr class="hover:bg-gray-50 transition-colors">
+                <td class="px-4 py-3 font-mono text-blue-600 text-xs">AP-DEPT-001-20260616-001</td>
+                <td class="px-4 py-3"><span class="tag-dept text-xs px-2 py-0.5 rounded-full font-medium">部门类</span></td>
+                <td class="px-4 py-3">笔记本电脑申领（3台）</td>
+                <td class="px-4 py-3">陈静</td>
+                <td class="px-4 py-3">数据管理部</td>
+                <td class="px-4 py-3 text-xs text-gray-400">非项目</td>
+                <td class="px-4 py-3 text-gray-500">2026-06-16 11:05</td>
+                <td class="px-4 py-3 text-center"><button class="px-3 py-1 bg-blue-50 text-blue-600 rounded-lg text-xs font-medium hover:bg-blue-100" onclick="openApprovalDetail()">审批</button></td>
+              </tr>
+              <tr class="hover:bg-gray-50 transition-colors">
+                <td class="px-4 py-3 font-mono text-blue-600 text-xs">AP-DEPT-006-20260615-001</td>
+                <td class="px-4 py-3"><span class="tag-dept text-xs px-2 py-0.5 rounded-full font-medium">部门类</span></td>
+                <td class="px-4 py-3">Q3预算调整申请（临床运营部）</td>
+                <td class="px-4 py-3">刘洋</td>
+                <td class="px-4 py-3">临床运营部</td>
+                <td class="px-4 py-3 text-xs text-gray-400">非项目</td>
+                <td class="px-4 py-3 text-gray-500">2026-06-15 16:40</td>
+                <td class="px-4 py-3 text-center"><button class="px-3 py-1 bg-blue-50 text-blue-600 rounded-lg text-xs font-medium hover:bg-blue-100" onclick="openApprovalDetail()">审批</button></td>
+              </tr>
+              <tr class="hover:bg-gray-50 transition-colors">
+                <td class="px-4 py-3 font-mono text-blue-600 text-xs">AP-DEPT-004-20260615-002</td>
+                <td class="px-4 py-3"><span class="tag-dept text-xs px-2 py-0.5 rounded-full font-medium">部门类</span></td>
+                <td class="px-4 py-3">营业执照借用申请（客户拜访用）</td>
+                <td class="px-4 py-3">赵芳</td>
+                <td class="px-4 py-3">商务拓展部</td>
+                <td class="px-4 py-3 text-xs text-gray-400">非项目</td>
+                <td class="px-4 py-3 text-gray-500">2026-06-15 09:30</td>
+                <td class="px-4 py-3 text-center"><button class="px-3 py-1 bg-blue-50 text-blue-600 rounded-lg text-xs font-medium hover:bg-blue-100" onclick="openApprovalDetail()">审批</button></td>
+              </tr>
+            </tbody>
+          </table>
+          <!-- Pagination -->
+          <div class="px-4 py-3 border-t border-gray-100 flex items-center justify-between">
+            <span class="text-xs text-gray-500">共 6 条记录</span>
+            <div class="flex items-center gap-1">
+              <button class="px-2.5 py-1 text-xs border border-gray-300 rounded bg-white text-gray-400">上一页</button>
+              <button class="px-2.5 py-1 text-xs border border-blue-500 rounded bg-blue-50 text-blue-600 font-medium">1</button>
+              <button class="px-2.5 py-1 text-xs border border-gray-300 rounded bg-white text-gray-400">下一页</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==================== Tab2 我已审批 ==================== -->
+      <div id="tab-done" class="tab-content" style="display:none">
+        <!-- Filters -->
+        <div class="bg-white rounded-xl border border-gray-200 p-4 mb-4 flex items-end gap-4 flex-wrap">
+          <div class="flex flex-col gap-1">
+            <label class="text-xs text-gray-500">申请类型</label>
+            <select class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-200 focus:border-blue-400 outline-none min-w-[140px]">
+              <option value="">全部类型</option>
+              <option>项目类</option>
+              <option>部门类</option>
+            </select>
+          </div>
+          <div class="flex flex-col gap-1">
+            <label class="text-xs text-gray-500">项目</label>
+            <select class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-200 focus:border-blue-400 outline-none min-w-[160px]">
+              <option value="">全部项目</option>
+              <option>XJL-2026-001 帕博利珠单抗III期</option>
+              <option>XJL-2026-003 奥希替尼II期</option>
+              <option>XJL-2026-005 阿替利珠单抗I期</option>
+              <option>非项目</option>
+            </select>
+          </div>
+          <div class="flex flex-col gap-1">
+            <label class="text-xs text-gray-500">时间范围</label>
+            <input type="date" class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-200 focus:border-blue-400 outline-none" value="2026-06-01">
+          </div>
+          <div class="flex items-center gap-1 text-gray-400 text-sm">—</div>
+          <div class="flex flex-col gap-1">
+            <label class="text-xs text-gray-500">&nbsp;</label>
+            <input type="date" class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-200 focus:border-blue-400 outline-none" value="2026-06-17">
+          </div>
+          <button class="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors">查询</button>
+          <button class="px-4 py-2 bg-white text-gray-600 text-sm rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors">重置</button>
+        </div>
+
+        <!-- Table -->
+        <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="bg-gray-50 text-gray-600 text-left">
+                <th class="px-4 py-3 font-medium">申请编号</th>
+                <th class="px-4 py-3 font-medium">申请类型</th>
+                <th class="px-4 py-3 font-medium">标题</th>
+                <th class="px-4 py-3 font-medium">发起人</th>
+                <th class="px-4 py-3 font-medium">我的审批结果</th>
+                <th class="px-4 py-3 font-medium">审批时间</th>
+                <th class="px-4 py-3 font-medium text-center">操作</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+              <tr class="hover:bg-gray-50 transition-colors">
+                <td class="px-4 py-3 font-mono text-blue-600 text-xs">AP-PRJ-003-20260614-001</td>
+                <td class="px-4 py-3"><span class="tag-project text-xs px-2 py-0.5 rounded-full font-medium">项目类</span></td>
+                <td class="px-4 py-3">阿替利珠单抗I期—费用报销 ¥12,500</td>
+                <td class="px-4 py-3">孙丽</td>
+                <td class="px-4 py-3"><span class="text-green-600 font-medium">✓ 通过</span></td>
+                <td class="px-4 py-3 text-gray-500">2026-06-14 11:20</td>
+                <td class="px-4 py-3 text-center"><button class="px-3 py-1 bg-gray-50 text-gray-600 rounded-lg text-xs font-medium hover:bg-gray-100">查看</button></td>
+              </tr>
+              <tr class="hover:bg-gray-50 transition-colors">
+                <td class="px-4 py-3 font-mono text-blue-600 text-xs">AP-DEPT-002-20260613-001</td>
+                <td class="px-4 py-3"><span class="tag-dept text-xs px-2 py-0.5 rounded-full font-medium">部门类</span></td>
+                <td class="px-4 py-3">办公耗材采购申请（6月）</td>
+                <td class="px-4 py-3">周磊</td>
+                <td class="px-4 py-3"><span class="text-green-600 font-medium">✓ 通过</span></td>
+                <td class="px-4 py-3 text-gray-500">2026-06-13 15:30</td>
+                <td class="px-4 py-3 text-center"><button class="px-3 py-1 bg-gray-50 text-gray-600 rounded-lg text-xs font-medium hover:bg-gray-100">查看</button></td>
+              </tr>
+              <tr class="hover:bg-gray-50 transition-colors">
+                <td class="px-4 py-3 font-mono text-blue-600 text-xs">AP-DEPT-008-20260612-001</td>
+                <td class="px-4 py-3"><span class="tag-dept text-xs px-2 py-0.5 rounded-full font-medium">部门类</span></td>
+                <td class="px-4 py-3">6月差旅费用报销 ¥8,200</td>
+                <td class="px-4 py-3">黄强</td>
+                <td class="px-4 py-3"><span class="text-red-600 font-medium">✗ 驳回</span></td>
+                <td class="px-4 py-3 text-gray-500">2026-06-12 17:45</td>
+                <td class="px-4 py-3 text-center"><button class="px-3 py-1 bg-gray-50 text-gray-600 rounded-lg text-xs font-medium hover:bg-gray-100">查看</button></td>
+              </tr>
+              <tr class="hover:bg-gray-50 transition-colors">
+                <td class="px-4 py-3 font-mono text-blue-600 text-xs">AP-PRJ-004-20260611-001</td>
+                <td class="px-4 py-3"><span class="tag-project text-xs px-2 py-0.5 rounded-full font-medium">项目类</span></td>
+                <td class="px-4 py-3">帕博利珠单抗III期—用印申请</td>
+                <td class="px-4 py-3">吴婷</td>
+                <td class="px-4 py-3"><span class="text-green-600 font-medium">✓ 通过</span></td>
+                <td class="px-4 py-3 text-gray-500">2026-06-11 10:10</td>
+                <td class="px-4 py-3 text-center"><button class="px-3 py-1 bg-gray-50 text-gray-600 rounded-lg text-xs font-medium hover:bg-gray-100">查看</button></td>
+              </tr>
+              <tr class="hover:bg-gray-50 transition-colors">
+                <td class="px-4 py-3 font-mono text-blue-600 text-xs">AP-DEPT-006-20260610-001</td>
+                <td class="px-4 py-3"><span class="tag-dept text-xs px-2 py-0.5 rounded-full font-medium">部门类</span></td>
+                <td class="px-4 py-3">Q2预算调整申请（数据管理部）</td>
+                <td class="px-4 py-3">郑浩</td>
+                <td class="px-4 py-3"><span class="text-green-600 font-medium">✓ 通过</span></td>
+                <td class="px-4 py-3 text-gray-500">2026-06-10 14:25</td>
+                <td class="px-4 py-3 text-center"><button class="px-3 py-1 bg-gray-50 text-gray-600 rounded-lg text-xs font-medium hover:bg-gray-100">查看</button></td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="px-4 py-3 border-t border-gray-100 flex items-center justify-between">
+            <span class="text-xs text-gray-500">共 5 条记录</span>
+            <div class="flex items-center gap-1">
+              <button class="px-2.5 py-1 text-xs border border-gray-300 rounded bg-white text-gray-400">上一页</button>
+              <button class="px-2.5 py-1 text-xs border border-blue-500 rounded bg-blue-50 text-blue-600 font-medium">1</button>
+              <button class="px-2.5 py-1 text-xs border border-gray-300 rounded bg-white text-gray-400">下一页</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==================== Tab3 我发起的 ==================== -->
+      <div id="tab-mine" class="tab-content" style="display:none">
+        <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="bg-gray-50 text-gray-600 text-left">
+                <th class="px-4 py-3 font-medium">申请编号</th>
+                <th class="px-4 py-3 font-medium">申请类型</th>
+                <th class="px-4 py-3 font-medium">标题</th>
+                <th class="px-4 py-3 font-medium">当前节点</th>
+                <th class="px-4 py-3 font-medium">当前处理人</th>
+                <th class="px-4 py-3 font-medium">状态</th>
+                <th class="px-4 py-3 font-medium text-center">操作</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+              <tr class="hover:bg-gray-50 transition-colors">
+                <td class="px-4 py-3 font-mono text-blue-600 text-xs">AP-PRJ-003-20260615-002</td>
+                <td class="px-4 py-3"><span class="tag-project text-xs px-2 py-0.5 rounded-full font-medium">项目类</span></td>
+                <td class="px-4 py-3">帕博利珠单抗III期—付款申请 ¥120,000</td>
+                <td class="px-4 py-3">财务审核</td>
+                <td class="px-4 py-3">李四</td>
+                <td class="px-4 py-3"><span class="badge-pending text-xs px-2 py-0.5 rounded-full font-medium">审批中</span></td>
+                <td class="px-4 py-3 text-center"><button class="px-3 py-1 bg-amber-50 text-amber-600 rounded-lg text-xs font-medium hover:bg-amber-100" onclick="showToast('催办通知已发送','info')">催办</button></td>
+              </tr>
+              <tr class="hover:bg-gray-50 transition-colors">
+                <td class="px-4 py-3 font-mono text-blue-600 text-xs">AP-DEPT-001-20260614-002</td>
+                <td class="px-4 py-3"><span class="tag-dept text-xs px-2 py-0.5 rounded-full font-medium">部门类</span></td>
+                <td class="px-4 py-3">显示器申领（2台）</td>
+                <td class="px-4 py-3">部门负责人</td>
+                <td class="px-4 py-3">马超</td>
+                <td class="px-4 py-3"><span class="badge-pending text-xs px-2 py-0.5 rounded-full font-medium">审批中</span></td>
+                <td class="px-4 py-3 text-center"><button class="px-3 py-1 bg-amber-50 text-amber-600 rounded-lg text-xs font-medium hover:bg-amber-100" onclick="showToast('催办通知已发送','info')">催办</button></td>
+              </tr>
+              <tr class="hover:bg-gray-50 transition-colors">
+                <td class="px-4 py-3 font-mono text-blue-600 text-xs">AP-DEPT-007-20260612-002</td>
+                <td class="px-4 py-3"><span class="tag-dept text-xs px-2 py-0.5 rounded-full font-medium">部门类</span></td>
+                <td class="px-4 py-3">5月差旅费用报销 ¥6,800</td>
+                <td class="px-4 py-3">—</td>
+                <td class="px-4 py-3">—</td>
+                <td class="px-4 py-3"><span class="badge-rejected text-xs px-2 py-0.5 rounded-full font-medium">已拒绝</span></td>
+                <td class="px-4 py-3 text-center"><button class="px-3 py-1 bg-blue-50 text-blue-600 rounded-lg text-xs font-medium hover:bg-blue-100" onclick="showToast('已进入重新提交流程','info')">重新提交</button></td>
+              </tr>
+              <tr class="hover:bg-gray-50 transition-colors">
+                <td class="px-4 py-3 font-mono text-blue-600 text-xs">AP-PRJ-004-20260610-001</td>
+                <td class="px-4 py-3"><span class="tag-project text-xs px-2 py-0.5 rounded-full font-medium">项目类</span></td>
+                <td class="px-4 py-3">奥希替尼II期—用印申请（合同盖章）</td>
+                <td class="px-4 py-3">—</td>
+                <td class="px-4 py-3">—</td>
+                <td class="px-4 py-3"><span class="badge-approved text-xs px-2 py-0.5 rounded-full font-medium">已通过</span></td>
+                <td class="px-4 py-3 text-center"><button class="px-3 py-1 bg-gray-50 text-gray-600 rounded-lg text-xs font-medium hover:bg-gray-100">查看</button></td>
+              </tr>
+              <tr class="hover:bg-gray-50 transition-colors">
+                <td class="px-4 py-3 font-mono text-blue-600 text-xs">AP-DEPT-009-20260608-001</td>
+                <td class="px-4 py-3"><span class="tag-dept text-xs px-2 py-0.5 rounded-full font-medium">部门类</span></td>
+                <td class="px-4 py-3">通用审批—团建活动方案审批</td>
+                <td class="px-4 py-3">—</td>
+                <td class="px-4 py-3">—</td>
+                <td class="px-4 py-3"><span class="badge-returned text-xs px-2 py-0.5 rounded-full font-medium">已退回</span></td>
+                <td class="px-4 py-3 text-center"><button class="px-3 py-1 bg-gray-50 text-gray-600 rounded-lg text-xs font-medium hover:bg-gray-100">查看</button></td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="px-4 py-3 border-t border-gray-100 flex items-center justify-between">
+            <span class="text-xs text-gray-500">共 5 条记录</span>
+            <div class="flex items-center gap-1">
+              <button class="px-2.5 py-1 text-xs border border-gray-300 rounded bg-white text-gray-400">上一页</button>
+              <button class="px-2.5 py-1 text-xs border border-blue-500 rounded bg-blue-50 text-blue-600 font-medium">1</button>
+              <button class="px-2.5 py-1 text-xs border border-gray-300 rounded bg-white text-gray-400">下一页</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==================== Tab4 新建申请 ==================== -->
+      <div id="tab-new" class="tab-content" style="display:none">
+        <!-- Top Hint -->
+        <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-5 flex items-start gap-3">
+          <span class="text-xl">💡</span>
+          <div>
+            <p class="text-sm text-blue-800 font-medium">集中申请入口</p>
+            <p class="text-xs text-blue-600 mt-1">选择类别后进入对应表单。各模块也可独立发起，此处更便捷。</p>
+          </div>
+        </div>
+
+        <!-- Category Cards Grid -->
+        <div class="grid grid-cols-3 gap-4 mb-5">
+          <!-- Card 1 -->
+          <div class="card-select" onclick="openNewApplyModal('印章/证照申请')">
+            <div class="text-2xl mb-2">📋</div>
+            <div class="font-semibold text-gray-900 mb-1">印章/证照申请</div>
+            <div class="text-xs text-gray-500 mb-3">用印申请、证照借用</div>
+            <div class="flex flex-wrap gap-1">
+              <span class="text-[10px] px-1.5 py-0.5 bg-blue-50 text-blue-600 rounded">AP-PRJ-004</span>
+              <span class="text-[10px] px-1.5 py-0.5 bg-green-50 text-green-600 rounded">AP-DEPT-004</span>
+              <span class="text-[10px] px-1.5 py-0.5 bg-green-50 text-green-600 rounded">AP-DEPT-005</span>
+            </div>
+          </div>
+          <!-- Card 2 -->
+          <div class="card-select" onclick="openNewApplyModal('办公资产')">
+            <div class="text-2xl mb-2">💻</div>
+            <div class="font-semibold text-gray-900 mb-1">办公资产</div>
+            <div class="text-xs text-gray-500 mb-3">设备申领、办公用品采购</div>
+            <div class="flex flex-wrap gap-1">
+              <span class="text-[10px] px-1.5 py-0.5 bg-green-50 text-green-600 rounded">AP-DEPT-001</span>
+              <span class="text-[10px] px-1.5 py-0.5 bg-green-50 text-green-600 rounded">AP-DEPT-002</span>
+            </div>
+          </div>
+          <!-- Card 3 -->
+          <div class="card-select" onclick="openNewApplyModal('借款/用款/报销')">
+            <div class="text-2xl mb-2">💰</div>
+            <div class="font-semibold text-gray-900 mb-1">借款/用款/报销</div>
+            <div class="text-xs text-gray-500 mb-3">借款、付款、费用报销</div>
+            <div class="flex flex-wrap gap-1">
+              <span class="text-[10px] px-1.5 py-0.5 bg-blue-50 text-blue-600 rounded">AP-PRJ-003</span>
+              <span class="text-[10px] px-1.5 py-0.5 bg-green-50 text-green-600 rounded">AP-DEPT-003</span>
+              <span class="text-[10px] px-1.5 py-0.5 bg-green-50 text-green-600 rounded">AP-DEPT-007</span>
+              <span class="text-[10px] px-1.5 py-0.5 bg-green-50 text-green-600 rounded">AP-DEPT-008</span>
+            </div>
+          </div>
+          <!-- Card 4 -->
+          <div class="card-select" onclick="openNewApplyModal('预算相关')">
+            <div class="text-2xl mb-2">📊</div>
+            <div class="font-semibold text-gray-900 mb-1">预算相关</div>
+            <div class="text-xs text-gray-500 mb-3">预算调整、项目费用</div>
+            <div class="flex flex-wrap gap-1">
+              <span class="text-[10px] px-1.5 py-0.5 bg-green-50 text-green-600 rounded">AP-DEPT-006</span>
+              <span class="text-[10px] px-1.5 py-0.5 bg-blue-50 text-blue-600 rounded">AP-PRJ-003</span>
+            </div>
+          </div>
+          <!-- Card 5 -->
+          <div class="card-select" onclick="openNewApplyModal('通用审批')">
+            <div class="text-2xl mb-2">📝</div>
+            <div class="font-semibold text-gray-900 mb-1">通用审批</div>
+            <div class="text-xs text-gray-500 mb-3">不属于以上类别</div>
+            <div class="flex flex-wrap gap-1">
+              <span class="text-[10px] px-1.5 py-0.5 bg-green-50 text-green-600 rounded">AP-DEPT-009</span>
+            </div>
+          </div>
+          <!-- Card 6 - Disabled -->
+          <div class="card-select disabled">
+            <div class="text-2xl mb-2">🔒</div>
+            <div class="font-semibold text-gray-400 mb-1">预留扩展</div>
+            <div class="text-xs text-gray-400 mb-3">考勤/请假/加班调休</div>
+            <div class="text-[10px] text-gray-400 bg-gray-100 px-2 py-1 rounded inline-block">企微对接后开放</div>
+          </div>
+        </div>
+
+        <!-- Bottom Hint -->
+        <div class="bg-gray-50 border border-gray-200 rounded-xl p-4 flex items-start gap-3">
+          <span class="text-sm">💡</span>
+          <p class="text-xs text-gray-600">各申请表单与对应模块共享，审批流程统一归口审批中心。考勤/请假/加班调休将对接企业微信。</p>
+        </div>
+
+        <!-- Form Area (hidden by default, shown after selecting type) -->
+        <div id="applyFormArea" class="hidden mt-5 bg-white rounded-xl border border-gray-200 p-6">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="font-semibold text-gray-900" id="applyFormTitle">申请表单</h3>
+            <button class="text-xs text-gray-400 hover:text-gray-600" onclick="document.getElementById('applyFormArea').classList.add('hidden')">✕ 关闭</button>
+          </div>
+          <div id="applyFormContent" class="bg-gray-50 rounded-lg border border-dashed border-gray-300 p-8 text-center text-gray-400 text-sm">
+            此处调用对应模块表单
+          </div>
+        </div>
+      </div>
+
+      <!-- ==================== Tab5 流程配置 ==================== -->
+      <div id="tab-config" class="tab-content" style="display:none">
+        <div class="flex gap-4 h-[calc(100vh-200px)]">
+          <!-- Left Panel: Category Tree -->
+          <div class="w-60 shrink-0 bg-white rounded-xl border border-gray-200 overflow-hidden flex flex-col">
+            <div class="p-3 border-b border-gray-100 font-semibold text-sm text-gray-900">分类树</div>
+            <div class="flex-1 overflow-y-auto p-2">
+              <!-- 项目类 -->
+              <div class="mb-1">
+                <div class="tree-item flex items-center gap-2 font-semibold text-gray-800" onclick="toggleTree(this)">
+                  <svg class="w-4 h-4 text-gray-400 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                  <span>📁</span>
+                  <span>项目类流程</span>
+                  <span class="text-xs text-gray-400 ml-auto">8</span>
+                </div>
+                <div class="tree-children ml-5 pl-2 border-l-2 border-gray-100">
+                  <div class="tree-item text-sm text-gray-600 flex items-center justify-between selected" onclick="selectTreeNode(this,'prj-progress')">
+                    <span>📂 进度</span><span class="text-xs text-gray-400">(2)</span>
+                  </div>
+                  <div class="tree-item text-sm text-gray-600 flex items-center justify-between" onclick="selectTreeNode(this,'prj-timesheet')">
+                    <span>📂 工时</span><span class="text-xs text-gray-400">(1)</span>
+                  </div>
+                  <div class="tree-item text-sm text-gray-600 flex items-center justify-between" onclick="selectTreeNode(this,'prj-center')">
+                    <span>📂 中心</span><span class="text-xs text-gray-400">(3)</span>
+                  </div>
+                  <div class="tree-item text-sm text-gray-600 flex items-center justify-between" onclick="selectTreeNode(this,'prj-contract')">
+                    <span>📂 合同</span><span class="text-xs text-gray-400">(1)</span>
+                  </div>
+                  <div class="tree-item text-sm text-gray-600 flex items-center justify-between" onclick="selectTreeNode(this,'prj-seal')">
+                    <span>📂 用印</span><span class="text-xs text-gray-400">(1)</span>
+                  </div>
+                  <div class="tree-item text-sm text-gray-600 flex items-center justify-between" onclick="selectTreeNode(this,'prj-budget')">
+                    <span>📂 预算</span><span class="text-xs text-gray-400">(1)</span>
+                  </div>
+                  <div class="tree-item text-sm text-gray-600 flex items-center justify-between" onclick="selectTreeNode(this,'prj-procurement')">
+                    <span>📂 采购</span><span class="text-xs text-gray-400">(1)</span>
+                  </div>
+                  <div class="tree-item text-sm text-gray-600 flex items-center justify-between" onclick="selectTreeNode(this,'prj-quality')">
+                    <span>📂 质量</span><span class="text-xs text-gray-400">(2)</span>
+                  </div>
+                </div>
+              </div>
+              <!-- 部门类 -->
+              <div class="mb-1">
+                <div class="tree-item flex items-center gap-2 font-semibold text-gray-800" onclick="toggleTree(this)">
+                  <svg class="w-4 h-4 text-gray-400 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                  <span>📁</span>
+                  <span>部门类流程</span>
+                  <span class="text-xs text-gray-400 ml-auto">5</span>
+                </div>
+                <div class="tree-children ml-5 pl-2 border-l-2 border-gray-100">
+                  <div class="tree-item text-sm text-gray-600 flex items-center justify-between" onclick="selectTreeNode(this,'dept-admin')">
+                    <span>📂 行政</span><span class="text-xs text-gray-400">(3)</span>
+                  </div>
+                  <div class="tree-item text-sm text-gray-600 flex items-center justify-between" onclick="selectTreeNode(this,'dept-seal')">
+                    <span>📂 用印</span><span class="text-xs text-gray-400">(1)</span>
+                  </div>
+                  <div class="tree-item text-sm text-gray-600 flex items-center justify-between" onclick="selectTreeNode(this,'dept-budget')">
+                    <span>📂 预算</span><span class="text-xs text-gray-400">(4)</span>
+                  </div>
+                  <div class="tree-item text-sm text-gray-600 flex items-center justify-between" onclick="selectTreeNode(this,'dept-general')">
+                    <span>📂 通用</span><span class="text-xs text-gray-400">(1)</span>
+                  </div>
+                  <div class="tree-item text-sm text-gray-600 flex items-center justify-between" onclick="selectTreeNode(this,'dept-hr')">
+                    <span>📂 HR</span><span class="text-xs text-gray-400">(1)</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Panel: Flow List -->
+          <div class="flex-1 flex flex-col min-w-0">
+            <!-- Top Bar -->
+            <div class="bg-white rounded-xl border border-gray-200 p-4 mb-4 flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <select class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-200 focus:border-blue-400 outline-none min-w-[140px]">
+                  <option value="">全部公司</option>
+                  <option>兴德通医药</option>
+                  <option>兴德通生物</option>
+                  <option>兴德通临床</option>
+                </select>
+              </div>
+              <button class="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-1" onclick="openNewFlowModal()">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                新建流程
+              </button>
+            </div>
+
+            <!-- Flow Table -->
+            <div class="bg-white rounded-xl border border-gray-200 overflow-hidden flex-1">
+              <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                  <thead>
+                    <tr class="bg-gray-50 text-gray-600 text-left">
+                      <th class="px-4 py-3 font-medium">流程编号</th>
+                      <th class="px-4 py-3 font-medium">流程名称</th>
+                      <th class="px-4 py-3 font-medium">适用公司</th>
+                      <th class="px-4 py-3 font-medium">条件路由</th>
+                      <th class="px-4 py-3 font-medium">步骤数</th>
+                      <th class="px-4 py-3 font-medium">状态</th>
+                      <th class="px-4 py-3 font-medium text-center">操作</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-gray-100" id="flowTableBody">
+                    <tr class="hover:bg-gray-50 transition-colors">
+                      <td class="px-4 py-3 font-mono text-blue-600 text-xs">AP-PRJ-001</td>
+                      <td class="px-4 py-3">项目立项审批</td>
+                      <td class="px-4 py-3 text-xs text-gray-500">全部</td>
+                      <td class="px-4 py-3"><span class="text-green-600 text-xs font-medium">✓ 分支</span></td>
+                      <td class="px-4 py-3 text-center">4</td>
+                      <td class="px-4 py-3"><span class="badge-enabled text-xs px-2 py-0.5 rounded-full font-medium">启用</span></td>
+                      <td class="px-4 py-3 text-center flex items-center justify-center gap-1">
+                        <button class="px-2 py-1 text-xs text-blue-600 hover:bg-blue-50 rounded" onclick="openEditFlowModal('AP-PRJ-001')">编辑</button>
+                        <button class="px-2 py-1 text-xs text-gray-500 hover:bg-gray-50 rounded" onclick="showToast('流程已复制','success')">复制</button>
+                        <button class="px-2 py-1 text-xs text-red-500 hover:bg-red-50 rounded" onclick="showToast('流程已停用','warning')">停用</button>
+                      </td>
+                    </tr>
+                    <tr class="hover:bg-gray-50 transition-colors">
+                      <td class="px-4 py-3 font-mono text-blue-600 text-xs">AP-PRJ-002</td>
+                      <td class="px-4 py-3">项目变更审批</td>
+                      <td class="px-4 py-3 text-xs text-gray-500">全部</td>
+                      <td class="px-4 py-3 text-xs text-gray-400">—</td>
+                      <td class="px-4 py-3 text-center">3</td>
+                      <td class="px-4 py-3"><span class="badge-enabled text-xs px-2 py-0.5 rounded-full font-medium">启用</span></td>
+                      <td class="px-4 py-3 text-center flex items-center justify-center gap-1">
+                        <button class="px-2 py-1 text-xs text-blue-600 hover:bg-blue-50 rounded" onclick="openEditFlowModal('AP-PRJ-002')">编辑</button>
+                        <button class="px-2 py-1 text-xs text-gray-500 hover:bg-gray-50 rounded">复制</button>
+                        <button class="px-2 py-1 text-xs text-red-500 hover:bg-red-50 rounded">停用</button>
+                      </td>
+                    </tr>
+                    <tr class="hover:bg-gray-50 transition-colors">
+                      <td class="px-4 py-3 font-mono text-blue-600 text-xs">AP-PRJ-003</td>
+                      <td class="px-4 py-3">项目借款/付款审批</td>
+                      <td class="px-4 py-3 text-xs text-gray-500">全部</td>
+                      <td class="px-4 py-3"><span class="text-green-600 text-xs font-medium">✓ 分支</span></td>
+                      <td class="px-4 py-3 text-center">5</td>
+                      <td class="px-4 py-3"><span class="badge-enabled text-xs px-2 py-0.5 rounded-full font-medium">启用</span></td>
+                      <td class="px-4 py-3 text-center flex items-center justify-center gap-1">
+                        <button class="px-2 py-1 text-xs text-blue-600 hover:bg-blue-50 rounded" onclick="openEditFlowModal('AP-PRJ-003')">编辑</button>
+                        <button class="px-2 py-1 text-xs text-gray-500 hover:bg-gray-50 rounded">复制</button>
+                        <button class="px-2 py-1 text-xs text-red-500 hover:bg-red-50 rounded">停用</button>
+                      </td>
+                    </tr>
+                    <tr class="hover:bg-gray-50 transition-colors">
+                      <td class="px-4 py-3 font-mono text-blue-600 text-xs">AP-PRJ-004</td>
+                      <td class="px-4 py-3">项目用印审批</td>
+                      <td class="px-4 py-3 text-xs text-gray-500">兴德通医药</td>
+                      <td class="px-4 py-3 text-xs text-gray-400">—</td>
+                      <td class="px-4 py-3 text-center">3</td>
+                      <td class="px-4 py-3"><span class="badge-enabled text-xs px-2 py-0.5 rounded-full font-medium">启用</span></td>
+                      <td class="px-4 py-3 text-center flex items-center justify-center gap-1">
+                        <button class="px-2 py-1 text-xs text-blue-600 hover:bg-blue-50 rounded" onclick="openEditFlowModal('AP-PRJ-004')">编辑</button>
+                        <button class="px-2 py-1 text-xs text-gray-500 hover:bg-gray-50 rounded">复制</button>
+                        <button class="px-2 py-1 text-xs text-red-500 hover:bg-red-50 rounded">停用</button>
+                      </td>
+                    </tr>
+                    <tr class="hover:bg-gray-50 transition-colors">
+                      <td class="px-4 py-3 font-mono text-blue-600 text-xs">AP-PRJ-005</td>
+                      <td class="px-4 py-3">项目质量事件审批</td>
+                      <td class="px-4 py-3 text-xs text-gray-500">全部</td>
+                      <td class="px-4 py-3"><span class="text-green-600 text-xs font-medium">✓ 分支</span></td>
+                      <td class="px-4 py-3 text-center">4</td>
+                      <td class="px-4 py-3"><span class="badge-enabled text-xs px-2 py-0.5 rounded-full font-medium">启用</span></td>
+                      <td class="px-4 py-3 text-center flex items-center justify-center gap-1">
+                        <button class="px-2 py-1 text-xs text-blue-600 hover:bg-blue-50 rounded" onclick="openEditFlowModal('AP-PRJ-005')">编辑</button>
+                        <button class="px-2 py-1 text-xs text-gray-500 hover:bg-gray-50 rounded">复制</button>
+                        <button class="px-2 py-1 text-xs text-red-500 hover:bg-red-50 rounded">停用</button>
+                      </td>
+                    </tr>
+                    <tr class="hover:bg-gray-50 transition-colors">
+                      <td class="px-4 py-3 font-mono text-blue-600 text-xs">AP-DEPT-001</td>
+                      <td class="px-4 py-3">设备申领审批</td>
+                      <td class="px-4 py-3 text-xs text-gray-500">全部</td>
+                      <td class="px-4 py-3 text-xs text-gray-400">—</td>
+                      <td class="px-4 py-3 text-center">3</td>
+                      <td class="px-4 py-3"><span class="badge-enabled text-xs px-2 py-0.5 rounded-full font-medium">启用</span></td>
+                      <td class="px-4 py-3 text-center flex items-center justify-center gap-1">
+                        <button class="px-2 py-1 text-xs text-blue-600 hover:bg-blue-50 rounded" onclick="openEditFlowModal('AP-DEPT-001')">编辑</button>
+                        <button class="px-2 py-1 text-xs text-gray-500 hover:bg-gray-50 rounded">复制</button>
+                        <button class="px-2 py-1 text-xs text-red-500 hover:bg-red-50 rounded">停用</button>
+                      </td>
+                    </tr>
+                    <tr class="hover:bg-gray-50 transition-colors">
+                      <td class="px-4 py-3 font-mono text-blue-600 text-xs">AP-DEPT-002</td>
+                      <td class="px-4 py-3">办公用品采购审批</td>
+                      <td class="px-4 py-3 text-xs text-gray-500">全部</td>
+                      <td class="px-4 py-3 text-xs text-gray-400">—</td>
+                      <td class="px-4 py-3 text-center">2</td>
+                      <td class="px-4 py-3"><span class="badge-enabled text-xs px-2 py-0.5 rounded-full font-medium">启用</span></td>
+                      <td class="px-4 py-3 text-center flex items-center justify-center gap-1">
+                        <button class="px-2 py-1 text-xs text-blue-600 hover:bg-blue-50 rounded" onclick="openEditFlowModal('AP-DEPT-002')">编辑</button>
+                        <button class="px-2 py-1 text-xs text-gray-500 hover:bg-gray-50 rounded">复制</button>
+                        <button class="px-2 py-1 text-xs text-red-500 hover:bg-red-50 rounded">停用</button>
+                      </td>
+                    </tr>
+                    <tr class="hover:bg-gray-50 transition-colors">
+                      <td class="px-4 py-3 font-mono text-blue-600 text-xs">AP-DEPT-003</td>
+                      <td class="px-4 py-3">部门借款审批</td>
+                      <td class="px-4 py-3 text-xs text-gray-500">兴德通临床</td>
+                      <td class="px-4 py-3"><span class="text-green-600 text-xs font-medium">✓ 分支</span></td>
+                      <td class="px-4 py-3 text-center">4</td>
+                      <td class="px-4 py-3"><span class="badge-enabled text-xs px-2 py-0.5 rounded-full font-medium">启用</span></td>
+                      <td class="px-4 py-3 text-center flex items-center justify-center gap-1">
+                        <button class="px-2 py-1 text-xs text-blue-600 hover:bg-blue-50 rounded" onclick="openEditFlowModal('AP-DEPT-003')">编辑</button>
+                        <button class="px-2 py-1 text-xs text-gray-500 hover:bg-gray-50 rounded">复制</button>
+                        <button class="px-2 py-1 text-xs text-red-500 hover:bg-red-50 rounded">停用</button>
+                      </td>
+                    </tr>
+                    <tr class="hover:bg-gray-50 transition-colors">
+                      <td class="px-4 py-3 font-mono text-blue-600 text-xs">AP-DEPT-004</td>
+                      <td class="px-4 py-3">部门用印审批</td>
+                      <td class="px-4 py-3 text-xs text-gray-500">全部</td>
+                      <td class="px-4 py-3 text-xs text-gray-400">—</td>
+                      <td class="px-4 py-3 text-center">3</td>
+                      <td class="px-4 py-3"><span class="badge-enabled text-xs px-2 py-0.5 rounded-full font-medium">启用</span></td>
+                      <td class="px-4 py-3 text-center flex items-center justify-center gap-1">
+                        <button class="px-2 py-1 text-xs text-blue-600 hover:bg-blue-50 rounded" onclick="openEditFlowModal('AP-DEPT-004')">编辑</button>
+                        <button class="px-2 py-1 text-xs text-gray-500 hover:bg-gray-50 rounded">复制</button>
+                        <button class="px-2 py-1 text-xs text-red-500 hover:bg-red-50 rounded">停用</button>
+                      </td>
+                    </tr>
+                    <tr class="hover:bg-gray-50 transition-colors">
+                      <td class="px-4 py-3 font-mono text-blue-600 text-xs">AP-DEPT-006</td>
+                      <td class="px-4 py-3">预算调整审批</td>
+                      <td class="px-4 py-3 text-xs text-gray-500">全部</td>
+                      <td class="px-4 py-3"><span class="text-green-600 text-xs font-medium">✓ 分支</span></td>
+                      <td class="px-4 py-3 text-center">4</td>
+                      <td class="px-4 py-3"><span class="badge-enabled text-xs px-2 py-0.5 rounded-full font-medium">启用</span></td>
+                      <td class="px-4 py-3 text-center flex items-center justify-center gap-1">
+                        <button class="px-2 py-1 text-xs text-blue-600 hover:bg-blue-50 rounded" onclick="openEditFlowModal('AP-DEPT-006')">编辑</button>
+                        <button class="px-2 py-1 text-xs text-gray-500 hover:bg-gray-50 rounded">复制</button>
+                        <button class="px-2 py-1 text-xs text-red-500 hover:bg-red-50 rounded">停用</button>
+                      </td>
+                    </tr>
+                    <tr class="hover:bg-gray-50 transition-colors">
+                      <td class="px-4 py-3 font-mono text-blue-600 text-xs">AP-DEPT-008</td>
+                      <td class="px-4 py-3">费用报销审批</td>
+                      <td class="px-4 py-3 text-xs text-gray-500">全部</td>
+                      <td class="px-4 py-3"><span class="text-green-600 text-xs font-medium">✓ 分支</span></td>
+                      <td class="px-4 py-3 text-center">3</td>
+                      <td class="px-4 py-3"><span class="badge-enabled text-xs px-2 py-0.5 rounded-full font-medium">启用</span></td>
+                      <td class="px-4 py-3 text-center flex items-center justify-center gap-1">
+                        <button class="px-2 py-1 text-xs text-blue-600 hover:bg-blue-50 rounded" onclick="openEditFlowModal('AP-DEPT-008')">编辑</button>
+                        <button class="px-2 py-1 text-xs text-gray-500 hover:bg-gray-50 rounded">复制</button>
+                        <button class="px-2 py-1 text-xs text-red-500 hover:bg-red-50 rounded">停用</button>
+                      </td>
+                    </tr>
+                    <tr class="hover:bg-gray-50 transition-colors">
+                      <td class="px-4 py-3 font-mono text-blue-600 text-xs">AP-DEPT-009</td>
+                      <td class="px-4 py-3">通用审批流程</td>
+                      <td class="px-4 py-3 text-xs text-gray-500">全部</td>
+                      <td class="px-4 py-3 text-xs text-gray-400">—</td>
+                      <td class="px-4 py-3 text-center">2</td>
+                      <td class="px-4 py-3"><span class="badge-disabled text-xs px-2 py-0.5 rounded-full font-medium">停用</span></td>
+                      <td class="px-4 py-3 text-center flex items-center justify-center gap-1">
+                        <button class="px-2 py-1 text-xs text-blue-600 hover:bg-blue-50 rounded" onclick="openEditFlowModal('AP-DEPT-009')">编辑</button>
+                        <button class="px-2 py-1 text-xs text-gray-500 hover:bg-gray-50 rounded">复制</button>
+                        <button class="px-2 py-1 text-xs text-green-600 hover:bg-green-50 rounded" onclick="showToast('流程已启用','success')">启用</button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="px-4 py-3 border-t border-gray-100 flex items-center justify-between">
+                <span class="text-xs text-gray-500">共 12 条记录</span>
+                <div class="flex items-center gap-1">
+                  <button class="px-2.5 py-1 text-xs border border-gray-300 rounded bg-white text-gray-400">上一页</button>
+                  <button class="px-2.5 py-1 text-xs border border-blue-500 rounded bg-blue-50 text-blue-600 font-medium">1</button>
+                  <button class="px-2.5 py-1 text-xs border border-gray-300 rounded bg-white text-gray-400">下一页</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==================== Tab6 审批统计 ==================== -->
+      <div id="tab-stats" class="tab-content" style="display:none">
+        <!-- Stat Cards -->
+        <div class="grid grid-cols-4 gap-4 mb-5">
+          <div class="stat-card rounded-xl border border-blue-100 p-5">
+            <div class="text-xs text-gray-500 mb-1">本月审批总数</div>
+            <div class="text-3xl font-bold text-gray-900">247</div>
+            <div class="text-xs text-green-600 mt-1">↑ 12% 较上月</div>
+          </div>
+          <div class="stat-card rounded-xl border border-blue-100 p-5">
+            <div class="text-xs text-gray-500 mb-1">平均审批时长</div>
+            <div class="text-3xl font-bold text-gray-900">1.8<span class="text-lg font-normal text-gray-500">天</span></div>
+            <div class="text-xs text-green-600 mt-1">↓ 0.3天 较上月</div>
+          </div>
+          <div class="stat-card rounded-xl border border-blue-100 p-5">
+            <div class="text-xs text-gray-500 mb-1">审批通过率</div>
+            <div class="text-3xl font-bold text-gray-900">86.2<span class="text-lg font-normal text-gray-500">%</span></div>
+            <div class="text-xs text-gray-500 mt-1">与上月持平</div>
+          </div>
+          <div class="stat-card rounded-xl border border-blue-100 p-5">
+            <div class="text-xs text-gray-500 mb-1">待处理数</div>
+            <div class="text-3xl font-bold text-amber-600">6</div>
+            <div class="text-xs text-amber-600 mt-1">需及时处理</div>
+          </div>
+        </div>
+
+        <!-- Charts Row -->
+        <div class="grid grid-cols-3 gap-4 mb-5">
+          <!-- Pie Chart Placeholder -->
+          <div class="bg-white rounded-xl border border-gray-200 p-5">
+            <div class="font-semibold text-sm text-gray-900 mb-4">按分类分布</div>
+            <div class="chart-placeholder h-48 flex items-center justify-center">
+              <div class="text-center">
+                <div class="flex items-center justify-center gap-6 mb-3">
+                  <div class="relative w-24 h-24">
+                    <svg viewBox="0 0 36 36" class="w-24 h-24 transform -rotate-90">
+                      <circle cx="18" cy="18" r="15.915" fill="none" stroke="#e5e7eb" stroke-width="3"/>
+                      <circle cx="18" cy="18" r="15.915" fill="none" stroke="#3b82f6" stroke-width="3" stroke-dasharray="58 42" stroke-linecap="round"/>
+                      <circle cx="18" cy="18" r="15.915" fill="none" stroke="#22c55e" stroke-width="3" stroke-dasharray="0 58 42 0" stroke-dashoffset="-58" stroke-linecap="round"/>
+                    </svg>
+                    <div class="absolute inset-0 flex items-center justify-center text-xs font-semibold text-gray-700">247</div>
+                  </div>
+                </div>
+                <div class="flex items-center justify-center gap-4 text-xs">
+                  <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 bg-blue-500 rounded-full"></span>项目类 58%</span>
+                  <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 bg-green-500 rounded-full"></span>部门类 42%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Bar Chart Placeholder -->
+          <div class="bg-white rounded-xl border border-gray-200 p-5">
+            <div class="font-semibold text-sm text-gray-900 mb-4">按二级分类统计</div>
+            <div class="chart-placeholder h-48 flex items-end justify-center gap-2 px-2 pb-2">
+              <div class="flex flex-col items-center gap-1 flex-1">
+                <div class="w-full bg-blue-400 rounded-t" style="height:80%"></div>
+                <span class="text-[9px] text-gray-500">进度</span>
+              </div>
+              <div class="flex flex-col items-center gap-1 flex-1">
+                <div class="w-full bg-blue-400 rounded-t" style="height:45%"></div>
+                <span class="text-[9px] text-gray-500">工时</span>
+              </div>
+              <div class="flex flex-col items-center gap-1 flex-1">
+                <div class="w-full bg-blue-400 rounded-t" style="height:90%"></div>
+                <span class="text-[9px] text-gray-500">中心</span>
+              </div>
+              <div class="flex flex-col items-center gap-1 flex-1">
+                <div class="w-full bg-blue-400 rounded-t" style="height:55%"></div>
+                <span class="text-[9px] text-gray-500">合同</span>
+              </div>
+              <div class="flex flex-col items-center gap-1 flex-1">
+                <div class="w-full bg-green-400 rounded-t" style="height:35%"></div>
+                <span class="text-[9px] text-gray-500">行政</span>
+              </div>
+              <div class="flex flex-col items-center gap-1 flex-1">
+                <div class="w-full bg-green-400 rounded-t" style="height:60%"></div>
+                <span class="text-[9px] text-gray-500">预算</span>
+              </div>
+              <div class="flex flex-col items-center gap-1 flex-1">
+                <div class="w-full bg-green-400 rounded-t" style="height:25%"></div>
+                <span class="text-[9px] text-gray-500">通用</span>
+              </div>
+            </div>
+          </div>
+          <!-- Line Chart Placeholder -->
+          <div class="bg-white rounded-xl border border-gray-200 p-5">
+            <div class="font-semibold text-sm text-gray-900 mb-4">近30天趋势</div>
+            <div class="chart-placeholder h-48 flex items-center justify-center">
+              <svg class="w-full h-32 px-2" viewBox="0 0 300 100" preserveAspectRatio="none">
+                <polyline fill="none" stroke="#3b82f6" stroke-width="2" points="0,80 20,70 40,75 60,55 80,60 100,45 120,50 140,35 160,40 180,30 200,38 220,25 240,32 260,20 280,28 300,15"/>
+                <polyline fill="none" stroke="#93c5fd" stroke-width="1" stroke-dasharray="4,4" points="0,85 20,80 40,82 60,78 80,80 100,76 120,78 140,72 160,74 180,70 200,72 220,68 240,70 260,65 280,68 300,62"/>
+                <line x1="0" y1="95" x2="300" y2="95" stroke="#e5e7eb" stroke-width="1"/>
+              </svg>
+              <div class="absolute bottom-2 flex items-center gap-4 text-[10px]">
+                <span class="flex items-center gap-1"><span class="w-4 h-0.5 bg-blue-500"></span>审批数</span>
+                <span class="flex items-center gap-1"><span class="w-4 h-0.5 bg-blue-300" style="border-top:1px dashed"></span>平均</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Detail Table -->
+        <div class="bg-white rounded-xl border border-gray-200 overflow-hidden mb-4">
+          <div class="px-4 py-3 border-b border-gray-100 font-semibold text-sm text-gray-900">明细统计</div>
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="bg-gray-50 text-gray-600 text-left">
+                <th class="px-4 py-3 font-medium">分类</th>
+                <th class="px-4 py-3 font-medium">流程名</th>
+                <th class="px-4 py-3 font-medium text-center">审批数</th>
+                <th class="px-4 py-3 font-medium text-center">平均时长</th>
+                <th class="px-4 py-3 font-medium text-center">通过率</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+              <tr class="hover:bg-gray-50"><td class="px-4 py-2.5"><span class="tag-project text-xs px-2 py-0.5 rounded-full">项目类</span></td><td class="px-4 py-2.5">项目立项审批</td><td class="px-4 py-2.5 text-center">42</td><td class="px-4 py-2.5 text-center">2.1天</td><td class="px-4 py-2.5 text-center">90.5%</td></tr>
+              <tr class="hover:bg-gray-50"><td class="px-4 py-2.5"><span class="tag-project text-xs px-2 py-0.5 rounded-full">项目类</span></td><td class="px-4 py-2.5">项目借款/付款审批</td><td class="px-4 py-2.5 text-center">38</td><td class="px-4 py-2.5 text-center">1.5天</td><td class="px-4 py-2.5 text-center">84.2%</td></tr>
+              <tr class="hover:bg-gray-50"><td class="px-4 py-2.5"><span class="tag-project text-xs px-2 py-0.5 rounded-full">项目类</span></td><td class="px-4 py-2.5">项目用印审批</td><td class="px-4 py-2.5 text-center">25</td><td class="px-4 py-2.5 text-center">1.2天</td><td class="px-4 py-2.5 text-center">92.0%</td></tr>
+              <tr class="hover:bg-gray-50"><td class="px-4 py-2.5"><span class="tag-dept text-xs px-2 py-0.5 rounded-full">部门类</span></td><td class="px-4 py-2.5">设备申领审批</td><td class="px-4 py-2.5 text-center">30</td><td class="px-4 py-2.5 text-center">0.8天</td><td class="px-4 py-2.5 text-center">96.7%</td></tr>
+              <tr class="hover:bg-gray-50"><td class="px-4 py-2.5"><span class="tag-dept text-xs px-2 py-0.5 rounded-full">部门类</span></td><td class="px-4 py-2.5">费用报销审批</td><td class="px-4 py-2.5 text-center">55</td><td class="px-4 py-2.5 text-center">1.9天</td><td class="px-4 py-2.5 text-center">78.2%</td></tr>
+              <tr class="hover:bg-gray-50"><td class="px-4 py-2.5"><span class="tag-dept text-xs px-2 py-0.5 rounded-full">部门类</span></td><td class="px-4 py-2.5">预算调整审批</td><td class="px-4 py-2.5 text-center">22</td><td class="px-4 py-2.5 text-center">2.5天</td><td class="px-4 py-2.5 text-center">81.8%</td></tr>
+              <tr class="hover:bg-gray-50"><td class="px-4 py-2.5"><span class="tag-dept text-xs px-2 py-0.5 rounded-full">部门类</span></td><td class="px-4 py-2.5">部门用印审批</td><td class="px-4 py-2.5 text-center">18</td><td class="px-4 py-2.5 text-center">1.0天</td><td class="px-4 py-2.5 text-center">94.4%</td></tr>
+              <tr class="hover:bg-gray-50"><td class="px-4 py-2.5"><span class="tag-dept text-xs px-2 py-0.5 rounded-full">部门类</span></td><td class="px-4 py-2.5">通用审批流程</td><td class="px-4 py-2.5 text-center">17</td><td class="px-4 py-2.5 text-center">1.3天</td><td class="px-4 py-2.5 text-center">88.2%</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Permission Note -->
+        <div class="bg-gray-50 border border-gray-200 rounded-xl p-4 flex items-start gap-3">
+          <span class="text-sm">💡</span>
+          <p class="text-xs text-gray-600">权限说明：管理人员+管理员可查看全部数据，普通员工仅看自己相关。</p>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<!-- ==================== MODAL: 审批详情面板 ==================== -->
+<div id="modalApprovalDetail" class="modal-overlay" onclick="if(event.target===this)closeModal('modalApprovalDetail')">
+  <div class="bg-white rounded-2xl shadow-2xl w-[680px] max-h-[90vh] overflow-y-auto">
+    <!-- Header -->
+    <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between rounded-t-2xl z-10">
+      <div class="flex items-center gap-3">
+        <h3 class="font-semibold text-gray-900">审批详情</h3>
+        <span class="font-mono text-xs text-blue-600">AP-PRJ-003-20260617-001</span>
+        <span class="badge-pending text-xs px-2 py-0.5 rounded-full font-medium">审批中</span>
+        <span class="text-xs px-2 py-0.5 bg-purple-50 text-purple-600 rounded-full border border-purple-200">费用管理</span>
+      </div>
+      <button class="text-gray-400 hover:text-gray-600 text-lg" onclick="closeModal('modalApprovalDetail')">✕</button>
+    </div>
+
+    <div class="p-6 space-y-5">
+      <!-- Info Grid -->
+      <div class="grid grid-cols-2 gap-x-8 gap-y-3 bg-gray-50 rounded-xl p-4">
+        <div><span class="text-xs text-gray-500">申请人</span><div class="text-sm font-medium text-gray-900 mt-0.5">王五</div></div>
+        <div><span class="text-xs text-gray-500">申请部门</span><div class="text-sm font-medium text-gray-900 mt-0.5">临床运营部</div></div>
+        <div><span class="text-xs text-gray-500">项目</span><div class="text-sm font-medium text-gray-900 mt-0.5">XJL-2026-001 帕博利珠单抗III期</div></div>
+        <div><span class="text-xs text-gray-500">金额</span><div class="text-sm font-bold text-red-600 mt-0.5">¥50,000.00</div></div>
+        <div class="col-span-2"><span class="text-xs text-gray-500">摘要</span><div class="text-sm text-gray-700 mt-0.5">帕博利珠单抗III期临床研究借款，用于受试者交通补贴及中心调研费用。</div></div>
+      </div>
+
+      <!-- Progress Steps -->
+      <div>
+        <div class="text-xs font-semibold text-gray-700 mb-3">流程进度</div>
+        <div class="flex items-center gap-0">
+          <!-- Step 1: Done -->
+          <div class="flex flex-col items-center">
+            <div class="w-8 h-8 rounded-full bg-green-500 text-white flex items-center justify-center text-sm font-semibold">✓</div>
+            <div class="text-xs text-green-600 font-medium mt-1.5">项目经理审核</div>
+            <div class="text-[10px] text-gray-400">王五</div>
+          </div>
+          <div class="flex-1 h-0.5 bg-green-500 mx-1"></div>
+          <!-- Step 2: Current -->
+          <div class="flex flex-col items-center">
+            <div class="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center text-sm font-semibold step-pulse">●</div>
+            <div class="text-xs text-blue-600 font-medium mt-1.5">财务审核</div>
+            <div class="text-[10px] text-gray-400">李四</div>
+          </div>
+          <div class="flex-1 h-0.5 bg-gray-200 mx-1"></div>
+          <!-- Step 3: Pending -->
+          <div class="flex flex-col items-center">
+            <div class="w-8 h-8 rounded-full bg-gray-200 text-gray-400 flex items-center justify-center text-sm font-semibold">○</div>
+            <div class="text-xs text-gray-400 mt-1.5">财务总监</div>
+            <div class="text-[10px] text-gray-300">待处理</div>
+          </div>
+          <div class="flex-1 h-0.5 bg-gray-200 mx-1"></div>
+          <!-- Step 4: Pending -->
+          <div class="flex flex-col items-center">
+            <div class="w-8 h-8 rounded-full bg-gray-200 text-gray-400 flex items-center justify-center text-sm font-semibold">○</div>
+            <div class="text-xs text-gray-400 mt-1.5">总经理</div>
+            <div class="text-[10px] text-gray-300">待处理</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Approval History Timeline -->
+      <div>
+        <div class="text-xs font-semibold text-gray-700 mb-3">审批历史</div>
+        <div class="space-y-3">
+          <div class="flex gap-3">
+            <div class="w-2 h-2 rounded-full bg-green-500 mt-1.5 shrink-0"></div>
+            <div>
+              <div class="text-sm text-gray-900"><span class="font-medium">2026-06-17 10:30</span> <span class="text-gray-600">王五（项目经理）</span> <span class="text-green-600 font-medium">通过</span></div>
+              <div class="text-xs text-gray-500 mt-0.5">"同意"</div>
+            </div>
+          </div>
+          <div class="flex gap-3">
+            <div class="w-2 h-2 rounded-full bg-blue-500 mt-1.5 shrink-0 step-pulse"></div>
+            <div>
+              <div class="text-sm text-gray-900"><span class="font-medium">2026-06-17 14:15</span> <span class="text-gray-600">李四（财务）</span> <span class="text-blue-600 font-medium">处理中...</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Area -->
+      <div class="border-t border-gray-200 pt-4">
+        <div class="flex gap-2 mb-3">
+          <button class="px-5 py-2 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 font-medium" onclick="showToast('审批已通过','success');closeModal('modalApprovalDetail')">通过</button>
+          <button class="px-5 py-2 bg-red-600 text-white text-sm rounded-lg hover:bg-red-700 font-medium" onclick="showToast('审批已驳回','warning');closeModal('modalApprovalDetail')">驳回</button>
+          <button class="px-5 py-2 bg-amber-500 text-white text-sm rounded-lg hover:bg-amber-600 font-medium" onclick="showToast('已退回上一节点','info');closeModal('modalApprovalDetail')">退回</button>
+        </div>
+        <textarea class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-200 focus:border-blue-400 outline-none resize-none" rows="3" placeholder="请输入审批意见..."></textarea>
+      </div>
+
+      <!-- Bottom Hint -->
+      <div class="text-xs text-gray-400 flex items-center gap-1">
+        💡 此面板同时可在业务模块内打开
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== MODAL: 新建申请-选择类型 ==================== -->
+<div id="modalNewApply" class="modal-overlay" onclick="if(event.target===this)closeModal('modalNewApply')">
+  <div class="bg-white rounded-2xl shadow-2xl w-[480px] max-h-[80vh] overflow-y-auto">
+    <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+      <h3 class="font-semibold text-gray-900">选择申请类型</h3>
+      <button class="text-gray-400 hover:text-gray-600" onclick="closeModal('modalNewApply')">✕</button>
+    </div>
+    <div class="p-6 space-y-4">
+      <!-- Category Title -->
+      <div class="font-medium text-gray-900" id="newApplyCategoryTitle">印章/证照申请</div>
+
+      <!-- Project Selection (conditional) -->
+      <div id="newApplyProjectSelect">
+        <label class="text-xs text-gray-500 mb-1 block">关联项目（可选"非项目"）</label>
+        <select id="newApplyProjectDropdown" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-200 focus:border-blue-400 outline-none">
+          <option value="">请选择项目</option>
+          <option>XJL-2026-001 帕博利珠单抗III期</option>
+          <option>XJL-2026-003 奥希替尼II期</option>
+          <option>XJL-2026-005 阿替利珠单抗I期</option>
+          <option>非项目</option>
+        </select>
+      </div>
+
+      <!-- Form Type List (radio) -->
+      <div>
+        <label class="text-xs text-gray-500 mb-2 block">申请表单</label>
+        <div class="space-y-2" id="newApplyFormList">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="flex justify-end gap-2 pt-2">
+        <button class="px-4 py-2 text-sm text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50" onclick="closeModal('modalNewApply')">取消</button>
+        <button class="px-4 py-2 text-sm text-white bg-blue-600 rounded-lg hover:bg-blue-700" onclick="confirmNewApply()">确认</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== MODAL: 新建流程 ==================== -->
+<div id="modalNewFlow" class="modal-overlay" onclick="if(event.target===this)closeModal('modalNewFlow')">
+  <div class="bg-white rounded-2xl shadow-2xl w-[780px] max-h-[90vh] overflow-y-auto">
+    <!-- Header -->
+    <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between rounded-t-2xl z-10">
+      <h3 class="font-semibold text-gray-900" id="flowModalTitle">新建流程</h3>
+      <button class="text-gray-400 hover:text-gray-600" onclick="closeModal('modalNewFlow')">✕</button>
+    </div>
+
+    <!-- Wizard Steps Indicator -->
+    <div class="px-6 pt-5 pb-2">
+      <div class="flex items-center gap-0">
+        <div class="wizard-dot active" id="wizDot1">1</div>
+        <div class="wizard-line" id="wizLine1"></div>
+        <div class="wizard-dot" id="wizDot2">2</div>
+        <div class="wizard-line" id="wizLine2"></div>
+        <div class="wizard-dot" id="wizDot3">3</div>
+      </div>
+      <div class="flex items-center mt-1">
+        <span class="text-xs text-blue-600 font-medium w-[32px] text-center">基本</span>
+        <span class="flex-1"></span>
+        <span class="text-xs text-gray-400 w-[32px] text-center">路由</span>
+        <span class="flex-1"></span>
+        <span class="text-xs text-gray-400 w-[32px] text-center">步骤</span>
+      </div>
+    </div>
+
+    <div class="px-6 pb-6">
+      <!-- Step 1: Basic Info -->
+      <div class="form-wizard-step active" id="wizStep1">
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="text-xs text-gray-500 mb-1 block">流程编号 <span class="text-red-400">*</span></label>
+            <div class="flex items-center gap-2">
+              <select id="flowPrefix" class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-200 focus:border-blue-400 outline-none" onchange="updateFlowCode()">
+                <option value="AP-PRJ">AP-PRJ</option>
+                <option value="AP-DEPT">AP-DEPT</option>
+              </select>
+              <span class="text-gray-400">-</span>
+              <input type="text" id="flowCodeNum" class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-200 focus:border-blue-400 outline-none w-20" value="010" placeholder="编号">
+            </div>
+            <div class="text-[10px] text-gray-400 mt-1">格式：AP-PRJ-xxx / AP-DEPT-xxx，可手动修改</div>
+          </div>
+          <div>
+            <label class="text-xs text-gray-500 mb-1 block">流程名称 <span class="text-red-400">*</span></label>
+            <input type="text" id="flowName" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-200 focus:border-blue-400 outline-none" placeholder="请输入流程名称">
+          </div>
+          <div>
+            <label class="text-xs text-gray-500 mb-1 block">一级分类 <span class="text-red-400">*</span></label>
+            <select id="flowCat1" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-200 focus:border-blue-400 outline-none" onchange="updateCat2Options()">
+              <option value="">请选择</option>
+              <option value="prj">项目类</option>
+              <option value="dept">部门类</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-xs text-gray-500 mb-1 block">二级分类 <span class="text-red-400">*</span></label>
+            <select id="flowCat2" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-200 focus:border-blue-400 outline-none">
+              <option value="">请先选择一级分类</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-xs text-gray-500 mb-1 block">适用公司</label>
+            <select class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-200 focus:border-blue-400 outline-none" multiple>
+              <option value="" selected>全部</option>
+              <option>兴德通医药</option>
+              <option>兴德通生物</option>
+              <option>兴德通临床</option>
+            </select>
+            <div class="text-[10px] text-gray-400 mt-1">多选，默认"全部"</div>
+          </div>
+          <div>
+            <label class="text-xs text-gray-500 mb-1 block">调用模块</label>
+            <select class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-200 focus:border-blue-400 outline-none" multiple>
+              <option>合同</option>
+              <option>用印</option>
+              <option>预算</option>
+              <option>费用</option>
+              <option>项目</option>
+              <option>中心</option>
+              <option>质量</option>
+              <option>采购</option>
+              <option>行政</option>
+              <option>HR</option>
+            </select>
+            <div class="text-[10px] text-gray-400 mt-1">多选，关联调用模块</div>
+          </div>
+        </div>
+        <div class="flex justify-end mt-6">
+          <button class="px-5 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700" onclick="goWizardStep(2)">下一步</button>
+        </div>
+      </div>
+
+      <!-- Step 2: Condition Routes -->
+      <div class="form-wizard-step" id="wizStep2">
+        <div class="flex items-center justify-between mb-4">
+          <label class="text-sm font-medium text-gray-900">是否启用条件路由</label>
+          <label class="relative inline-flex items-center cursor-pointer">
+            <input type="checkbox" id="enableRoute" class="sr-only peer" onchange="toggleRouteSection()">
+            <div class="w-10 h-5 bg-gray-200 peer-focus:ring-2 peer-focus:ring-blue-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
+          </label>
+        </div>
+        <div id="routeSection" class="hidden">
+          <div class="space-y-3" id="routeRules">
+            <div class="flex items-center gap-2 bg-gray-50 rounded-lg p-3">
+              <select class="border border-gray-300 rounded-lg px-2 py-1.5 text-sm outline-none min-w-[100px]">
+                <option>金额</option>
+                <option>项目类型</option>
+                <option>部门</option>
+                <option>公司</option>
+              </select>
+              <select class="border border-gray-300 rounded-lg px-2 py-1.5 text-sm outline-none min-w-[80px]">
+                <option>大于</option>
+                <option>等于</option>
+                <option>小于</option>
+                <option>包含</option>
+              </select>
+              <input type="text" class="border border-gray-300 rounded-lg px-2 py-1.5 text-sm outline-none w-28" placeholder="值">
+              <span class="text-xs text-gray-500">→</span>
+              <input type="text" class="border border-gray-300 rounded-lg px-2 py-1.5 text-sm outline-none flex-1" placeholder="走分支说明">
+              <button class="text-red-400 hover:text-red-600 text-sm" onclick="this.parentElement.remove()">✕</button>
+            </div>
+          </div>
+          <button class="mt-3 text-sm text-blue-600 hover:text-blue-800 flex items-center gap-1" onclick="addRouteRule()">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            添加条件
+          </button>
+        </div>
+        <div class="flex justify-between mt-6">
+          <button class="px-5 py-2 text-sm text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50" onclick="goWizardStep(1)">上一步</button>
+          <button class="px-5 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700" onclick="goWizardStep(3)">下一步</button>
+        </div>
+      </div>
+
+      <!-- Step 3: Approval Steps Editor -->
+      <div class="form-wizard-step" id="wizStep3">
+        <div class="space-y-3" id="approvalSteps">
+          <!-- Step 1 -->
+          <div class="flex items-center gap-2 bg-gray-50 rounded-lg p-3">
+            <span class="drag-handle text-lg">⠿</span>
+            <span class="text-xs text-gray-400 w-6 text-center shrink-0">1</span>
+            <input type="text" class="border border-gray-300 rounded-lg px-2 py-1.5 text-sm outline-none w-32" value="项目经理审核" placeholder="步骤名称">
+            <select class="border border-gray-300 rounded-lg px-2 py-1.5 text-sm outline-none min-w-[110px]" onchange="onApproverTypeChange(this)">
+              <option value="role">固定角色</option>
+              <option value="leader">直属上级</option>
+              <option value="dept_head">部门负责人</option>
+              <option value="pm" selected>项目PM</option>
+              <option value="qa">项目QA</option>
+            </select>
+            <input type="text" class="border border-gray-300 rounded-lg px-2 py-1.5 text-sm outline-none w-24" value="自动匹配" disabled>
+            <label class="flex items-center gap-1 text-xs text-gray-600 shrink-0"><input type="checkbox" class="rounded"> 会签</label>
+            <input type="text" class="border border-gray-300 rounded-lg px-2 py-1.5 text-sm outline-none w-28" placeholder="条件(可选)">
+            <button class="text-red-400 hover:text-red-600 text-sm shrink-0" onclick="removeApprovalStep(this)">✕</button>
+          </div>
+          <!-- Step 2 -->
+          <div class="flex items-center gap-2 bg-gray-50 rounded-lg p-3">
+            <span class="drag-handle text-lg">⠿</span>
+            <span class="text-xs text-gray-400 w-6 text-center shrink-0">2</span>
+            <input type="text" class="border border-gray-300 rounded-lg px-2 py-1.5 text-sm outline-none w-32" value="财务审核" placeholder="步骤名称">
+            <select class="border border-gray-300 rounded-lg px-2 py-1.5 text-sm outline-none min-w-[110px]" onchange="onApproverTypeChange(this)">
+              <option value="role" selected>固定角色</option>
+              <option value="leader">直属上级</option>
+              <option value="dept_head">部门负责人</option>
+              <option value="pm">项目PM</option>
+              <option value="qa">项目QA</option>
+            </select>
+            <select class="border border-gray-300 rounded-lg px-2 py-1.5 text-sm outline-none w-28">
+              <option>财务经理</option>
+              <option>财务总监</option>
+              <option>会计</option>
+            </select>
+            <label class="flex items-center gap-1 text-xs text-gray-600 shrink-0"><input type="checkbox" class="rounded"> 会签</label>
+            <input type="text" class="border border-gray-300 rounded-lg px-2 py-1.5 text-sm outline-none w-28" placeholder="条件(可选)">
+            <button class="text-red-400 hover:text-red-600 text-sm shrink-0" onclick="removeApprovalStep(this)">✕</button>
+          </div>
+          <!-- Step 3 -->
+          <div class="flex items-center gap-2 bg-gray-50 rounded-lg p-3">
+            <span class="drag-handle text-lg">⠿</span>
+            <span class="text-xs text-gray-400 w-6 text-center shrink-0">3</span>
+            <input type="text" class="border border-gray-300 rounded-lg px-2 py-1.5 text-sm outline-none w-32" value="总经理审批" placeholder="步骤名称">
+            <select class="border border-gray-300 rounded-lg px-2 py-1.5 text-sm outline-none min-w-[110px]" onchange="onApproverTypeChange(this)">
+              <option value="role" selected>固定角色</option>
+              <option value="leader">直属上级</option>
+              <option value="dept_head">部门负责人</option>
+              <option value="pm">项目PM</option>
+              <option value="qa">项目QA</option>
+            </select>
+            <select class="border border-gray-300 rounded-lg px-2 py-1.5 text-sm outline-none w-28">
+              <option>总经理</option>
+              <option>副总经理</option>
+            </select>
+            <label class="flex items-center gap-1 text-xs text-gray-600 shrink-0"><input type="checkbox" class="rounded"> 会签</label>
+            <input type="text" class="border border-gray-300 rounded-lg px-2 py-1.5 text-sm outline-none w-28" value="金额>50000" placeholder="条件(可选)">
+            <button class="text-red-400 hover:text-red-600 text-sm shrink-0" onclick="removeApprovalStep(this)">✕</button>
+          </div>
+        </div>
+        <button class="mt-3 text-sm text-blue-600 hover:text-blue-800 flex items-center gap-1" onclick="addApprovalStep()">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+          添加步骤
+        </button>
+        <div class="flex justify-between mt-6">
+          <button class="px-5 py-2 text-sm text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50" onclick="goWizardStep(2)">上一步</button>
+          <div class="flex gap-2">
+            <button class="px-5 py-2 text-sm text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50" onclick="closeModal('modalNewFlow')">取消</button>
+            <button class="px-5 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700" onclick="showToast('流程已保存','success');closeModal('modalNewFlow')">保存</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== JavaScript ==================== -->
+<script>
+// ===== Tab Switching =====
+function switchTab(tabId, btn) {
+  document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
+  document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+  document.getElementById(tabId).style.display = 'block';
+  btn.classList.add('active');
+}
+
+// ===== Modal Control =====
+function openModal(id) {
+  document.getElementById(id).classList.add('show');
+}
+function closeModal(id) {
+  document.getElementById(id).classList.remove('show');
+}
+
+// ===== Toast =====
+function showToast(msg, type = 'info') {
+  const colors = {
+    success: 'bg-green-600',
+    warning: 'bg-amber-500',
+    info: 'bg-blue-600',
+    error: 'bg-red-600'
+  };
+  const container = document.getElementById('toastContainer');
+  const toast = document.createElement('div');
+  toast.className = `toast ${colors[type]} text-white text-sm px-4 py-2.5 rounded-lg shadow-lg`;
+  toast.textContent = msg;
+  container.appendChild(toast);
+  setTimeout(() => { toast.style.opacity = '0'; toast.style.transition = 'opacity .3s'; setTimeout(() => toast.remove(), 300); }, 2500);
+}
+
+// ===== Approval Detail Modal =====
+function openApprovalDetail() {
+  openModal('modalApprovalDetail');
+}
+
+// ===== New Apply Modal =====
+const applyCategories = {
+  '印章/证照申请': {
+    hasProject: true,
+    forms: [
+      { code: 'AP-PRJ-004', name: '项目用印申请', cat: 'project' },
+      { code: 'AP-DEPT-004', name: '部门用印申请', cat: 'dept' },
+      { code: 'AP-DEPT-005', name: '证照借用申请', cat: 'dept' }
+    ]
+  },
+  '办公资产': {
+    hasProject: false,
+    forms: [
+      { code: 'AP-DEPT-001', name: '设备申领', cat: 'dept' },
+      { code: 'AP-DEPT-002', name: '办公用品采购', cat: 'dept' }
+    ]
+  },
+  '借款/用款/报销': {
+    hasProject: true,
+    forms: [
+      { code: 'AP-PRJ-003', name: '项目借款申请', cat: 'project' },
+      { code: 'AP-DEPT-003', name: '部门借款申请', cat: 'dept' },
+      { code: 'AP-DEPT-007', name: '付款申请', cat: 'dept' },
+      { code: 'AP-DEPT-008', name: '费用报销', cat: 'dept' }
+    ]
+  },
+  '预算相关': {
+    hasProject: true,
+    forms: [
+      { code: 'AP-DEPT-006', name: '预算调整申请', cat: 'dept' },
+      { code: 'AP-PRJ-003', name: '项目费用申请', cat: 'project' }
+    ]
+  },
+  '通用审批': {
+    hasProject: false,
+    forms: [
+      { code: 'AP-DEPT-009', name: '通用审批申请', cat: 'dept' }
+    ]
+  }
+};
+
+function openNewApplyModal(category) {
+  const cat = applyCategories[category];
+  if (!cat) return;
+  document.getElementById('newApplyCategoryTitle').textContent = category;
+  // Project select
+  const ps = document.getElementById('newApplyProjectSelect');
+  ps.style.display = cat.hasProject ? 'block' : 'none';
+  // Form list
+  const list = document.getElementById('newApplyFormList');
+  list.innerHTML = '';
+  cat.forms.forEach((f, i) => {
+    const tagClass = f.cat === 'project' ? 'tag-project' : 'tag-dept';
+    list.innerHTML += `
+      <label class="flex items-center gap-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+        <input type="radio" name="applyFormType" value="${f.code}" ${i === 0 ? 'checked' : ''} class="text-blue-600">
+        <span class="text-sm font-medium text-gray-900">${f.name}</span>
+        <span class="${tagClass} text-[10px] px-1.5 py-0.5 rounded">${f.code}</span>
+      </label>
+    `;
+  });
+  openModal('modalNewApply');
+}
+
+function confirmNewApply() {
+  const selected = document.querySelector('input[name="applyFormType"]:checked');
+  if (!selected) { showToast('请选择申请类型', 'warning'); return; }
+  closeModal('modalNewApply');
+  // Show form area in Tab4
+  const formArea = document.getElementById('applyFormArea');
+  formArea.classList.remove('hidden');
+  document.getElementById('applyFormTitle').textContent = '申请表单 — ' + selected.value;
+  document.getElementById('applyFormContent').innerHTML = `
+    <div class="space-y-4">
+      <div class="text-sm font-medium text-gray-700">📋 此处调用 ${selected.value} 模块表单</div>
+      <div class="grid grid-cols-2 gap-4">
+        <div><label class="text-xs text-gray-500 block mb-1">申请人</label><input type="text" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-gray-100" value="张明远" disabled></div>
+        <div><label class="text-xs text-gray-500 block mb-1">申请部门</label><input type="text" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-gray-100" value="项目管理部" disabled></div>
+        <div><label class="text-xs text-gray-500 block mb-1">金额</label><input type="text" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" placeholder="请输入金额"></div>
+        <div><label class="text-xs text-gray-500 block mb-1">事由</label><input type="text" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" placeholder="请输入申请事由"></div>
+      </div>
+      <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 text-xs text-blue-700">
+        💡 完整表单请前往对应业务模块填写，此处为简化示意。
+      </div>
+      <div class="flex justify-end gap-2">
+        <button class="px-4 py-2 text-sm text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50" onclick="document.getElementById('applyFormArea').classList.add('hidden')">取消</button>
+        <button class="px-4 py-2 text-sm text-white bg-blue-600 rounded-lg hover:bg-blue-700" onclick="showToast('申请已提交，等待审批','success');document.getElementById('applyFormArea').classList.add('hidden')">提交申请</button>
+      </div>
+    </div>
+  `;
+}
+
+// ===== New Flow Modal =====
+function openNewFlowModal() {
+  document.getElementById('flowModalTitle').textContent = '新建流程';
+  goWizardStep(1);
+  // Reset
+  document.getElementById('flowPrefix').value = 'AP-PRJ';
+  document.getElementById('flowCodeNum').value = '010';
+  document.getElementById('flowName').value = '';
+  document.getElementById('flowCat1').value = '';
+  document.getElementById('flowCat2').innerHTML = '<option value="">请先选择一级分类</option>';
+  document.getElementById('enableRoute').checked = false;
+  document.getElementById('routeSection').classList.add('hidden');
+  openModal('modalNewFlow');
+}
+
+function openEditFlowModal(code) {
+  document.getElementById('flowModalTitle').textContent = '编辑流程 — ' + code;
+  goWizardStep(1);
+  // Pre-fill example data
+  const isPrj = code.startsWith('AP-PRJ');
+  document.getElementById('flowPrefix').value = isPrj ? 'AP-PRJ' : 'AP-DEPT';
+  document.getElementById('flowCodeNum').value = code.split('-').pop();
+  document.getElementById('flowName').value = getFlowNameByCode(code);
+  document.getElementById('flowCat1').value = isPrj ? 'prj' : 'dept';
+  updateCat2Options();
+  openModal('modalNewFlow');
+}
+
+function getFlowNameByCode(code) {
+  const map = {
+    'AP-PRJ-001': '项目立项审批', 'AP-PRJ-002': '项目变更审批', 'AP-PRJ-003': '项目借款/付款审批',
+    'AP-PRJ-004': '项目用印审批', 'AP-PRJ-005': '项目质量事件审批',
+    'AP-DEPT-001': '设备申领审批', 'AP-DEPT-002': '办公用品采购审批', 'AP-DEPT-003': '部门借款审批',
+    'AP-DEPT-004': '部门用印审批', 'AP-DEPT-006': '预算调整审批', 'AP-DEPT-008': '费用报销审批',
+    'AP-DEPT-009': '通用审批流程'
+  };
+  return map[code] || '流程名称';
+}
+
+function updateFlowCode() {
+  // Auto adjust prefix based on category
+}
+
+function updateCat2Options() {
+  const cat1 = document.getElementById('flowCat1').value;
+  const sel = document.getElementById('flowCat2');
+  sel.innerHTML = '';
+  if (cat1 === 'prj') {
+    ['进度','工时','中心','合同','用印','预算','采购','质量'].forEach(v => {
+      sel.innerHTML += `<option value="${v}">${v}</option>`;
+    });
+  } else if (cat1 === 'dept') {
+    ['行政','用印','预算','通用','HR'].forEach(v => {
+      sel.innerHTML += `<option value="${v}">${v}</option>`;
+    });
+  } else {
+    sel.innerHTML = '<option value="">请先选择一级分类</option>';
+  }
+}
+
+// ===== Wizard Steps =====
+function goWizardStep(step) {
+  for (let i = 1; i <= 3; i++) {
+    document.getElementById('wizStep' + i).classList.remove('active');
+    const dot = document.getElementById('wizDot' + i);
+    dot.classList.remove('active', 'done');
+    if (i < step) dot.classList.add('done');
+    if (i === step) dot.classList.add('active');
+  }
+  document.getElementById('wizStep' + step).classList.add('active');
+  // Lines
+  document.getElementById('wizLine1').classList.toggle('done', step > 1);
+  document.getElementById('wizLine2').classList.toggle('done', step > 2);
+  // Update labels
+  const labels = document.querySelectorAll('#modalNewFlow .text-xs.text-center');
+  // handled by dot styling
+}
+
+// ===== Route Rules =====
+function toggleRouteSection() {
+  const enabled = document.getElementById('enableRoute').checked;
+  document.getElementById('routeSection').classList.toggle('hidden', !enabled);
+}
+
+function addRouteRule() {
+  const rules = document.getElementById('routeRules');
+  const div = document.createElement('div');
+  div.className = 'flex items-center gap-2 bg-gray-50 rounded-lg p-3';
+  div.innerHTML = `
+    <select class="border border-gray-300 rounded-lg px-2 py-1.5 text-sm outline-none min-w-[100px]">
+      <option>金额</option><option>项目类型</option><option>部门</option><option>公司</option>
+    </select>
+    <select class="border border-gray-300 rounded-lg px-2 py-1.5 text-sm outline-none min-w-[80px]">
+      <option>大于</option><option>等于</option><option>小于</option><option>包含</option>
+    </select>
+    <input type="text" class="border border-gray-300 rounded-lg px-2 py-1.5 text-sm outline-none w-28" placeholder="值">
+    <span class="text-xs text-gray-500">→</span>
+    <input type="text" class="border border-gray-300 rounded-lg px-2 py-1.5 text-sm outline-none flex-1" placeholder="走分支说明">
+    <button class="text-red-400 hover:text-red-600 text-sm" onclick="this.parentElement.remove()">✕</button>
+  `;
+  rules.appendChild(div);
+}
+
+// ===== Approval Steps Editor =====
+let stepCounter = 3;
+function addApprovalStep() {
+  stepCounter++;
+  const steps = document.getElementById('approvalSteps');
+  const div = document.createElement('div');
+  div.className = 'flex items-center gap-2 bg-gray-50 rounded-lg p-3';
+  div.innerHTML = `
+    <span class="drag-handle text-lg">⠿</span>
+    <span class="text-xs text-gray-400 w-6 text-center shrink-0">${stepCounter}</span>
+    <input type="text" class="border border-gray-300 rounded-lg px-2 py-1.5 text-sm outline-none w-32" placeholder="步骤名称">
+    <select class="border border-gray-300 rounded-lg px-2 py-1.5 text-sm outline-none min-w-[110px]" onchange="onApproverTypeChange(this)">
+      <option value="role">固定角色</option><option value="leader">直属上级</option><option value="dept_head">部门负责人</option><option value="pm">项目PM</option><option value="qa">项目QA</option>
+    </select>
+    <input type="text" class="border border-gray-300 rounded-lg px-2 py-1.5 text-sm outline-none w-24" placeholder="审批人">
+    <label class="flex items-center gap-1 text-xs text-gray-600 shrink-0"><input type="checkbox" class="rounded"> 会签</label>
+    <input type="text" class="border border-gray-300 rounded-lg px-2 py-1.5 text-sm outline-none w-28" placeholder="条件(可选)">
+    <button class="text-red-400 hover:text-red-600 text-sm shrink-0" onclick="removeApprovalStep(this)">✕</button>
+  `;
+  steps.appendChild(div);
+}
+
+function removeApprovalStep(btn) {
+  btn.parentElement.remove();
+  renumberSteps();
+}
+
+function renumberSteps() {
+  const steps = document.querySelectorAll('#approvalSteps > div');
+  steps.forEach((s, i) => {
+    const numEl = s.querySelector('.text-gray-400.w-6');
+    if (numEl) numEl.textContent = i + 1;
+  });
+}
+
+function onApproverTypeChange(sel) {
+  const container = sel.parentElement;
+  const nextInput = sel.nextElementSibling;
+  if (!nextInput) return;
+  const val = sel.value;
+  if (val === 'pm' || val === 'qa') {
+    nextInput.tagName === 'INPUT' ? (nextInput.value = '自动匹配', nextInput.disabled = true) : null;
+  } else if (val === 'leader' || val === 'dept_head') {
+    if (nextInput.tagName === 'INPUT') {
+      nextInput.value = ''; nextInput.disabled = false; nextInput.placeholder = '自动匹配';
+    }
+  } else {
+    // fixed role — replace with select
+    const parent = nextInput.parentElement;
+    const select = document.createElement('select');
+    select.className = 'border border-gray-300 rounded-lg px-2 py-1.5 text-sm outline-none w-28';
+    if (nextInput.id) select.id = nextInput.id;
+    select.innerHTML = '<option>请选择角色</option><option>部门经理</option><option>财务经理</option><option>财务总监</option><option>总经理</option><option>副总经理</option>';
+    parent.replaceChild(select, nextInput);
+  }
+}
+
+// ===== Tree Toggle =====
+function toggleTree(el) {
+  const children = el.nextElementSibling;
+  if (!children) return;
+  const arrow = el.querySelector('svg');
+  if (children.classList.contains('collapsed')) {
+    children.classList.remove('collapsed');
+    children.style.maxHeight = children.scrollHeight + 'px';
+    arrow.style.transform = 'rotate(90deg)';
+  } else {
+    children.classList.add('collapsed');
+    arrow.style.transform = 'rotate(0deg)';
+  }
+}
+
+function selectTreeNode(el, nodeId) {
+  document.querySelectorAll('.tree-item').forEach(i => i.classList.remove('selected'));
+  el.classList.add('selected');
+  showToast('已选择分类: ' + el.textContent.trim(), 'info');
+}
+
+// ===== Init: Expand trees by default =====
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.tree-children').forEach(el => {
+    el.style.maxHeight = el.scrollHeight + 'px';
+    const arrow = el.previousElementSibling?.querySelector('svg');
+    if (arrow) arrow.style.transform = 'rotate(90deg)';
+  });
+});
+</script>
+
+</body>
+</html>
