@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>薪资中心 - CRO临床研究SaaS平台</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--primary:#4F46E5;--primary-light:#818CF8;--primary-bg:#EEF2FF;--success:#059669;--success-bg:#D1FAE5;--warning:#D97706;--warning-bg:#FEF3C7;--danger:#DC2626;--danger-bg:#FEE2E2;--info:#2563EB;--info-bg:#DBEAFE;--gray-50:#F9FAFB;--gray-100:#F3F4F6;--gray-200:#E5E7EB;--gray-300:#D1D5DB;--gray-400:#9CA3AF;--gray-500:#6B7280;--gray-600:#4B5563;--gray-700:#374151;--gray-800:#1F2937;--gray-900:#111827;--shadow:0 1px 3px rgba(0,0,0,0.1);--shadow-md:0 4px 6px rgba(0,0,0,0.07);--shadow-lg:0 10px 15px rgba(0,0,0,0.1);--radius:8px;--radius-sm:6px;--radius-lg:12px}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;background:var(--gray-50);color:var(--gray-800);line-height:1.6;font-size:14px}
+.container{max-width:1400px;margin:0 auto;padding:20px}
+
+/* Header */
+.header{background:linear-gradient(135deg,#4F46E5 0%,#7C3AED 100%);color:#fff;padding:24px 32px;border-radius:var(--radius-lg);margin-bottom:24px;display:flex;justify-content:space-between;align-items:center}
+.header h1{font-size:24px;font-weight:700}
+.header .subtitle{font-size:14px;opacity:0.85;margin-top:4px}
+.header .user-info{display:flex;align-items:center;gap:12px}
+.header .user-info .avatar{width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;font-weight:600;font-size:16px}
+.header .user-info .name{font-size:14px;font-weight:500}
+.header .user-info .role{font-size:12px;opacity:0.8}
+
+/* Tabs */
+.tabs{display:flex;background:#fff;border-radius:var(--radius-lg);box-shadow:var(--shadow);margin-bottom:24px;overflow-x:auto}
+.tab{padding:14px 24px;cursor:pointer;font-size:14px;font-weight:500;color:var(--gray-500);border-bottom:3px solid transparent;white-space:nowrap;transition:all 0.2s}
+.tab:hover{color:var(--primary);background:var(--primary-bg)}
+.tab.active{color:var(--primary);border-bottom-color:var(--primary);background:var(--primary-bg)}
+
+/* Cards */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
+.stat-card{background:#fff;border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);border-left:4px solid var(--primary)}
+.stat-card.success{border-left-color:var(--success)}
+.stat-card.warning{border-left-color:var(--warning)}
+.stat-card.info{border-left-color:var(--info)}
+.stat-card .label{font-size:13px;color:var(--gray-500);margin-bottom:8px}
+.stat-card .value{font-size:28px;font-weight:700;color:var(--gray-900)}
+.stat-card .change{font-size:12px;margin-top:4px}
+.stat-card .change.up{color:var(--success)}
+.stat-card .change.down{color:var(--danger)}
+
+/* Panel */
+.panel{background:#fff;border-radius:var(--radius-lg);box-shadow:var(--shadow);margin-bottom:24px;overflow:hidden}
+.panel-header{padding:16px 24px;border-bottom:1px solid var(--gray-200);display:flex;justify-content:space-between;align-items:center}
+.panel-header h3{font-size:16px;font-weight:600}
+.panel-body{padding:20px 24px}
+
+/* Table */
+.table-wrapper{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+th{background:var(--gray-50);padding:10px 16px;text-align:left;font-size:13px;font-weight:600;color:var(--gray-600);border-bottom:1px solid var(--gray-200);white-space:nowrap}
+td{padding:10px 16px;border-bottom:1px solid var(--gray-100);font-size:13px}
+tr:hover td{background:var(--gray-50)}
+
+/* Tags */
+.tag{display:inline-block;padding:2px 10px;border-radius:12px;font-size:12px;font-weight:500}
+.tag-success{background:var(--success-bg);color:var(--success)}
+.tag-warning{background:var(--warning-bg);color:var(--warning)}
+.tag-danger{background:var(--danger-bg);color:var(--danger)}
+.tag-info{background:var(--info-bg);color:var(--info)}
+.tag-gray{background:var(--gray-100);color:var(--gray-600)}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border:none;border-radius:var(--radius-sm);cursor:pointer;font-size:13px;font-weight:500;transition:all 0.2s}
+.btn-primary{background:var(--primary);color:#fff}.btn-primary:hover{background:#4338CA}
+.btn-success{background:var(--success);color:#fff}.btn-success:hover{background:#047857}
+.btn-warning{background:var(--warning);color:#fff}.btn-warning:hover{background:#B45309}
+.btn-outline{background:#fff;color:var(--gray-700);border:1px solid var(--gray-300)}.btn-outline:hover{background:var(--gray-50);border-color:var(--gray-400)}
+.btn-sm{padding:4px 12px;font-size:12px}
+.btn-group{display:flex;gap:8px;flex-wrap:wrap}
+
+/* Filters */
+.filters{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:16px}
+.filter-select,.filter-input{padding:8px 12px;border:1px solid var(--gray-300);border-radius:var(--radius-sm);font-size:13px;background:#fff}
+.filter-select:focus,.filter-input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(79,70,229,0.1)}
+.search-input{position:relative}
+.search-input input{padding-left:36px;width:220px}
+.search-input::before{content:'🔍';position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:14px}
+
+/* Modal */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center}
+.modal-overlay.show{display:flex}
+.modal{background:#fff;border-radius:var(--radius-lg);max-width:800px;width:95%;max-height:90vh;overflow-y:auto;box-shadow:var(--shadow-lg)}
+.modal-header{padding:20px 24px;border-bottom:1px solid var(--gray-200);display:flex;justify-content:space-between;align-items:center}
+.modal-header h3{font-size:18px;font-weight:600}
+.modal-close{width:32px;height:32px;border:none;background:none;cursor:pointer;font-size:20px;color:var(--gray-400);border-radius:var(--radius-sm)}
+.modal-close:hover{background:var(--gray-100);color:var(--gray-600)}
+.modal-body{padding:24px}
+.modal-footer{padding:16px 24px;border-top:1px solid var(--gray-200);display:flex;justify-content:flex-end;gap:12px}
+
+/* Form */
+.form-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+.form-group{display:flex;flex-direction:column;gap:4px}
+.form-group.full{grid-column:1/-1}
+.form-group label{font-size:13px;font-weight:500;color:var(--gray-700)}
+.form-group label .required{color:var(--danger)}
+.form-group input,.form-group select,.form-group textarea{padding:8px 12px;border:1px solid var(--gray-300);border-radius:var(--radius-sm);font-size:13px}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(79,70,229,0.1)}
+.form-group textarea{resize:vertical;min-height:60px}
+
+/* Salary Detail */
+.salary-section{margin-bottom:20px;padding:16px;background:var(--gray-50);border-radius:var(--radius)}
+.salary-section h4{font-size:14px;font-weight:600;margin-bottom:12px;color:var(--gray-700);padding-bottom:8px;border-bottom:1px solid var(--gray-200)}
+.salary-row{display:flex;justify-content:space-between;padding:4px 0;font-size:13px}
+.salary-row .label{color:var(--gray-600)}
+.salary-row .value{font-weight:500}
+.salary-row.total{border-top:1px solid var(--gray-300);padding-top:8px;margin-top:8px;font-weight:600;font-size:14px}
+.salary-row.total .value{color:var(--primary)}
+
+/* Charts placeholder */
+.chart-area{height:220px;background:var(--gray-50);border-radius:var(--radius);display:flex;align-items:center;justify-content:center;color:var(--gray-400);font-size:13px;position:relative;overflow:hidden}
+.chart-bar{position:absolute;bottom:20px;left:40px;right:20px;display:flex;align-items:flex-end;gap:8px;height:160px}
+.bar{flex:1;background:var(--primary-light);border-radius:4px 4px 0 0;min-width:24px;position:relative;transition:height 0.3s}
+.bar:hover{background:var(--primary)}
+.bar .bar-label{position:absolute;bottom:-20px;left:50%;transform:translateX(-50%);font-size:10px;color:var(--gray-500);white-space:nowrap}
+.bar .bar-value{position:absolute;top:-18px;left:50%;transform:translateX(-50%);font-size:10px;color:var(--gray-600);font-weight:500}
+
+/* Pending Actions */
+.action-list{display:flex;flex-direction:column;gap:8px}
+.action-item{display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--gray-50);border-radius:var(--radius-sm);border-left:3px solid var(--warning)}
+.action-item.done{border-left-color:var(--success)}
+.action-item .icon{font-size:18px}
+.action-item .text{flex:1;font-size:13px}
+.action-item .text strong{color:var(--gray-800)}
+
+/* Pagination */
+.pagination{display:flex;justify-content:space-between;align-items:center;padding:16px 0}
+.pagination .info{font-size:13px;color:var(--gray-500)}
+.pagination .pages{display:flex;gap:4px}
+.pagination .page-btn{padding:6px 12px;border:1px solid var(--gray-300);border-radius:var(--radius-sm);background:#fff;cursor:pointer;font-size:13px}
+.pagination .page-btn:hover{background:var(--gray-50)}
+.pagination .page-btn.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+
+/* Summary footer */
+.summary-bar{display:flex;gap:24px;padding:16px 24px;background:var(--gray-50);border-top:1px solid var(--gray-200);font-size:13px;color:var(--gray-600)}
+.summary-bar strong{color:var(--gray-800)}
+
+/* Responsive */
+@media(max-width:768px){.stats-grid{grid-template-columns:repeat(2,1fr)}.form-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="container">
+
+<!-- Header -->
+<div class="header">
+  <div>
+    <h1>💰 薪资中心</h1>
+    <div class="subtitle">薪资管理 · 发薪批次 · 社保公积金 · 个税计算 · 薪资报表</div>
+  </div>
+  <div class="user-info">
+    <div class="avatar">张</div>
+    <div><div class="name">张明远</div><div class="role">HR管理部</div></div>
+  </div>
+</div>
+
+<!-- Tabs -->
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('dashboard')">总览</div>
+  <div class="tab" onclick="switchTab('batch')">发薪批次</div>
+  <div class="tab" onclick="switchTab('structure')">薪资结构</div>
+  <div class="tab" onclick="switchTab('detail')">薪资明细</div>
+  <div class="tab" onclick="switchTab('social')">社保公积金</div>
+  <div class="tab" onclick="switchTab('tax')">个税配置</div>
+  <div class="tab" onclick="switchTab('report')">报表</div>
+</div>
+
+<!-- ============ Dashboard ============ -->
+<div id="tab-dashboard" class="tab-content">
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="label">本月应发</div>
+      <div class="value">¥852,340</div>
+      <div class="change up">↑ 3.2% 较上月</div>
+    </div>
+    <div class="stat-card success">
+      <div class="label">本月实发</div>
+      <div class="value">¥621,580</div>
+      <div class="change up">↑ 2.8% 较上月</div>
+    </div>
+    <div class="stat-card warning">
+      <div class="label">本月公司成本</div>
+      <div class="value">¥1,024K</div>
+      <div class="change up">↑ 3.5% 较上月</div>
+    </div>
+    <div class="stat-card info">
+      <div class="label">本月人数</div>
+      <div class="value">156<span style="font-size:14px;color:var(--gray-500)">人</span></div>
+      <div class="change up">+3 入职</div>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:24px">
+    <div class="panel">
+      <div class="panel-header"><h3>月度薪资趋势</h3></div>
+      <div class="panel-body">
+        <div class="chart-area">
+          <div class="chart-bar">
+            <div class="bar" style="height:55%"><div class="bar-label">1月</div><div class="bar-value">780K</div></div>
+            <div class="bar" style="height:58%"><div class="bar-label">2月</div><div class="bar-value">795K</div></div>
+            <div class="bar" style="height:62%"><div class="bar-label">3月</div><div class="bar-value">810K</div></div>
+            <div class="bar" style="height:60%"><div class="bar-label">4月</div><div class="bar-value">798K</div></div>
+            <div class="bar" style="height:68%"><div class="bar-label">5月</div><div class="bar-value">826K</div></div>
+            <div class="bar" style="height:72%;background:var(--primary)"><div class="bar-label">6月</div><div class="bar-value">852K</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-header"><h3>部门薪资分布</h3></div>
+      <div class="panel-body">
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;align-items:center;gap:12px"><span style="width:80px;font-size:13px">临床运营部</span><div style="flex:1;background:var(--gray-100);border-radius:4px;height:24px;overflow:hidden"><div style="width:75%;background:var(--primary);height:100%;border-radius:4px"></div></div><span style="font-size:13px;font-weight:500">¥380K</span></div>
+          <div style="display:flex;align-items:center;gap:12px"><span style="width:80px;font-size:13px">医学部</span><div style="flex:1;background:var(--gray-100);border-radius:4px;height:24px;overflow:hidden"><div style="width:32%;background:var(--info);height:100%;border-radius:4px"></div></div><span style="font-size:13px;font-weight:500">¥120K</span></div>
+          <div style="display:flex;align-items:center;gap:12px"><span style="width:80px;font-size:13px">QA部</span><div style="flex:1;background:var(--gray-100);border-radius:4px;height:24px;overflow:hidden"><div style="width:25%;background:var(--success);height:100%;border-radius:4px"></div></div><span style="font-size:13px;font-weight:500">¥95K</span></div>
+          <div style="display:flex;align-items:center;gap:12px"><span style="width:80px;font-size:13px">运营部</span><div style="flex:1;background:var(--gray-100);border-radius:4px;height:24px;overflow:hidden"><div style="width:23%;background:var(--warning);height:100%;border-radius:4px"></div></div><span style="font-size:13px;font-weight:500">¥88K</span></div>
+          <div style="display:flex;align-items:center;gap:12px"><span style="width:80px;font-size:13px">BD部</span><div style="flex:1;background:var(--gray-100);border-radius:4px;height:24px;overflow:hidden"><div style="width:19%;background:#8B5CF6;height:100%;border-radius:4px"></div></div><span style="font-size:13px;font-weight:500">¥72K</span></div>
+          <div style="display:flex;align-items:center;gap:12px"><span style="width:80px;font-size:13px">数据管理部</span><div style="flex:1;background:var(--gray-100);border-radius:4px;height:24px;overflow:hidden"><div style="width:18%;background:#EC4899;height:100%;border-radius:4px"></div></div><span style="font-size:13px;font-weight:500">¥66K</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-header"><h3>近期待处理</h3></div>
+    <div class="panel-body">
+      <div class="action-list">
+        <div class="action-item"><span class="icon">⚠️</span><span class="text"><strong>6月薪资批次未生成</strong>，请尽快创建并生成明细</span><button class="btn btn-warning btn-sm" onclick="switchTab('batch')">立即生成</button></div>
+        <div class="action-item"><span class="icon">📋</span><span class="text"><strong>5月批次待审批</strong>，已提交审批等待通过</span><button class="btn btn-outline btn-sm" onclick="switchTab('batch')">去审批</button></div>
+        <div class="action-item done"><span class="icon">✅</span><span class="text"><strong>4月批次已发放</strong>，实发¥585,000 / 151人</span><button class="btn btn-outline btn-sm" onclick="switchTab('detail')">查看明细</button></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 发薪批次 ============ -->
+<div id="tab-batch" class="tab-content" style="display:none">
+  <div class="panel">
+    <div class="panel-header">
+      <h3>发薪批次管理</h3>
+      <div class="btn-group">
+        <button class="btn btn-outline">📥 导入OA数据</button>
+        <button class="btn btn-primary" onclick="showModal('modal-new-batch')">+ 新建批次</button>
+      </div>
+    </div>
+    <div class="panel-body">
+      <div class="filters">
+        <select class="filter-select"><option>全部状态</option><option>DRAFT</option><option>GENERATED</option><option>审批中</option><option>APPROVED</option><option>已发放</option><option>CANCELLED</option></select>
+        <select class="filter-select"><option>全部年月</option><option>2026-06</option><option>2026-05</option><option>2026-04</option><option>2026-03</option></select>
+        <div class="search-input"><input type="text" class="filter-input" placeholder="搜索批次号..."></div>
+      </div>
+      <div class="table-wrapper">
+        <table>
+          <thead><tr><th>批次号</th><th>年月</th><th>人数</th><th>应发合计</th><th>实发合计</th><th>公司成本</th><th>状态</th><th>操作</th></tr></thead>
+          <tbody>
+            <tr><td><strong>SB-202606</strong></td><td>2026-06</td><td>156</td><td>¥852,340</td><td>¥621,580</td><td>¥1,024,150</td><td><span class="tag tag-warning">审批中</span></td><td><button class="btn btn-outline btn-sm" onclick="showModal('modal-batch-detail')">详情</button></td></tr>
+            <tr><td><strong>SB-202605</strong></td><td>2026-05</td><td>153</td><td>¥826,000</td><td>¥605,000</td><td>¥998,000</td><td><span class="tag tag-success">已发放</span></td><td><button class="btn btn-outline btn-sm">详情</button></td></tr>
+            <tr><td><strong>SB-202604</strong></td><td>2026-04</td><td>151</td><td>¥798,000</td><td>¥585,000</td><td>¥965,000</td><td><span class="tag tag-success">已发放</span></td><td><button class="btn btn-outline btn-sm">详情</button></td></tr>
+            <tr><td><strong>SB-202603</strong></td><td>2026-03</td><td>150</td><td>¥810,000</td><td>¥592,000</td><td>¥978,000</td><td><span class="tag tag-success">已发放</span></td><td><button class="btn btn-outline btn-sm">详情</button></td></tr>
+            <tr><td><strong>SB-202602</strong></td><td>2026-02</td><td>149</td><td>¥795,000</td><td>¥581,000</td><td>¥960,000</td><td><span class="tag tag-success">已发放</span></td><td><button class="btn btn-outline btn-sm">详情</button></td></tr>
+            <tr><td><strong>SB-202601</strong></td><td>2026-01</td><td>148</td><td>¥780,000</td><td>¥570,000</td><td>¥942,000</td><td><span class="tag tag-success">已发放</span></td><td><button class="btn btn-outline btn-sm">详情</button></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="pagination">
+        <span class="info">共 6 条记录</span>
+        <div class="pages"><button class="page-btn">上一页</button><button class="page-btn active">1</button><button class="page-btn">下一页</button></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 薪资结构 ============ -->
+<div id="tab-structure" class="tab-content" style="display:none">
+  <div class="panel">
+    <div class="panel-header">
+      <h3>薪资结构管理</h3>
+      <div class="btn-group">
+        <button class="btn btn-outline">📤 批量导入</button>
+        <button class="btn btn-primary" onclick="showModal('modal-new-structure')">+ 新增薪资结构</button>
+      </div>
+    </div>
+    <div class="panel-body">
+      <div class="filters">
+        <select class="filter-select"><option>全部部门</option><option>临床运营部</option><option>医学部</option><option>QA部</option><option>运营部</option><option>BD部</option></select>
+        <select class="filter-select"><option>全部岗位</option><option>PM</option><option>CRA</option><option>CRC</option><option>CTA</option><option>DM</option><option>QA</option></select>
+        <select class="filter-select"><option>仅当前生效</option><option>全部(含历史)</option></select>
+        <div class="search-input"><input type="text" class="filter-input" placeholder="搜索姓名/工号..."></div>
+      </div>
+      <div class="table-wrapper">
+        <table>
+          <thead><tr><th>姓名</th><th>部门</th><th>岗位</th><th>基本工资</th><th>岗位工资</th><th>职级工资</th><th>职务工资</th><th>补贴合计</th><th>应发合计</th><th>生效日期</th><th>操作</th></tr></thead>
+          <tbody>
+            <tr><td><strong>王英辉</strong></td><td>医学运营部</td><td>PM</td><td>¥4,000</td><td>¥2,500</td><td>¥6,000</td><td>¥5,500</td><td>¥545</td><td><strong>¥18,545</strong></td><td>2026-03-01</td><td><button class="btn btn-outline btn-sm">编辑</button> <button class="btn btn-outline btn-sm" onclick="showModal('modal-salary-detail')">详情</button></td></tr>
+            <tr><td><strong>刘艳丽</strong></td><td>医学运营部</td><td>PM</td><td>¥4,000</td><td>¥2,500</td><td>¥8,000</td><td>¥3,500</td><td>¥545</td><td><strong>¥18,545</strong></td><td>2026-01-01</td><td><button class="btn btn-outline btn-sm">编辑</button> <button class="btn btn-outline btn-sm">详情</button></td></tr>
+            <tr><td><strong>李文艳</strong></td><td>医学运营部</td><td>CRA</td><td>¥3,000</td><td>¥2,000</td><td>¥4,000</td><td>—</td><td>¥545</td><td><strong>¥9,545</strong></td><td>2026-02-01</td><td><button class="btn btn-outline btn-sm">编辑</button> <button class="btn btn-outline btn-sm">详情</button></td></tr>
+            <tr><td><strong>白锦涛</strong></td><td>医学运营部</td><td>CRA</td><td>¥3,000</td><td>¥1,500</td><td>¥2,000</td><td>—</td><td>¥545</td><td><strong>¥7,045</strong></td><td>2026-01-01</td><td><button class="btn btn-outline btn-sm">编辑</button> <button class="btn btn-outline btn-sm">详情</button></td></tr>
+            <tr><td><strong>方家悦</strong></td><td>医学运营部</td><td>CRA</td><td>¥3,000</td><td>¥2,500</td><td>¥2,500</td><td>—</td><td>¥545</td><td><strong>¥8,545</strong></td><td>2025-12-01</td><td><button class="btn btn-outline btn-sm">编辑</button> <button class="btn btn-outline btn-sm">详情</button></td></tr>
+            <tr><td><strong>李润宇</strong></td><td>医学运营部</td><td>APM</td><td>¥4,000</td><td>¥2,000</td><td>¥2,000</td><td>¥2,000</td><td>¥545</td><td><strong>¥10,545</strong></td><td>2026-05-01</td><td><button class="btn btn-outline btn-sm">编辑</button> <button class="btn btn-outline btn-sm">详情</button></td></tr>
+            <tr><td><strong>郭文静</strong></td><td>医学运营部</td><td>CTA</td><td>¥3,000</td><td>¥1,500</td><td>¥1,000</td><td>—</td><td>¥545</td><td><strong>¥6,045</strong></td><td>2026-01-01</td><td><button class="btn btn-outline btn-sm">编辑</button> <button class="btn btn-outline btn-sm">详情</button></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="pagination">
+        <span class="info">共 156 条记录，第 1/16 页</span>
+        <div class="pages"><button class="page-btn">上一页</button><button class="page-btn active">1</button><button class="page-btn">2</button><button class="page-btn">3</button><button class="page-btn">...</button><button class="page-btn">16</button><button class="page-btn">下一页</button></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 薪资明细 ============ -->
+<div id="tab-detail" class="tab-content" style="display:none">
+  <div class="panel">
+    <div class="panel-header">
+      <h3>员工薪资明细</h3>
+      <button class="btn btn-outline">📥 导出Excel</button>
+    </div>
+    <div class="panel-body">
+      <div class="filters">
+        <select class="filter-select"><option>2026-06</option><option>2026-05</option><option>2026-04</option><option>2026-03</option></select>
+        <select class="filter-select"><option>全部部门</option><option>临床运营部</option><option>医学部</option><option>QA部</option></select>
+        <select class="filter-select"><option>全部岗位</option><option>PM</option><option>CRA</option><option>CRC</option></select>
+        <div class="search-input"><input type="text" class="filter-input" placeholder="搜索姓名/工号..."></div>
+      </div>
+      <div class="table-wrapper">
+        <table>
+          <thead><tr><th>姓名</th><th>部门</th><th>岗位</th><th>职级</th><th>应发合计</th><th>社保(个人)</th><th>公积金(个人)</th><th>个税</th><th>实发</th><th>操作</th></tr></thead>
+          <tbody>
+            <tr><td><strong>王英辉</strong></td><td>医学运营部</td><td>PM</td><td>B-2</td><td>¥18,545</td><td>¥432.60</td><td>¥1,200</td><td>¥2,345.82</td><td><strong>¥14,557.46</strong></td><td><button class="btn btn-outline btn-sm" onclick="showModal('modal-record-detail')">详情</button></td></tr>
+            <tr><td><strong>刘艳丽</strong></td><td>医学运营部</td><td>PM</td><td>B-3</td><td>¥18,545</td><td>¥432.60</td><td>¥480</td><td>¥2,527.82</td><td><strong>¥15,103.46</strong></td><td><button class="btn btn-outline btn-sm">详情</button></td></tr>
+            <tr><td><strong>李文艳</strong></td><td>医学运营部</td><td>CRA</td><td>C</td><td>¥9,545</td><td>¥270.96</td><td>¥312</td><td>¥508.31</td><td><strong>¥8,308.23</strong></td><td><button class="btn btn-outline btn-sm">详情</button></td></tr>
+            <tr><td><strong>白锦涛</strong></td><td>医学运营部</td><td>CRA</td><td>C</td><td>¥7,045</td><td>¥270.96</td><td>¥312</td><td>¥176.65</td><td><strong>¥6,139.89</strong></td><td><button class="btn btn-outline btn-sm">详情</button></td></tr>
+            <tr><td><strong>方家悦</strong></td><td>医学运营部</td><td>CRA</td><td>C</td><td>¥8,545</td><td>¥270.96</td><td>¥312</td><td>¥326.65</td><td><strong>¥7,489.89</strong></td><td><button class="btn btn-outline btn-sm">详情</button></td></tr>
+            <tr><td><strong>李润宇</strong></td><td>医学运营部</td><td>APM</td><td>C</td><td>¥10,545</td><td>¥320</td><td>¥480</td><td>¥671.26</td><td><strong>¥8,960.02</strong></td><td><button class="btn btn-outline btn-sm">详情</button></td></tr>
+            <tr><td><strong>郭文静</strong></td><td>医学运营部</td><td>CTA</td><td>C</td><td>¥6,045</td><td>¥270.96</td><td>¥312</td><td>¥77.39</td><td><strong>¥5,246.53</strong></td><td><button class="btn btn-outline btn-sm">详情</button></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="summary-bar">
+        <span>共 <strong>156</strong> 人</span>
+        <span>应发合计 <strong>¥852,340</strong></span>
+        <span>社保(个人) <strong>¥54,230</strong></span>
+        <span>公积金(个人) <strong>¥48,672</strong></span>
+        <span>个税 <strong>¥128,860</strong></span>
+        <span>实发合计 <strong>¥621,580</strong></span>
+      </div>
+      <div class="pagination">
+        <span class="info">共 156 条记录，第 1/16 页</span>
+        <div class="pages"><button class="page-btn">上一页</button><button class="page-btn active">1</button><button class="page-btn">2</button><button class="page-btn">3</button><button class="page-btn">...</button><button class="page-btn">16</button><button class="page-btn">下一页</button></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 社保公积金 ============ -->
+<div id="tab-social" class="tab-content" style="display:none">
+  <div class="panel">
+    <div class="panel-header">
+      <h3>社保公积金配置</h3>
+      <div class="btn-group">
+        <button class="btn btn-outline">📋 按区域复制</button>
+        <button class="btn btn-primary" onclick="showModal('modal-new-social')">+ 新增配置</button>
+      </div>
+    </div>
+    <div class="panel-body">
+      <div class="filters">
+        <select class="filter-select"><option>全部区域</option><option>BJ 北京</option><option>QC 齐齐哈尔</option></select>
+        <select class="filter-select"><option>2026</option><option>2025</option></select>
+      </div>
+      <div class="table-wrapper">
+        <table>
+          <thead><tr><th>区域</th><th>年度</th><th>基数下限</th><th>基数上限</th><th>养老(公司/个人)</th><th>医疗(公司/个人)</th><th>失业(公司/个人)</th><th>工伤(公司)</th><th>生育(公司)</th><th>公积金(公司/个人)</th><th>残保金(公司)</th><th>操作</th></tr></thead>
+          <tbody>
+            <tr><td><strong>BJ 北京</strong></td><td>2026</td><td>¥6,326</td><td>¥35,283</td><td>16%/8%</td><td>9.8%/2%</td><td>0.5%/0.5%</td><td>0.2%</td><td>0.8%</td><td>12%/12%</td><td>1.5%</td><td><button class="btn btn-outline btn-sm">编辑</button></td></tr>
+            <tr><td><strong>QC 齐齐哈尔</strong></td><td>2026</td><td>¥4,208</td><td>¥22,860</td><td>16%/8%</td><td>8.5%/2%</td><td>0.7%/0.7%</td><td>0.6%</td><td>0.7%</td><td>8%/8%</td><td>0%</td><td><button class="btn btn-outline btn-sm">编辑</button></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div style="padding:16px 0;font-size:13px;color:var(--gray-500)">
+        注：百分比格式为"公司%/个人%"。缴纳基数上下限随社保区域和年度变化，需及时更新。
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 个税配置 ============ -->
+<div id="tab-tax" class="tab-content" style="display:none">
+  <div class="panel">
+    <div class="panel-header">
+      <h3>个税配置 — 累计预扣法税率表</h3>
+      <div class="btn-group">
+        <select class="filter-select" style="font-weight:500"><option>2026</option><option>2025</option></select>
+        <button class="btn btn-outline">📋 复制年度</button>
+        <button class="btn btn-primary">+ 新增税率档位</button>
+      </div>
+    </div>
+    <div class="panel-body">
+      <div style="margin-bottom:16px;padding:12px 16px;background:var(--info-bg);border-radius:var(--radius-sm);font-size:13px;color:var(--info)">
+        起征点：<strong>¥5,000/月</strong>（¥60,000/年）| 采用累计预扣法，按年累计计算
+      </div>
+      <div class="table-wrapper">
+        <table>
+          <thead><tr><th>级数</th><th>累计预扣预缴应纳税所得额</th><th>税率</th><th>速算扣除数</th><th>操作</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td>不超过 ¥36,000</td><td><strong>3%</strong></td><td>¥0</td><td><button class="btn btn-outline btn-sm">编辑</button></td></tr>
+            <tr><td>2</td><td>¥36,000 ~ ¥144,000</td><td><strong>10%</strong></td><td>¥2,520</td><td><button class="btn btn-outline btn-sm">编辑</button></td></tr>
+            <tr><td>3</td><td>¥144,000 ~ ¥300,000</td><td><strong>20%</strong></td><td>¥16,920</td><td><button class="btn btn-outline btn-sm">编辑</button></td></tr>
+            <tr><td>4</td><td>¥300,000 ~ ¥420,000</td><td><strong>25%</strong></td><td>¥31,920</td><td><button class="btn btn-outline btn-sm">编辑</button></td></tr>
+            <tr><td>5</td><td>¥420,000 ~ ¥660,000</td><td><strong>30%</strong></td><td>¥52,920</td><td><button class="btn btn-outline btn-sm">编辑</button></td></tr>
+            <tr><td>6</td><td>¥660,000 ~ ¥960,000</td><td><strong>35%</strong></td><td>¥85,920</td><td><button class="btn btn-outline btn-sm">编辑</button></td></tr>
+            <tr><td>7</td><td>超过 ¥960,000</td><td><strong>45%</strong></td><td>¥181,920</td><td><button class="btn btn-outline btn-sm">编辑</button></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 报表 ============ -->
+<div id="tab-report" class="tab-content" style="display:none">
+  <div class="panel">
+    <div class="panel-header">
+      <h3>薪资报表</h3>
+      <button class="btn btn-outline">📥 导出Excel</button>
+    </div>
+    <div class="panel-body">
+      <div class="tabs" style="margin-bottom:20px;margin-top:-8px">
+        <div class="tab active" style="font-size:13px;padding:10px 20px">月度汇总</div>
+        <div class="tab" style="font-size:13px;padding:10px 20px">部门统计</div>
+        <div class="tab" style="font-size:13px;padding:10px 20px">年度累计</div>
+        <div class="tab" style="font-size:13px;padding:10px 20px">人力成本分析</div>
+      </div>
+      <div class="filters">
+        <select class="filter-select"><option>2026-06</option><option>2026-05</option><option>2026-04</option></select>
+      </div>
+      <div class="table-wrapper">
+        <table>
+          <thead><tr><th>部门</th><th>人数</th><th>应发合计</th><th>社保(公司)</th><th>公积金(公司)</th><th>个税</th><th>实发合计</th><th>公司成本</th><th>人均应发</th></tr></thead>
+          <tbody>
+            <tr style="font-weight:600;background:var(--gray-50)"><td>合计</td><td>156</td><td>¥852,340</td><td>¥128,000</td><td>¥48,672</td><td>¥128,860</td><td>¥621,580</td><td>¥1,024,150</td><td>¥5,464</td></tr>
+            <tr><td>临床运营部</td><td>68</td><td>¥380,000</td><td>¥57,000</td><td>¥21,000</td><td>¥57,000</td><td>¥277,000</td><td>¥456,000</td><td>¥5,588</td></tr>
+            <tr><td>医学部</td><td>24</td><td>¥120,000</td><td>¥18,000</td><td>¥7,000</td><td>¥18,000</td><td>¥87,000</td><td>¥144,000</td><td>¥5,000</td></tr>
+            <tr><td>QA部</td><td>16</td><td>¥95,000</td><td>¥14,000</td><td>¥5,000</td><td>¥14,000</td><td>¥69,000</td><td>¥114,000</td><td>¥5,938</td></tr>
+            <tr><td>运营部</td><td>22</td><td>¥88,000</td><td>¥13,000</td><td>¥5,000</td><td>¥13,000</td><td>¥64,000</td><td>¥106,000</td><td>¥4,000</td></tr>
+            <tr><td>BD部</td><td>14</td><td>¥72,000</td><td>¥11,000</td><td>¥4,000</td><td>¥11,000</td><td>¥52,000</td><td>¥87,000</td><td>¥5,143</td></tr>
+            <tr><td>数据管理部</td><td>12</td><td>¥97,340</td><td>¥15,000</td><td>¥6,672</td><td>¥15,860</td><td>¥72,580</td><td>¥117,150</td><td>¥8,112</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ Modals ============ -->
+
+<!-- 新建批次 -->
+<div id="modal-new-batch" class="modal-overlay" onclick="if(event.target===this)hideModal('modal-new-batch')">
+  <div class="modal">
+    <div class="modal-header"><h3>新建发薪批次</h3><button class="modal-close" onclick="hideModal('modal-new-batch')">×</button></div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group"><label>发薪月份 <span class="required">*</span></label><input type="month" value="2026-07"></div>
+        <div class="form-group"><label>批次名称</label><input type="text" value="2026年7月薪资" placeholder="默认自动生成"></div>
+        <div class="form-group full"><label>备注</label><textarea placeholder="可选备注"></textarea></div>
+      </div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-outline" onclick="hideModal('modal-new-batch')">取消</button><button class="btn btn-primary">创建批次</button></div>
+  </div>
+</div>
+
+<!-- 新增薪资结构 -->
+<div id="modal-new-structure" class="modal-overlay" onclick="if(event.target===this)hideModal('modal-new-structure')">
+  <div class="modal">
+    <div class="modal-header"><h3>新增薪资结构</h3><button class="modal-close" onclick="hideModal('modal-new-structure')">×</button></div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group"><label>选择人员 <span class="required">*</span></label><input type="text" placeholder="搜索姓名/工号..."></div>
+        <div class="form-group"><label>生效日期 <span class="required">*</span></label><input type="date" value="2026-07-01"></div>
+        <div class="form-group"><label>基本工资 <span class="required">*</span></label><input type="number" value="4000"></div>
+        <div class="form-group"><label>岗位工资</label><input type="number" value="2500"></div>
+        <div class="form-group"><label>职级工资</label><input type="number" value="6000"></div>
+        <div class="form-group"><label>职务工资</label><input type="number" value="5500"></div>
+        <div class="form-group"><label>交通补贴</label><input type="number" value="100"></div>
+        <div class="form-group"><label>电脑补贴</label><input type="number" value="100"></div>
+        <div class="form-group"><label>午餐补贴</label><input type="number" value="345"></div>
+        <div class="form-group"><label>其他补贴</label><input type="number" value="0"></div>
+        <div class="form-group"><label>职务等级</label><input type="text" placeholder="如B-2, C"></div>
+        <div class="form-group"><label>职级等级</label><input type="text" placeholder="如CRA-III-1, PM-1"></div>
+        <div class="form-group"><label>调薪原因</label><select><option>入职定薪</option><option>年度调薪</option><option>晋升调薪</option><option>转正调薪</option><option>其他</option></select></div>
+        <div class="form-group"><label>社保区域</label><select><option>BJ 北京</option><option>QC 齐齐哈尔</option></select></div>
+        <div class="form-group full"><label>备注</label><textarea placeholder="可选备注"></textarea></div>
+      </div>
+      <div style="margin-top:16px;padding:12px 16px;background:var(--primary-bg);border-radius:var(--radius-sm);font-size:14px;font-weight:600;color:var(--primary)">
+        应发合计: ¥18,545
+      </div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-outline" onclick="hideModal('modal-new-structure')">取消</button><button class="btn btn-primary">确认新增</button></div>
+  </div>
+</div>
+
+<!-- 薪资明细详情 -->
+<div id="modal-record-detail" class="modal-overlay" onclick="if(event.target===this)hideModal('modal-record-detail')">
+  <div class="modal">
+    <div class="modal-header"><h3>薪资明细 — 王英辉 · 2026年6月</h3><button class="modal-close" onclick="hideModal('modal-record-detail')">×</button></div>
+    <div class="modal-body">
+      <div class="salary-section">
+        <h4>👤 基本信息</h4>
+        <div class="salary-row"><span class="label">姓名</span><span class="value">王英辉</span></div>
+        <div class="salary-row"><span class="label">部门</span><span class="value">医学运营部</span></div>
+        <div class="salary-row"><span class="label">岗位</span><span class="value">PM</span></div>
+        <div class="salary-row"><span class="label">职务等级</span><span class="value">B-2</span></div>
+        <div class="salary-row"><span class="label">职级等级</span><span class="value">PM-1</span></div>
+        <div class="salary-row"><span class="label">社保区域</span><span class="value">BJ</span></div>
+      </div>
+      <div class="salary-section">
+        <h4>💰 应发</h4>
+        <div class="salary-row"><span class="label">基本工资</span><span class="value">¥4,000</span></div>
+        <div class="salary-row"><span class="label">岗位工资</span><span class="value">¥2,500</span></div>
+        <div class="salary-row"><span class="label">职级工资</span><span class="value">¥6,000</span></div>
+        <div class="salary-row"><span class="label">职务工资</span><span class="value">¥5,500</span></div>
+        <div class="salary-row"><span class="label">交通补贴</span><span class="value">¥100</span></div>
+        <div class="salary-row"><span class="label">电脑补贴</span><span class="value">¥100</span></div>
+        <div class="salary-row"><span class="label">午餐补贴</span><span class="value">¥345</span></div>
+        <div class="salary-row total"><span class="label">应发合计</span><span class="value">¥18,545</span></div>
+      </div>
+      <div class="salary-section">
+        <h4>🏢 社保公积金（公司）</h4>
+        <div class="salary-row"><span class="label">养老(公司)</span><span class="value">¥760.00</span></div>
+        <div class="salary-row"><span class="label">医疗(公司)</span><span class="value">¥508.00</span></div>
+        <div class="salary-row"><span class="label">失业(公司)</span><span class="value">¥32.00</span></div>
+        <div class="salary-row"><span class="label">工伤(公司)</span><span class="value">¥10.16</span></div>
+        <div class="salary-row"><span class="label">生育(公司)</span><span class="value">¥40.64</span></div>
+        <div class="salary-row"><span class="label">公积金(公司)</span><span class="value">¥1,200.00</span></div>
+        <div class="salary-row"><span class="label">残保金(公司)</span><span class="value">¥50.16</span></div>
+        <div class="salary-row total"><span class="label">公司合计</span><span class="value">¥2,600.96</span></div>
+      </div>
+      <div class="salary-section">
+        <h4>👤 社保公积金（个人）</h4>
+        <div class="salary-row"><span class="label">养老(个人)</span><span class="value">¥320.00</span></div>
+        <div class="salary-row"><span class="label">医疗(个人)</span><span class="value">¥104.60</span></div>
+        <div class="salary-row"><span class="label">失业(个人)</span><span class="value">¥8.00</span></div>
+        <div class="salary-row"><span class="label">公积金(个人)</span><span class="value">¥1,200.00</span></div>
+        <div class="salary-row total"><span class="label">个人合计</span><span class="value">¥1,632.60</span></div>
+      </div>
+      <div class="salary-section">
+        <h4>📊 个税（累计预扣法）</h4>
+        <div class="salary-row"><span class="label">税前金额</span><span class="value">¥16,903.28</span></div>
+        <div class="salary-row"><span class="label">累计收入(1-6月)</span><span class="value">¥101,419.68</span></div>
+        <div class="salary-row"><span class="label">累计应纳税所得额</span><span class="value">¥37,419.68</span></div>
+        <div class="salary-row"><span class="label">适用税率</span><span class="value">10%</span></div>
+        <div class="salary-row"><span class="label">速算扣除数</span><span class="value">¥2,520</span></div>
+        <div class="salary-row total"><span class="label">本月个税</span><span class="value" style="color:var(--danger)">¥2,345.82</span></div>
+      </div>
+      <div class="salary-section" style="background:var(--success-bg);border:1px solid rgba(5,150,105,0.2)">
+        <h4 style="color:var(--success)">✅ 实发</h4>
+        <div class="salary-row total" style="font-size:18px"><span class="label">实发工资</span><span class="value" style="color:var(--success)">¥14,557.46</span></div>
+      </div>
+      <div class="salary-section">
+        <h4>🏢 公司成本</h4>
+        <div class="salary-row total"><span class="label">公司成本</span><span class="value">¥22,396.12</span></div>
+        <div style="font-size:12px;color:var(--gray-500);margin-top:8px">= 应发 ¥18,545 + 社保公积金(公司) ¥2,600.96 + 残保金(公司) ¥50.16 + 公积金(公司) ¥1,200.00</div>
+      </div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-outline">打印工资条</button><button class="btn btn-outline" onclick="hideModal('modal-record-detail')">关闭</button></div>
+  </div>
+</div>
+
+<!-- 批次详情 -->
+<div id="modal-batch-detail" class="modal-overlay" onclick="if(event.target===this)hideModal('modal-batch-detail')">
+  <div class="modal" style="max-width:1100px">
+    <div class="modal-header"><h3>批次详情 SB-202606 · 2026年6月薪资</h3><button class="modal-close" onclick="hideModal('modal-batch-detail')">×</button></div>
+    <div class="modal-body">
+      <div style="display:flex;gap:24px;margin-bottom:20px;padding:16px;background:var(--gray-50);border-radius:var(--radius)">
+        <div><span style="font-size:12px;color:var(--gray-500)">状态</span><br><span class="tag tag-warning">审批中</span></div>
+        <div><span style="font-size:12px;color:var(--gray-500)">人数</span><br><strong>156人</strong></div>
+        <div><span style="font-size:12px;color:var(--gray-500)">应发合计</span><br><strong>¥852,340</strong></div>
+        <div><span style="font-size:12px;color:var(--gray-500)">实发合计</span><br><strong>¥621,580</strong></div>
+        <div><span style="font-size:12px;color:var(--gray-500)">公司成本</span><br><strong>¥1,024,150</strong></div>
+      </div>
+      <div class="btn-group" style="margin-bottom:16px">
+        <button class="btn btn-outline btn-sm">🔄 重新生成</button>
+        <button class="btn btn-primary btn-sm">📤 提交审批</button>
+        <button class="btn btn-outline btn-sm">📥 导出Excel</button>
+      </div>
+      <div class="filters" style="margin-bottom:12px">
+        <select class="filter-select"><option>全部部门</option><option>临床运营部</option><option>医学部</option></select>
+        <select class="filter-select"><option>全部岗位</option><option>PM</option><option>CRA</option></select>
+        <div class="search-input"><input type="text" class="filter-input" placeholder="搜索姓名..."></div>
+      </div>
+      <div class="table-wrapper">
+        <table>
+          <thead><tr><th>姓名</th><th>部门</th><th>岗位</th><th>职级</th><th>应发合计</th><th>社保(个人)</th><th>公积金(个人)</th><th>个税</th><th>实发</th><th>操作</th></tr></thead>
+          <tbody>
+            <tr><td><strong>王英辉</strong></td><td>医学运营部</td><td>PM</td><td>B-2</td><td>¥18,545</td><td>¥432.60</td><td>¥1,200</td><td>¥2,345.82</td><td>¥14,557.46</td><td><button class="btn btn-outline btn-sm" onclick="hideModal('modal-batch-detail');showModal('modal-record-detail')">明细</button></td></tr>
+            <tr><td><strong>刘艳丽</strong></td><td>医学运营部</td><td>PM</td><td>B-3</td><td>¥18,545</td><td>¥432.60</td><td>¥480</td><td>¥2,527.82</td><td>¥15,103.46</td><td><button class="btn btn-outline btn-sm">明细</button></td></tr>
+            <tr><td><strong>李文艳</strong></td><td>医学运营部</td><td>CRA</td><td>C</td><td>¥9,545</td><td>¥270.96</td><td>¥312</td><td>¥508.31</td><td>¥8,308.23</td><td><button class="btn btn-outline btn-sm">明细</button></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="summary-bar">
+        <span>共 <strong>156</strong> 人</span>
+        <span>应发 <strong>¥852,340</strong></span>
+        <span>社保(个人) <strong>¥54,230</strong></span>
+        <span>公积金(个人) <strong>¥48,672</strong></span>
+        <span>个税 <strong>¥128,860</strong></span>
+        <span>实发 <strong>¥621,580</strong></span>
+      </div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-outline" onclick="hideModal('modal-batch-detail')">关闭</button></div>
+  </div>
+</div>
+
+<!-- 新增社保配置 -->
+<div id="modal-new-social" class="modal-overlay" onclick="if(event.target===this)hideModal('modal-new-social')">
+  <div class="modal">
+    <div class="modal-header"><h3>新增社保公积金配置</h3><button class="modal-close" onclick="hideModal('modal-new-social')">×</button></div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group"><label>区域代码 <span class="required">*</span></label><input type="text" placeholder="如BJ, QC"></div>
+        <div class="form-group"><label>区域名称 <span class="required">*</span></label><input type="text" placeholder="如北京, 齐齐哈尔"></div>
+        <div class="form-group"><label>适用年度 <span class="required">*</span></label><input type="number" value="2026"></div>
+        <div class="form-group"><label>缴纳基数下限 <span class="required">*</span></label><input type="number" placeholder="0"></div>
+        <div class="form-group"><label>缴纳基数上限 <span class="required">*</span></label><input type="number" placeholder="0"></div>
+        <div class="form-group"><label>养老(公司%) <span class="required">*</span></label><input type="number" step="0.1" value="16"></div>
+        <div class="form-group"><label>养老(个人%) <span class="required">*</span></label><input type="number" step="0.1" value="8"></div>
+        <div class="form-group"><label>医疗(公司%) <span class="required">*</span></label><input type="number" step="0.1" value="9.8"></div>
+        <div class="form-group"><label>医疗(个人%) <span class="required">*</span></label><input type="number" step="0.1" value="2"></div>
+        <div class="form-group"><label>失业(公司%) <span class="required">*</span></label><input type="number" step="0.1" value="0.5"></div>
+        <div class="form-group"><label>失业(个人%) <span class="required">*</span></label><input type="number" step="0.1" value="0.5"></div>
+        <div class="form-group"><label>工伤(公司%) <span class="required">*</span></label><input type="number" step="0.1" value="0.2"></div>
+        <div class="form-group"><label>工伤(个人%)</label><input type="number" step="0.1" value="0"></div>
+        <div class="form-group"><label>生育(公司%) <span class="required">*</span></label><input type="number" step="0.1" value="0.8"></div>
+        <div class="form-group"><label>生育(个人%)</label><input type="number" step="0.1" value="0"></div>
+        <div class="form-group"><label>公积金(公司%) <span class="required">*</span></label><input type="number" step="0.1" value="12"></div>
+        <div class="form-group"><label>公积金(个人%) <span class="required">*</span></label><input type="number" step="0.1" value="12"></div>
+        <div class="form-group"><label>残保金(公司%)</label><input type="number" step="0.1" value="1.5"></div>
+        <div class="form-group"><label>残保金(个人%)</label><input type="number" step="0.1" value="0"></div>
+      </div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-outline" onclick="hideModal('modal-new-social')">取消</button><button class="btn btn-primary">确认新增</button></div>
+  </div>
+</div>
+
+</div>
+
+<script>
+function switchTab(tab){
+  document.querySelectorAll('.tab-content').forEach(el=>el.style.display='none');
+  document.querySelectorAll('.tabs .tab').forEach(el=>el.classList.remove('active'));
+  document.getElementById('tab-'+tab).style.display='block';
+  // Find matching tab and activate
+  const tabs=document.querySelectorAll('.tabs .tab');
+  const map={dashboard:0,batch:1,structure:2,detail:3,social:4,tax:5,report:6};
+  if(tabs[map[tab]])tabs[map[tab]].classList.add('active');
+}
+function showModal(id){document.getElementById(id).classList.add('show')}
+function hideModal(id){document.getElementById(id).classList.remove('show')}
+</script>
+</body>
+</html>
