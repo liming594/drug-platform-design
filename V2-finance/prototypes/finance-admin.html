@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CRO财务管理系统 - 综合管理层V2.0</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Microsoft YaHei',sans-serif;background:#f5f6fa;color:#1f2937;font-size:14px;line-height:1.5}
+
+/* ===== 顶部导航 ===== */
+.topbar{background:linear-gradient(135deg,#0369a1,#075985);color:#fff;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 8px rgba(0,0,0,.1)}
+.topbar-title{display:flex;align-items:center;gap:10px;font-size:18px;font-weight:700}
+.topbar-meta{font-size:12px;display:flex;gap:16px;align-items:center}
+.topbar-meta .badge-ver{background:rgba(255,255,255,.2);padding:2px 10px;border-radius:12px}
+.topbar-meta .user-role{background:rgba(255,255,255,.15);padding:4px 12px;border-radius:6px}
+
+/* ===== Tab导航 ===== */
+.tab-bar{background:#fff;border-bottom:1px solid #e5e7eb;padding:0 24px;display:flex;gap:0;overflow-x:auto}
+.tab-item{padding:14px 20px;cursor:pointer;font-size:14px;color:#6b7280;border-bottom:3px solid transparent;transition:all .2s;white-space:nowrap;display:flex;align-items:center;gap:6px}
+.tab-item:hover{color:#0369a1;background:#f0f9ff}
+.tab-item.active{color:#0369a1;border-bottom-color:#0369a1;font-weight:600}
+.tab-count{background:#e0f2fe;color:#0369a1;font-size:11px;padding:1px 7px;border-radius:10px;font-weight:600}
+
+/* ===== 主容器 ===== */
+.main{padding:16px 24px}
+.tab-panel{display:none}
+.tab-panel.active{display:block}
+
+/* ===== KPI行 ===== */
+.kpi-row{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:16px}
+.kpi-card{background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:14px 16px;display:flex;align-items:center;gap:12px;transition:box-shadow .2s}
+.kpi-card:hover{box-shadow:0 4px 12px rgba(0,0,0,.06)}
+.kpi-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.kpi-val{font-size:20px;font-weight:700;line-height:1.2}
+.kpi-label{font-size:12px;color:#6b7280;margin-top:2px}
+.kpi-trend{font-size:11px;margin-top:2px}
+
+/* ===== 工具栏 ===== */
+.toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px}
+.toolbar-left{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.toolbar-right{display:flex;gap:8px;align-items:center}
+.search-box{position:relative}
+.search-box input{padding:8px 12px 8px 32px;border:1px solid #e5e7eb;border-radius:8px;font-size:13px;width:220px;outline:none;transition:border-color .2s}
+.search-box input:focus{border-color:#0369a1}
+.search-box .search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#9ca3af;font-size:13px}
+select.filter{padding:8px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:13px;background:#fff;cursor:pointer;outline:none}
+select.filter:focus{border-color:#0369a1}
+
+/* ===== 按钮 ===== */
+.btn{padding:8px 16px;border-radius:8px;font-size:13px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;border:none;transition:all .2s;font-family:inherit}
+.btn-primary{background:#0369a1;color:#fff}
+.btn-primary:hover{background:#024e75}
+.btn-success{background:#059669;color:#fff}
+.btn-success:hover{background:#047857}
+.btn-outline{background:#fff;color:#374151;border:1px solid #e5e7eb}
+.btn-outline:hover{background:#f8fafc}
+.btn-danger{background:#fef2f2;color:#dc2626;border:1px solid #fecaca}
+.btn-edit{background:#f0f9ff;color:#0369a1;padding:5px 10px;font-size:12px}
+.btn-sm{background:#f8fafc;color:#374151;border:1px solid #e5e7eb;padding:5px 10px;border-radius:6px;font-size:12px;cursor:pointer}
+.btn-sm:hover{background:#f0f9ff;color:#0369a1}
+
+/* ===== 表格 ===== */
+.table-wrap{overflow-x:auto;border:1px solid #e5e7eb;border-radius:10px;background:#fff;margin-bottom:16px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead th{padding:10px 12px;text-align:left;background:#f8fafc;color:#6b7280;font-weight:600;font-size:12px;border-bottom:1px solid #e5e7eb;white-space:nowrap}
+tbody td{padding:10px 12px;border-bottom:1px solid #f3f4f6;vertical-align:middle}
+tbody tr:hover{background:#f8fafc}
+tbody tr:last-child td{border-bottom:none}
+.row-overdue{background:#fef2f2}
+.row-overdue:hover{background:#fee2e2}
+
+/* ===== Badge ===== */
+.badge{display:inline-block;padding:2px 10px;border-radius:10px;font-size:11px;font-weight:600;white-space:nowrap}
+.badge-green{background:#dcfce7;color:#16a34a}
+.badge-blue{background:#dbeafe;color:#2563eb}
+.badge-orange{background:#fef3c7;color:#d97706}
+.badge-red{background:#fee2e2;color:#dc2626}
+.badge-gray{background:#f3f4f6;color:#6b7280}
+.badge-purple{background:#f5f3ff;color:#7c3aed}
+.badge-cyan{background:#cffafe;color:#0891b2}
+
+/* ===== 子Tab ===== */
+.subtab-bar{display:flex;gap:0;border-bottom:1px solid #e5e7eb;margin-bottom:14px}
+.subtab-item{padding:8px 16px;font-size:13px;color:#6b7280;cursor:pointer;border-bottom:2px solid transparent;transition:all .2s}
+.subtab-item:hover{color:#0369a1}
+.subtab-item.active{color:#0369a1;border-bottom-color:#0369a1;font-weight:600}
+.subtab-item .subtab-count{background:#f0f9ff;color:#0369a1;font-size:11px;padding:1px 6px;border-radius:8px;margin-left:4px}
+
+/* ===== 模态框 ===== */
+.modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.4);z-index:10000;display:none;align-items:center;justify-content:center}
+.modal-overlay.show{display:flex}
+.modal-box{background:#fff;border-radius:12px;width:600px;max-width:90vw;max-height:85vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+.modal-box.lg{width:760px}
+.modal-header{display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1px solid #e5e7eb;position:sticky;top:0;background:#fff;z-index:1}
+.modal-header h4{font-size:15px;color:#1f2937;display:flex;align-items:center;gap:8px}
+.modal-close{background:none;border:none;font-size:22px;cursor:pointer;color:#9ca3af;padding:4px;line-height:1}
+.modal-close:hover{color:#374151}
+.modal-body{padding:20px}
+.modal-footer{display:flex;justify-content:flex-end;gap:8px;padding:14px 20px;border-top:1px solid #e5e7eb;background:#fafafa;position:sticky;bottom:0}
+
+/* ===== 表单 ===== */
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.form-row.full{grid-template-columns:1fr}
+.form-group label{display:block;font-size:13px;color:#374151;font-weight:500;margin-bottom:6px}
+.form-group label .req{color:#dc2626}
+.form-group input,.form-group select,.form-group textarea{width:100%;padding:9px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:13px;outline:none;transition:border-color .2s;font-family:inherit}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:#0369a1;box-shadow:0 0 0 3px rgba(3,105,161,.08)}
+.form-group input[readonly]{background:#f8fafc;color:#6b7280}
+.form-divider{border:none;border-top:1px dashed #e5e7eb;margin:14px 0}
+.form-hint{font-size:12px;color:#9ca3af;margin-top:4px}
+
+/* ===== 信息展示块 ===== */
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+.info-item{}
+.info-label{font-size:12px;color:#6b7280;margin-bottom:2px}
+.info-value{font-size:14px;color:#1f2937;font-weight:500}
+.info-section-title{font-size:13px;font-weight:600;color:#374151;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid #e5e7eb}
+
+/* ===== 审批时间线 ===== */
+.timeline{padding:0 0 0 16px;border-left:2px solid #e5e7eb;margin:12px 0}
+.timeline-item{position:relative;padding:0 0 16px 16px}
+.timeline-item:last-child{padding-bottom:0}
+.timeline-dot{position:absolute;left:-22px;top:2px;width:12px;height:12px;border-radius:50%;border:2px solid #fff}
+.timeline-dot.done{background:#16a34a}
+.timeline-dot.current{background:#d97706}
+.timeline-dot.pending{background:#d1d5db}
+.timeline-time{font-size:12px;color:#9ca3af}
+.timeline-title{font-size:13px;font-weight:500;color:#374151;margin-top:2px}
+.timeline-desc{font-size:12px;color:#6b7280;margin-top:2px}
+
+/* ===== 盈亏卡片 ===== */
+.profit-card-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+.profit-card{background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:16px;position:relative;overflow:hidden}
+.profit-card::before{content:'';position:absolute;top:0;left:0;width:4px;height:100%}
+.profit-card.green::before{background:#16a34a}
+.profit-card.blue::before{background:#0369a1}
+.profit-card.orange::before{background:#d97706}
+.profit-card.red::before{background:#dc2626}
+.profit-card-title{font-size:13px;font-weight:600;color:#1f2937;margin-bottom:8px}
+.profit-card-row{display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px}
+.profit-card-row .lbl{color:#6b7280}
+.profit-card-row .val{font-weight:600}
+.profit-card-profit{font-size:22px;font-weight:700;margin-top:8px}
+.profit-card-rate{font-size:13px;margin-top:2px}
+
+/* ===== 进度条 ===== */
+.progress-bar{width:80px;height:6px;background:#f3f4f6;border-radius:3px;overflow:hidden;display:inline-block;vertical-align:middle}
+.progress-fill{height:100%;border-radius:3px}
+
+/* ===== 审计行 ===== */
+.severity-high td:first-child{border-left:3px solid #dc2626}
+.severity-mid td:first-child{border-left:3px solid #d97706}
+.severity-low td:first-child{border-left:3px solid #2563eb}
+
+/* ===== 说明栏 ===== */
+.note-bar{background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;padding:10px 14px;font-size:12px;color:#0369a1;margin-bottom:12px}
+
+/* ===== Toast ===== */
+.toast{position:fixed;top:20px;right:20px;z-index:99999;padding:12px 20px;border-radius:10px;color:#fff;font-size:13px;box-shadow:0 4px 20px rgba(0,0,0,.15);display:flex;align-items:center;gap:8px}
+.toast-success{background:#059669}
+.toast-error{background:#dc2626}
+.toast-info{background:#0369a1}
+
+/* ===== 分页 ===== */
+.pagination{display:flex;justify-content:center;align-items:center;gap:6px;margin-top:14px}
+.pagination button{padding:6px 12px;border:1px solid #e5e7eb;border-radius:6px;background:#fff;cursor:pointer;font-size:12px;color:#374151}
+.pagination button.active{background:#0369a1;color:#fff;border-color:#0369a1}
+.pagination .page-info{font-size:12px;color:#6b7280;margin:0 8px}
+
+/* ===== 分区标题 ===== */
+.section-title{font-size:14px;font-weight:600;color:#374151;margin:16px 0 8px}
+</style>
+</head>
+<body>
+
+<!-- ===== 顶部导航 ===== -->
+<div class="topbar">
+  <div class="topbar-title">💰 CRO财务管理系统</div>
+  <div class="topbar-meta">
+    <span class="badge-ver">V2.0 综合管理层</span>
+    <span class="user-role">👤 财务管理员 · 张敏</span>
+  </div>
+</div>
+
+<!-- ===== Tab导航 ===== -->
+<div class="tab-bar">
+  <div class="tab-item active" onclick="switchTab('income',event)">📥 收入管理 <span class="tab-count">12</span></div>
+  <div class="tab-item" onclick="switchTab('expense',event)">📤 支出管理 <span class="tab-count">38</span></div>
+  <div class="tab-item" onclick="switchTab('invoice',event)">🧾 票据视图 <span class="tab-count">15</span></div>
+  <div class="tab-item" onclick="switchTab('settlement',event)">⚖️ 结算管理 <span class="tab-count">6</span></div>
+  <div class="tab-item" onclick="switchTab('profit',event)">📊 项目盈亏 <span class="tab-count">5</span></div>
+  <div class="tab-item" onclick="switchTab('audit',event)">🚨 审计告警 <span class="tab-count">9</span></div>
+</div>
+
+<!-- ===== 主容器 ===== -->
+<div class="main">
+
+<!-- ================================================================ -->
+<!-- Tab1: 收入管理 -->
+<!-- ================================================================ -->
+<div class="tab-panel active" id="panel-income">
+
+  <div class="kpi-row">
+    <div class="kpi-card">
+      <div class="kpi-icon" style="background:#fff7ed;color:#ea580c;">📄</div>
+      <div><div class="kpi-val" style="color:#ea580c;">¥1,286.5万</div><div class="kpi-label">应收总额</div></div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon" style="background:#dcfce7;color:#16a34a;">✓</div>
+      <div><div class="kpi-val" style="color:#16a34a;">¥842.3万</div><div class="kpi-label">已收总额</div><div class="kpi-trend" style="color:#16a34a;">收款率 65.5%</div></div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon" style="background:#fee2e2;color:#dc2626;">⏰</div>
+      <div><div class="kpi-val" style="color:#dc2626;">¥444.2万</div><div class="kpi-label">待收余额</div><div class="kpi-trend" style="color:#dc2626;">含逾期¥86.5万</div></div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon" style="background:#dbeafe;color:#2563eb;">🧾</div>
+      <div><div class="kpi-val" style="color:#2563eb;">¥713.7万</div><div class="kpi-label">已开票总额</div></div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon" style="background:#fef3c7;color:#d97706;">⚠️</div>
+      <div><div class="kpi-val" style="color:#d97706;">¥128.6万</div><div class="kpi-label">发票缺口</div><div class="kpi-trend" style="color:#6b7280;">已收未开票差额</div></div>
+    </div>
+  </div>
+
+  <!-- 收款记录 -->
+  <div class="section-title">收款记录</div>
+  <div class="toolbar">
+    <div class="toolbar-left">
+      <div class="search-box"><span class="search-icon">🔍</span><input type="text" placeholder="搜索合同号/申办方..." oninput="filterTable('income-collection-table',this.value)"></div>
+      <select class="filter"><option value="">全部状态</option><option>待收款</option><option>部分收款</option><option>已收款</option><option>逾期</option></select>
+      <select class="filter"><option value="">全部项目</option><option>SINO202505001 吉源干细胞项目</option><option>SINO202504003 慢病真实世界研究</option><option>SINO202503002 肿瘤伴随诊断研究</option></select>
+    </div>
+    <div class="toolbar-right">
+      <button class="btn btn-outline" onclick="showToast('收款记录导出中...','info')">📥 导出</button>
+      <button class="btn btn-primary" onclick="openModal('modal-confirm-collection')">✓ 确认收款</button>
+    </div>
+  </div>
+  <div class="table-wrap">
+    <table id="income-collection-table">
+      <thead><tr><th>合同号</th><th>申办方</th><th>计划金额</th><th>实收金额</th><th>收款日期</th><th>状态</th><th>操作</th></tr></thead>
+      <tbody>
+        <tr><td><span style="color:#0369a1;font-weight:500;">HT-2026-001</span></td><td>吉源生物科技</td><td style="font-weight:500;">¥1,200,000</td><td style="color:#16a34a;font-weight:500;">¥1,200,000</td><td>2026-06-05</td><td><span class="badge badge-green">已收款</span></td><td><button class="btn-sm">查看</button></td></tr>
+        <tr><td><span style="color:#0369a1;font-weight:500;">HT-2026-001</span></td><td>吉源生物科技</td><td style="font-weight:500;">¥1,500,000</td><td style="color:#d97706;font-weight:500;">¥800,000</td><td>2026-06-15</td><td><span class="badge badge-orange">部分收款</span></td><td><button class="btn-edit btn" onclick="openModal('modal-confirm-collection')">补录收款</button></td></tr>
+        <tr><td><span style="color:#0369a1;font-weight:500;">HT-2026-003</span></td><td>慢病研究中心</td><td style="font-weight:500;">¥800,000</td><td style="color:#16a34a;font-weight:500;">¥800,000</td><td>2026-06-08</td><td><span class="badge badge-green">已收款</span></td><td><button class="btn-sm">查看</button></td></tr>
+        <tr><td><span style="color:#0369a1;font-weight:500;">HT-2026-002</span></td><td>肿瘤诊断公司</td><td style="font-weight:500;">¥865,000</td><td style="color:#dc2626;font-weight:500;">¥0</td><td>—</td><td><span class="badge badge-red">逾期</span></td><td><button class="btn-edit btn" onclick="openModal('modal-confirm-collection')">催收</button></td></tr>
+        <tr><td><span style="color:#0369a1;font-weight:500;">HT-2026-003</span></td><td>慢病研究中心</td><td style="font-weight:500;">¥1,000,000</td><td>—</td><td>—</td><td><span class="badge badge-gray">待收款</span></td><td><button class="btn-edit btn" onclick="openModal('modal-confirm-collection')">录入</button></td></tr>
+        <tr><td><span style="color:#0369a1;font-weight:500;">HT-2026-001</span></td><td>吉源生物科技</td><td style="font-weight:500;">¥1,200,000</td><td>—</td><td>—</td><td><span class="badge badge-gray">待收款</span></td><td><button class="btn-edit btn" onclick="openModal('modal-confirm-collection')">录入</button></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 销项发票列表 -->
+  <div class="section-title">销项发票列表</div>
+  <div class="toolbar">
+    <div class="toolbar-left">
+      <div class="search-box"><span class="search-icon">🔍</span><input type="text" placeholder="搜索发票号/申办方..." oninput="filterTable('income-invoice-table',this.value)"></div>
+    </div>
+    <div class="toolbar-right">
+      <button class="btn btn-primary" onclick="openModal('modal-issue-invoice')">🧾 开票</button>
+    </div>
+  </div>
+  <div class="table-wrap">
+    <table id="income-invoice-table">
+      <thead><tr><th>发票号</th><th>申办方</th><th>金额</th><th>税率</th><th>开票日期</th><th>状态</th><th>操作</th></tr></thead>
+      <tbody>
+        <tr><td><span style="color:#0369a1;font-weight:500;">FP-20260605-001</span></td><td>吉源生物科技</td><td style="font-weight:500;">¥1,200,000</td><td>6%</td><td>2026-06-08</td><td><span class="badge badge-green">已开具</span></td><td><button class="btn-sm">查看</button></td></tr>
+        <tr><td><span style="color:#0369a1;font-weight:500;">FP-20260608-002</span></td><td>慢病研究中心</td><td style="font-weight:500;">¥800,000</td><td>6%</td><td>2026-06-10</td><td><span class="badge badge-green">已开具</span></td><td><button class="btn-sm">查看</button></td></tr>
+        <tr><td><span style="color:#0369a1;font-weight:500;">FP-20260612-003</span></td><td>吉源生物科技</td><td style="font-weight:500;">¥754,717</td><td>6%</td><td>2026-06-15</td><td><span class="badge badge-orange">待审批</span></td><td><button class="btn-sm">查看</button></td></tr>
+        <tr><td><span style="color:#0369a1;font-weight:500;">FP-20260618-004</span></td><td>肿瘤诊断公司</td><td style="font-weight:500;">¥500,000</td><td>6%</td><td>2026-06-18</td><td><span class="badge badge-orange">待审批</span></td><td><button class="btn-sm">查看</button></td></tr>
+        <tr><td><span style="color:#0369a1;font-weight:500;">FP-20260601-005</span></td><td>恒瑞医药</td><td style="font-weight:500;">¥2,000,000</td><td>6%</td><td>2026-06-01</td><td><span class="badge badge-green">已开具</span></td><td><button class="btn-sm">查看</button></td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- Tab2: 支出管理 -->
+<!-- ================================================================ -->
+<div class="tab-panel" id="panel-expense">
+
+  <div class="kpi-row" style="grid-template-columns:repeat(4,1fr);">
+    <div class="kpi-card"><div class="kpi-icon" style="background:#dbeafe;color:#2563eb;">📤</div><div><div class="kpi-val" style="color:#2563eb;">¥520.0万</div><div class="kpi-label">支出总额</div></div></div>
+    <div class="kpi-card"><div class="kpi-icon" style="background:#fef3c7;color:#d97706;">⏳</div><div><div class="kpi-val" style="color:#d97706;">12</div><div class="kpi-label">待审批</div></div></div>
+    <div class="kpi-card"><div class="kpi-icon" style="background:#dcfce7;color:#16a34a;">✓</div><div><div class="kpi-val" style="color:#16a34a;">26</div><div class="kpi-label">已审批</div></div></div>
+    <div class="kpi-card"><div class="kpi-icon" style="background:#fee2e2;color:#dc2626;">⚠️</div><div><div class="kpi-val" style="color:#dc2626;">3</div><div class="kpi-label">待补票</div></div></div>
+  </div>
+
+  <!-- 子Tab -->
+  <div class="subtab-bar">
+    <div class="subtab-item active" onclick="switchSubTab('expense-all',this)">全部 <span class="subtab-count">38</span></div>
+    <div class="subtab-item" onclick="switchSubTab('expense-reimburse',this)">报销 <span class="subtab-count">22</span></div>
+    <div class="subtab-item" onclick="switchSubTab('expense-loan',this)">借款 <span class="subtab-count">8</span></div>
+    <div class="subtab-item" onclick="switchSubTab('expense-vendor',this)">供应商付款 <span class="subtab-count">8</span></div>
+  </div>
+
+  <!-- 筛选 -->
+  <div class="toolbar">
+    <div class="toolbar-left">
+      <select class="filter"><option value="">全部类型</option><option>日常报销</option><option>员工借款</option><option>供应商付款</option></select>
+      <select class="filter"><option value="">全部状态</option><option>草稿</option><option>待审批</option><option>已审批</option><option>已付款</option><option>已驳回</option></select>
+      <select class="filter"><option value="">全部项目</option><option>SINO202505001 吉源干细胞项目</option><option>SINO202504003 慢病真实世界研究</option><option>SINO202503002 肿瘤伴随诊断研究</option><option>无项目（部门预算）</option></select>
+      <input type="date" class="filter" value="2026-06-01" style="width:auto;">
+      <span style="color:#9ca3af;font-size:12px;">至</span>
+      <input type="date" class="filter" value="2026-06-30" style="width:auto;">
+    </div>
+    <div class="toolbar-right">
+      <button class="btn btn-outline" onclick="openModal('modal-transfer')">📋 单据转移</button>
+      <button class="btn btn-outline" onclick="showToast('支出记录导出中...','info')">📥 导出</button>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <table id="expense-table">
+      <thead><tr><th>单据编号</th><th>类型</th><th>项目</th><th>金额</th><th>预算归属</th><th>发票状态</th><th>提交人</th><th>状态</th><th>日期</th><th>操作</th></tr></thead>
+      <tbody>
+        <tr><td><span style="color:#0369a1;font-weight:500;">PAY-20260620-001</span></td><td><span class="badge badge-blue">报销</span></td><td>SINO202505001</td><td style="font-weight:500;">¥3,500.00</td><td>项目预算</td><td><span class="badge badge-green">已附票</span></td><td>李明</td><td><span class="badge badge-blue">已付款</span></td><td>2026-06-15</td><td><button class="btn-edit btn" onclick="openModal('modal-expense-detail')">详情</button> <button class="btn-sm">打印</button></td></tr>
+        <tr><td><span style="color:#0369a1;font-weight:500;">PAY-20260618-002</span></td><td><span class="badge badge-purple">供应商付款</span></td><td>SINO202504003</td><td style="font-weight:500;">¥86,000.00</td><td>项目预算</td><td><span class="badge badge-red">待补票</span></td><td>王芳</td><td><span class="badge badge-green">已审批</span></td><td>2026-06-12</td><td><button class="btn-edit btn" onclick="openModal('modal-expense-detail')">详情</button> <button class="btn-edit btn" onclick="openModal('modal-supply-invoice')">补票</button></td></tr>
+        <tr><td><span style="color:#0369a1;font-weight:500;">PAY-20260617-003</span></td><td><span class="badge badge-cyan">借款</span></td><td>—</td><td style="font-weight:500;">¥10,000.00</td><td>部门预算</td><td><span class="badge badge-gray">不适用</span></td><td>赵强</td><td><span class="badge badge-orange">待审批</span></td><td>2026-06-10</td><td><button class="btn-edit btn" onclick="openModal('modal-approve')">审批</button> <button class="btn-edit btn" onclick="openModal('modal-expense-detail')">详情</button></td></tr>
+        <tr><td><span style="color:#0369a1;font-weight:500;">PAY-20260615-004</span></td><td><span class="badge badge-blue">报销</span></td><td>SINO202503002</td><td style="font-weight:500;">¥1,280.00</td><td>项目预算</td><td><span class="badge badge-green">已附票</span></td><td>陈静</td><td><span class="badge badge-orange">待审批</span></td><td>2026-06-10</td><td><button class="btn-edit btn" onclick="openModal('modal-approve')">审批</button> <button class="btn-edit btn" onclick="openModal('modal-expense-detail')">详情</button></td></tr>
+        <tr><td><span style="color:#0369a1;font-weight:500;">PAY-20260612-005</span></td><td><span class="badge badge-purple">供应商付款</span></td><td>SINO202505001</td><td style="font-weight:500;">¥128,000.00</td><td>项目预算</td><td><span class="badge badge-green">已附票</span></td><td>李明</td><td><span class="badge badge-green">已审批</span></td><td>2026-06-08</td><td><button class="btn-edit btn" onclick="openModal('modal-expense-detail')">详情</button></td></tr>
+        <tr><td><span style="color:#0369a1;font-weight:500;">PAY-20260610-006</span></td><td><span class="badge badge-cyan">借款</span></td><td>—</td><td style="font-weight:500;">¥5,000.00</td><td>部门预算</td><td><span class="badge badge-gray">不适用</span></td><td>孙伟</td><td><span class="badge badge-blue">已付款</span></td><td>2026-06-05</td><td><button class="btn-edit btn" onclick="openModal('modal-expense-detail')">详情</button></td></tr>
+        <tr><td><span style="color:#0369a1;font-weight:500;">PAY-20260608-007</span></td><td><span class="badge badge-blue">报销</span></td><td>无项目</td><td style="font-weight:500;">¥2,650.00</td><td>部门预算</td><td><span class="badge badge-green">已附票</span></td><td>周婷</td><td><span class="badge badge-red">已驳回</span></td><td>2026-06-03</td><td><button class="btn-edit btn" onclick="openModal('modal-expense-detail')">详情</button></td></tr>
+        <tr><td><span style="color:#0369a1;font-weight:500;">PAY-20260605-008</span></td><td><span class="badge badge-purple">供应商付款</span></td><td>SINO202504003</td><td style="font-weight:500;">¥72,000.00</td><td>项目预算</td><td><span class="badge badge-red">待补票</span></td><td>王芳</td><td><span class="badge badge-blue">已付款</span></td><td>2026-06-01</td><td><button class="btn-edit btn" onclick="openModal('modal-expense-detail')">详情</button> <button class="btn-edit btn" onclick="openModal('modal-supply-invoice')">补票</button></td></tr>
+        <tr><td><span style="color:#0369a1;font-weight:500;">PAY-20260603-009</span></td><td><span class="badge badge-blue">报销</span></td><td>SINO202505001</td><td style="font-weight:500;">¥5,800.00</td><td>项目预算</td><td><span class="badge badge-green">已附票</span></td><td>李明</td><td><span class="badge badge-blue">已付款</span></td><td>2026-05-28</td><td><button class="btn-edit btn" onclick="openModal('modal-expense-detail')">详情</button></td></tr>
+        <tr><td><span style="color:#0369a1;font-weight:500;">PAY-20260601-010</span></td><td><span class="badge badge-cyan">借款</span></td><td>—</td><td style="font-weight:500;">¥15,000.00</td><td>部门预算</td><td><span class="badge badge-gray">不适用</span></td><td>赵强</td><td><span class="badge badge-green">已审批</span></td><td>2026-05-25</td><td><button class="btn-edit btn" onclick="openModal('modal-expense-detail')">详情</button></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="pagination">
+    <button>‹</button><button class="active">1</button><button>2</button><button>3</button><button>4</button><button>›</button><span class="page-info">共38条记录</span>
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- Tab3: 票据视图 -->
+<!-- ================================================================ -->
+<div class="tab-panel" id="panel-invoice">
+
+  <div class="subtab-bar">
+    <div class="subtab-item active" onclick="switchSubTab('inv-input',this)">进项发票 <span class="subtab-count">18</span></div>
+    <div class="subtab-item" onclick="switchSubTab('inv-output',this)">销项发票 <span class="subtab-count">5</span></div>
+    <div class="subtab-item" onclick="switchSubTab('inv-pending',this)">待补票提醒 <span class="subtab-count">3</span></div>
+  </div>
+
+  <!-- 进项发票 -->
+  <div id="subtab-inv-input" style="display:block;">
+    <div class="section-title">进项发票（从支出流水提取）</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>发票号</th><th>来源单据</th><th>金额</th><th>税率</th><th>日期</th><th>状态</th></tr></thead>
+        <tbody>
+          <tr><td><span style="color:#0369a1;font-weight:500;">01234567890</span></td><td>PAY-20260620-001 日常报销</td><td style="font-weight:500;">¥3,500.00</td><td>6%</td><td>2026-06-15</td><td><span class="badge badge-green">已核销</span></td></tr>
+          <tr><td><span style="color:#0369a1;font-weight:500;">02345678901</span></td><td>PAY-20260612-005 供应商付款</td><td style="font-weight:500;">¥128,000.00</td><td>3%</td><td>2026-06-08</td><td><span class="badge badge-green">已核销</span></td></tr>
+          <tr><td><span style="color:#0369a1;font-weight:500;">03456789012</span></td><td>PAY-20260615-004 日常报销</td><td style="font-weight:500;">¥1,280.00</td><td>6%</td><td>2026-06-10</td><td><span class="badge badge-green">已核销</span></td></tr>
+          <tr><td><span style="color:#0369a1;font-weight:500;">04567890123</span></td><td>PAY-20260603-009 日常报销</td><td style="font-weight:500;">¥5,800.00</td><td>6%</td><td>2026-05-28</td><td><span class="badge badge-green">已核销</span></td></tr>
+          <tr><td><span style="color:#0369a1;font-weight:500;">05678901234</span></td><td>PAY-20260601-010 供应商付款</td><td style="font-weight:500;">¥80,000.00</td><td>3%</td><td>2026-05-25</td><td><span class="badge badge-green">已核销</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 销项发票 -->
+  <div id="subtab-inv-output" style="display:none;">
+    <div class="section-title">销项发票（从收款提取）</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>发票号</th><th>收款单据</th><th>申办方</th><th>金额</th><th>税率</th><th>日期</th><th>状态</th></tr></thead>
+        <tbody>
+          <tr><td><span style="color:#0369a1;font-weight:500;">FP-20260605-001</span></td><td>SK-2026-001</td><td>吉源生物科技</td><td style="font-weight:500;">¥1,200,000</td><td>6%</td><td>2026-06-08</td><td><span class="badge badge-green">已开具</span></td></tr>
+          <tr><td><span style="color:#0369a1;font-weight:500;">FP-20260608-002</span></td><td>SK-2026-003</td><td>慢病研究中心</td><td style="font-weight:500;">¥800,000</td><td>6%</td><td>2026-06-10</td><td><span class="badge badge-green">已开具</span></td></tr>
+          <tr><td><span style="color:#0369a1;font-weight:500;">FP-20260612-003</span></td><td>SK-2026-002</td><td>吉源生物科技</td><td style="font-weight:500;">¥754,717</td><td>6%</td><td>2026-06-15</td><td><span class="badge badge-orange">待审批</span></td></tr>
+          <tr><td><span style="color:#0369a1;font-weight:500;">FP-20260618-004</span></td><td>—</td><td>肿瘤诊断公司</td><td style="font-weight:500;">¥500,000</td><td>6%</td><td>2026-06-18</td><td><span class="badge badge-orange">待审批</span></td></tr>
+          <tr><td><span style="color:#0369a1;font-weight:500;">FP-20260601-005</span></td><td>SK-2026-004</td><td>恒瑞医药</td><td style="font-weight:500;">¥2,000,000</td><td>6%</td><td>2026-06-01</td><td><span class="badge badge-green">已开具</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 待补票提醒 -->
+  <div id="subtab-inv-pending" style="display:none;">
+    <div class="note-bar">⚠️ 以下单据已付款但未附发票，超过30天将标记为逾期。请尽快联系经办人补票。</div>
+    <div class="section-title">待补票提醒</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>单据编号</th><th>类型</th><th>金额</th><th>付款日期</th><th>逾期天数</th><th>状态</th><th>操作</th></tr></thead>
+        <tbody>
+          <tr class="row-overdue"><td><span style="color:#0369a1;font-weight:500;">PAY-20260515-011</span></td><td>供应商付款</td><td style="font-weight:500;">¥45,000.00</td><td>2026-05-15</td><td style="color:#dc2626;font-weight:600;">36天</td><td><span class="badge badge-red">已逾期</span></td><td><button class="btn-edit btn" onclick="openModal('modal-supply-invoice')">补票</button></td></tr>
+          <tr class="row-overdue"><td><span style="color:#0369a1;font-weight:500;">PAY-20260510-012</span></td><td>供应商付款</td><td style="font-weight:500;">¥32,000.00</td><td>2026-05-10</td><td style="color:#dc2626;font-weight:600;">41天</td><td><span class="badge badge-red">已逾期</span></td><td><button class="btn-edit btn" onclick="openModal('modal-supply-invoice')">补票</button></td></tr>
+          <tr><td><span style="color:#0369a1;font-weight:500;">PAY-20260605-008</span></td><td>供应商付款</td><td style="font-weight:500;">¥72,000.00</td><td>2026-06-05</td><td style="color:#d97706;font-weight:600;">15天</td><td><span class="badge badge-orange">待补票</span></td><td><button class="btn-edit btn" onclick="openModal('modal-supply-invoice')">补票</button></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- Tab4: 结算管理 -->
+<!-- ================================================================ -->
+<div class="tab-panel" id="panel-settlement">
+
+  <div class="kpi-row" style="grid-template-columns:repeat(4,1fr);">
+    <div class="kpi-card"><div class="kpi-icon" style="background:#dcfce7;color:#16a34a;">✓</div><div><div class="kpi-val" style="color:#16a34a;">3</div><div class="kpi-label">已结算</div></div></div>
+    <div class="kpi-card"><div class="kpi-icon" style="background:#fef3c7;color:#d97706;">⏳</div><div><div class="kpi-val" style="color:#d97706;">2</div><div class="kpi-label">待结算</div></div></div>
+    <div class="kpi-card"><div class="kpi-icon" style="background:#fee2e2;color:#dc2626;">⚠️</div><div><div class="kpi-val" style="color:#dc2626;">1</div><div class="kpi-label">差异待核查</div></div></div>
+    <div class="kpi-card"><div class="kpi-icon" style="background:#dbeafe;color:#2563eb;">⚖️</div><div><div class="kpi-val" style="color:#2563eb;">¥318.3万</div><div class="kpi-label">净收入合计</div></div></div>
+  </div>
+
+  <div class="toolbar">
+    <div class="toolbar-left">
+      <div class="search-box"><span class="search-icon">🔍</span><input type="text" placeholder="搜索合同号/申办方..." oninput="filterTable('settlement-table',this.value)"></div>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <table id="settlement-table">
+      <thead><tr><th>合同号</th><th>申办方</th><th>计划收入</th><th>实际收入</th><th>计划支出</th><th>实际支出</th><th>差异</th><th>状态</th><th>操作</th></tr></thead>
+      <tbody>
+        <tr><td><span style="color:#0369a1;font-weight:500;">HT-2026-001</span></td><td>吉源生物科技</td><td>¥3,900,000</td><td style="color:#16a34a;font-weight:500;">¥2,000,000</td><td>¥1,500,000</td><td style="color:#dc2626;font-weight:500;">¥1,280,000</td><td style="color:#16a34a;">+¥720,000</td><td><span class="badge badge-orange">待结算</span></td><td><button class="btn-edit btn" onclick="openModal('modal-settlement-confirm')">确认结算</button></td></tr>
+        <tr><td><span style="color:#0369a1;font-weight:500;">HT-2026-002</span></td><td>肿瘤诊断公司</td><td>¥2,065,000</td><td style="color:#dc2626;font-weight:500;">¥0</td><td>¥800,000</td><td style="color:#dc2626;font-weight:500;">¥350,000</td><td style="color:#dc2626;font-weight:600;">-¥350,000</td><td><span class="badge badge-red">差异待核查</span></td><td><button class="btn-edit btn" onclick="openModal('modal-settlement-confirm')">核查</button></td></tr>
+        <tr><td><span style="color:#0369a1;font-weight:500;">HT-2026-003</span></td><td>慢病研究中心</td><td>¥1,800,000</td><td style="color:#16a34a;font-weight:500;">¥800,000</td><td>¥600,000</td><td style="color:#dc2626;font-weight:500;">¥420,000</td><td style="color:#16a34a;">+¥380,000</td><td><span class="badge badge-orange">待结算</span></td><td><button class="btn-edit btn" onclick="openModal('modal-settlement-confirm')">确认结算</button></td></tr>
+        <tr><td><span style="color:#0369a1;font-weight:500;">HT-2026-004</span></td><td>恒瑞医药</td><td>¥5,000,000</td><td style="color:#16a34a;font-weight:500;">¥3,000,000</td><td>¥2,000,000</td><td style="color:#dc2626;font-weight:500;">¥1,500,000</td><td style="color:#16a34a;">+¥1,500,000</td><td><span class="badge badge-green">已结算</span></td><td><button class="btn-sm">查看</button></td></tr>
+        <tr><td><span style="color:#0369a1;font-weight:500;">HT-2026-005</span></td><td>信达生物</td><td>¥1,500,000</td><td style="color:#16a34a;font-weight:500;">¥1,500,000</td><td>¥500,000</td><td style="color:#dc2626;font-weight:500;">¥480,000</td><td style="color:#16a34a;">+¥1,020,000</td><td><span class="badge badge-green">已结算</span></td><td><button class="btn-sm">查看</button></td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- Tab5: 项目盈亏 -->
+<!-- ================================================================ -->
+<div class="tab-panel" id="panel-profit">
+
+  <div class="note-bar">ℹ️ 成本只含项目预算EXPENSE（报销）和VENDOR_PAYMENT（供应商付款）。LOAN（借款）和部门预算不计入项目盈亏。</div>
+
+  <!-- 盈亏卡片 -->
+  <div class="profit-card-grid">
+    <div class="profit-card green">
+      <div class="profit-card-title">SINO202505001 吉源干细胞项目</div>
+      <div class="profit-card-row"><span class="lbl">收入</span><span class="val" style="color:#16a34a;">¥200.0万</span></div>
+      <div class="profit-card-row"><span class="lbl">报销成本</span><span class="val" style="color:#dc2626;">¥1.0万</span></div>
+      <div class="profit-card-row"><span class="lbl">供应商成本</span><span class="val" style="color:#dc2626;">¥12.8万</span></div>
+      <div class="profit-card-profit" style="color:#16a34a;">¥186.2万</div>
+      <div class="profit-card-rate" style="color:#16a34a;">利润率 93.1%</div>
+    </div>
+    <div class="profit-card green">
+      <div class="profit-card-title">SINO202504003 慢病真实世界研究</div>
+      <div class="profit-card-row"><span class="lbl">收入</span><span class="val" style="color:#16a34a;">¥80.0万</span></div>
+      <div class="profit-card-row"><span class="lbl">报销成本</span><span class="val" style="color:#dc2626;">¥0.5万</span></div>
+      <div class="profit-card-row"><span class="lbl">供应商成本</span><span class="val" style="color:#dc2626;">¥15.8万</span></div>
+      <div class="profit-card-profit" style="color:#16a34a;">¥63.7万</div>
+      <div class="profit-card-rate" style="color:#16a34a;">利润率 79.6%</div>
+    </div>
+    <div class="profit-card red">
+      <div class="profit-card-title">SINO202503002 肿瘤伴随诊断研究</div>
+      <div class="profit-card-row"><span class="lbl">收入</span><span class="val" style="color:#16a34a;">¥0.0万</span></div>
+      <div class="profit-card-row"><span class="lbl">报销成本</span><span class="val" style="color:#dc2626;">¥0.1万</span></div>
+      <div class="profit-card-row"><span class="lbl">供应商成本</span><span class="val" style="color:#dc2626;">¥3.5万</span></div>
+      <div class="profit-card-profit" style="color:#dc2626;">-¥3.6万</div>
+      <div class="profit-card-rate" style="color:#dc2626;">利润率 — (亏损中)</div>
+    </div>
+    <div class="profit-card green">
+      <div class="profit-card-title">SINO202506001 恒瑞PD-1三期试验</div>
+      <div class="profit-card-row"><span class="lbl">收入</span><span class="val" style="color:#16a34a;">¥300.0万</span></div>
+      <div class="profit-card-row"><span class="lbl">报销成本</span><span class="val" style="color:#dc2626;">¥2.3万</span></div>
+      <div class="profit-card-row"><span class="lbl">供应商成本</span><span class="val" style="color:#dc2626;">¥15.0万</span></div>
+      <div class="profit-card-profit" style="color:#16a34a;">¥282.7万</div>
+      <div class="profit-card-rate" style="color:#16a34a;">利润率 94.2%</div>
+    </div>
+  </div>
+
+  <!-- 明细表格 -->
+  <div class="section-title">项目盈亏明细</div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>项目</th><th>收入</th><th>报销成本</th><th>供应商成本</th><th>总成本</th><th>利润</th><th>利润率</th></tr></thead>
+      <tbody>
+        <tr><td><span style="font-weight:500;">SINO202505001</span><br><span style="font-size:12px;color:#6b7280;">吉源干细胞项目</span></td><td style="color:#16a34a;font-weight:500;">¥200.0万</td><td style="color:#dc2626;">¥1.0万</td><td style="color:#dc2626;">¥12.8万</td><td style="font-weight:500;">¥13.8万</td><td style="color:#16a34a;font-weight:600;">¥186.2万</td><td><span class="badge badge-green">93.1%</span></td></tr>
+        <tr><td><span style="font-weight:500;">SINO202504003</span><br><span style="font-size:12px;color:#6b7280;">慢病真实世界研究</span></td><td style="color:#16a34a;font-weight:500;">¥80.0万</td><td style="color:#dc2626;">¥0.5万</td><td style="color:#dc2626;">¥15.8万</td><td style="font-weight:500;">¥16.3万</td><td style="color:#16a34a;font-weight:600;">¥63.7万</td><td><span class="badge badge-green">79.6%</span></td></tr>
+        <tr><td><span style="font-weight:500;">SINO202503002</span><br><span style="font-size:12px;color:#6b7280;">肿瘤伴随诊断研究</span></td><td style="color:#16a34a;font-weight:500;">¥0.0万</td><td style="color:#dc2626;">¥0.1万</td><td style="color:#dc2626;">¥3.5万</td><td style="font-weight:500;">¥3.6万</td><td style="color:#dc2626;font-weight:600;">-¥3.6万</td><td><span class="badge badge-red">亏损</span></td></tr>
+        <tr><td><span style="font-weight:500;">SINO202506001</span><br><span style="font-size:12px;color:#6b7280;">恒瑞PD-1三期试验</span></td><td style="color:#16a34a;font-weight:500;">¥300.0万</td><td style="color:#dc2626;">¥2.3万</td><td style="color:#dc2626;">¥15.0万</td><td style="font-weight:500;">¥17.3万</td><td style="color:#16a34a;font-weight:600;">¥282.7万</td><td><span class="badge badge-green">94.2%</span></td></tr>
+        <tr><td><span style="font-weight:500;">SINO202505002</span><br><span style="font-size:12px;color:#6b7280;">百济神州BGB-317</span></td><td style="color:#16a34a;font-weight:500;">¥150.0万</td><td style="color:#dc2626;">¥0.8万</td><td style="color:#dc2626;">¥8.0万</td><td style="font-weight:500;">¥8.8万</td><td style="color:#16a34a;font-weight:600;">¥141.2万</td><td><span class="badge badge-green">94.1%</span></td></tr>
+        <tr style="background:#f8fafc;font-weight:600;"><td>合计</td><td style="color:#16a34a;">¥730.0万</td><td style="color:#dc2626;">¥4.7万</td><td style="color:#dc2626;">¥55.1万</td><td>¥59.8万</td><td style="color:#16a34a;">¥670.2万</td><td>—</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- Tab6: 审计告警 -->
+<!-- ================================================================ -->
+<div class="tab-panel" id="panel-audit">
+
+  <div class="kpi-row" style="grid-template-columns:repeat(4,1fr);">
+    <div class="kpi-card"><div class="kpi-icon" style="background:#fee2e2;color:#dc2626;">🔴</div><div><div class="kpi-val" style="color:#dc2626;">2</div><div class="kpi-label">高风险</div></div></div>
+    <div class="kpi-card"><div class="kpi-icon" style="background:#fef3c7;color:#d97706;">🟠</div><div><div class="kpi-val" style="color:#d97706;">4</div><div class="kpi-label">中风险</div></div></div>
+    <div class="kpi-card"><div class="kpi-icon" style="background:#dbeafe;color:#2563eb;">🔵</div><div><div class="kpi-val" style="color:#2563eb;">3</div><div class="kpi-label">低风险</div></div></div>
+    <div class="kpi-card"><div class="kpi-icon" style="background:#f3f4f6;color:#6b7280;">⏳</div><div><div class="kpi-val" style="color:#6b7280;">5</div><div class="kpi-label">待处理</div></div></div>
+  </div>
+
+  <div class="toolbar">
+    <div class="toolbar-left">
+      <select class="filter"><option value="">全部严重程度</option><option>高</option><option>中</option><option>低</option></select>
+      <select class="filter"><option value="">全部状态</option><option>待处理</option><option>已处理</option><option>已退回</option></select>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>告警编号</th><th>类型</th><th>关联单据</th><th>金额</th><th>描述</th><th>严重程度</th><th>日期</th><th>状态</th><th>操作</th></tr></thead>
+      <tbody>
+        <tr class="severity-high"><td>AUD-001</td><td>超预算支出</td><td>PAY-20260612-005</td><td style="color:#dc2626;font-weight:500;">¥128,000</td><td>供应商付款超出项目预算剩余额度¥20,000</td><td><span class="badge badge-red">高</span></td><td>2026-06-12</td><td><span class="badge badge-orange">待处理</span></td><td><button class="btn-sm">详情</button> <button class="btn-edit btn">标记已处理</button></td></tr>
+        <tr class="severity-high"><td>AUD-002</td><td>开票超合同额</td><td>FP-20260612-003</td><td style="color:#dc2626;font-weight:500;">¥754,717</td><td>已开票金额超过合同约定阶段比例15%</td><td><span class="badge badge-red">高</span></td><td>2026-06-12</td><td><span class="badge badge-orange">待处理</span></td><td><button class="btn-sm">详情</button> <button class="btn-edit btn">标记已处理</button></td></tr>
+        <tr class="severity-mid"><td>AUD-003</td><td>收款归属不一致</td><td>SK-2026-002</td><td style="font-weight:500;">¥800,000</td><td>收款记录合同编号与计划节点不匹配</td><td><span class="badge badge-orange">中</span></td><td>2026-06-10</td><td><span class="badge badge-green">已处理</span></td><td><button class="btn-sm">详情</button></td></tr>
+        <tr class="severity-mid"><td>AUD-004</td><td>发票归属不一致</td><td>FP-20260608-002</td><td style="font-weight:500;">¥6,800</td><td>发票金额与对应收款记录金额不一致，疑似含税口径差异</td><td><span class="badge badge-orange">中</span></td><td>2026-06-08</td><td><span class="badge badge-green">已处理</span></td><td><button class="btn-sm">详情</button></td></tr>
+        <tr class="severity-mid"><td>AUD-005</td><td>待补票逾期</td><td>PAY-20260515-011</td><td style="font-weight:500;">¥45,000</td><td>供应商付款已超30天未补发票</td><td><span class="badge badge-orange">中</span></td><td>2026-06-15</td><td><span class="badge badge-orange">待处理</span></td><td><button class="btn-sm">详情</button> <button class="btn-edit btn" onclick="openModal('modal-supply-invoice')">补票</button></td></tr>
+        <tr class="severity-mid"><td>AUD-006</td><td>收款笔数不匹配</td><td>HT-2026-003</td><td style="font-weight:500;">¥200,000</td><td>收款记录笔数(3)与发票笔数(2)不匹配，存在未开票收款</td><td><span class="badge badge-orange">中</span></td><td>2026-06-10</td><td><span class="badge badge-orange">待处理</span></td><td><button class="btn-sm">详情</button> <button class="btn-edit btn">标记已处理</button></td></tr>
+        <tr class="severity-low"><td>AUD-007</td><td>付款计划超额</td><td>HT-2026-001</td><td style="font-weight:500;">¥10,000</td><td>收款计划合计金额超出合同总额¥1万</td><td><span class="badge badge-blue">低</span></td><td>2026-06-05</td><td><span class="badge badge-green">已处理</span></td><td><button class="btn-sm">详情</button></td></tr>
+        <tr class="severity-low"><td>AUD-008</td><td>付款节点不一致</td><td>HT-2026-002</td><td style="font-weight:500;">—</td><td>收款计划节点数与合同约定里程碑不匹配</td><td><span class="badge badge-blue">低</span></td><td>2026-06-03</td><td><span class="badge badge-gray">已退回</span></td><td><button class="btn-sm">详情</button> <button class="btn-edit btn">重审</button></td></tr>
+        <tr class="severity-low"><td>AUD-009</td><td>借款逾期未还</td><td>PAY-20260601-010</td><td style="font-weight:500;">¥15,000</td><td>员工借款超过预计还款日期未核销</td><td><span class="badge badge-blue">低</span></td><td>2026-06-20</td><td><span class="badge badge-orange">待处理</span></td><td><button class="btn-sm">详情</button> <button class="btn-edit btn">催还</button></td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+</div><!-- /main -->
+
+<!-- ================================================================ -->
+<!-- 模态框1: 收款确认 -->
+<!-- ================================================================ -->
+<div class="modal-overlay" id="modal-confirm-collection">
+  <div class="modal-box">
+    <div class="modal-header"><h4>✓ 确认收款</h4><button class="modal-close" onclick="closeModal('modal-confirm-collection')">&times;</button></div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group"><label>关联合同 <span class="req">*</span></label><select><option value="">请选择合同</option><option>HT-2026-001 吉源干细胞项目合同</option><option>HT-2026-002 肿瘤伴随诊断合同</option><option>HT-2026-003 慢病真实世界研究合同</option></select></div>
+        <div class="form-group"><label>关联计划</label><select><option value="">请选择收款计划（可选）</option><option>PN-001 中期款 计划¥150万 已收¥80万</option><option>PN-002 里程碑1 计划¥100万</option></select></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>实收金额 <span class="req">*</span></label><div style="position:relative;"><span style="position:absolute;left:12px;top:9px;color:#6b7280;">¥</span><input type="number" step="0.01" placeholder="0.00" style="padding-left:28px;"></div></div>
+        <div class="form-group"><label>收款日期 <span class="req">*</span></label><input type="date" value="2026-06-20"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>银行流水号</label><input type="text" placeholder="如：BK-20260620-001"></div>
+        <div class="form-group"><label>收款账户</label><select><option>建行北京分行 6228****1023</option><option>工行北京分行 6222****4567</option></select></div>
+      </div>
+      <div class="form-row full"><div class="form-group"><label>备注</label><textarea rows="2" placeholder="补充说明..."></textarea></div></div>
+      <div class="note-bar">ℹ️ 审批规则：≤5万直接确认 / 5-50万财务总监审批 / >50万加CFO审批</div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-outline" onclick="closeModal('modal-confirm-collection')">取消</button><button class="btn btn-primary" onclick="closeModal('modal-confirm-collection');showToast('收款已确认','success')">确认收款</button></div>
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- 模态框2: 审批 -->
+<!-- ================================================================ -->
+<div class="modal-overlay" id="modal-approve">
+  <div class="modal-box">
+    <div class="modal-header"><h4>📋 支出审批</h4><button class="modal-close" onclick="closeModal('modal-approve')">&times;</button></div>
+    <div class="modal-body">
+      <div class="info-section-title">单据详情（只读）</div>
+      <div class="info-grid">
+        <div class="info-item"><div class="info-label">单据编号</div><div class="info-value" style="color:#0369a1;">PAY-20260617-003</div></div>
+        <div class="info-item"><div class="info-label">类型</div><div class="info-value">员工借款</div></div>
+        <div class="info-item"><div class="info-label">金额</div><div class="info-value" style="color:#dc2626;font-weight:600;">¥10,000.00</div></div>
+        <div class="info-item"><div class="info-label">提交人</div><div class="info-value">赵强 · 临床运营部</div></div>
+        <div class="info-item"><div class="info-label">事由</div><div class="info-value">项目差旅预借款</div></div>
+        <div class="info-item"><div class="info-label">预计还款日期</div><div class="info-value">2026-07-20</div></div>
+      </div>
+      <hr class="form-divider">
+      <div class="info-section-title">审批意见</div>
+      <div class="form-row full"><div class="form-group"><label>审批结果 <span class="req">*</span></label><select id="approve-result"><option value="">请选择</option><option value="pass">通过</option><option value="reject">驳回</option></select></div></div>
+      <div class="form-row full"><div class="form-group"><label>审批意见</label><textarea rows="3" placeholder="请输入审批意见..."></textarea></div></div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-outline" onclick="closeModal('modal-approve')">取消</button><button class="btn btn-primary" onclick="closeModal('modal-approve');showToast('审批已提交','success')">提交审批</button></div>
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- 模态框3: 支出详情（含审批时间线） -->
+<!-- ================================================================ -->
+<div class="modal-overlay" id="modal-expense-detail">
+  <div class="modal-box lg">
+    <div class="modal-header"><h4>📄 支出详情 - PAY-20260620-001</h4><button class="modal-close" onclick="closeModal('modal-expense-detail')">&times;</button></div>
+    <div class="modal-body">
+      <div class="info-section-title">基本信息</div>
+      <div class="info-grid">
+        <div class="info-item"><div class="info-label">单据编号</div><div class="info-value" style="color:#0369a1;">PAY-20260620-001</div></div>
+        <div class="info-item"><div class="info-label">类型</div><div class="info-value">日常报销</div></div>
+        <div class="info-item"><div class="info-label">项目</div><div class="info-value">SINO202505001 吉源干细胞项目</div></div>
+        <div class="info-item"><div class="info-label">费用类型</div><div class="info-value">差旅费</div></div>
+        <div class="info-item"><div class="info-label">金额</div><div class="info-value" style="color:#dc2626;font-weight:600;">¥3,500.00</div></div>
+        <div class="info-item"><div class="info-label">预算归属</div><div class="info-value">项目预算</div></div>
+        <div class="info-item"><div class="info-label">提交人</div><div class="info-value">李明</div></div>
+        <div class="info-item"><div class="info-label">提交日期</div><div class="info-value">2026-06-15</div></div>
+      </div>
+      <hr class="form-divider">
+      <div class="info-section-title">票据信息</div>
+      <div class="info-grid">
+        <div class="info-item"><div class="info-label">发票号码</div><div class="info-value">01234567890</div></div>
+        <div class="info-item"><div class="info-label">不含税金额</div><div class="info-value">¥3,301.89</div></div>
+        <div class="info-item"><div class="info-label">税率</div><div class="info-value">6%</div></div>
+        <div class="info-item"><div class="info-label">税额</div><div class="info-value">¥198.11</div></div>
+        <div class="info-item"><div class="info-label">发票日期</div><div class="info-value">2026-06-14</div></div>
+        <div class="info-item"><div class="info-label">发票状态</div><div class="info-value"><span class="badge badge-green">已附票</span></div></div>
+      </div>
+      <hr class="form-divider">
+      <div class="info-section-title">审批时间线</div>
+      <div class="timeline">
+        <div class="timeline-item"><div class="timeline-dot done"></div><div class="timeline-time">2026-06-15 09:30</div><div class="timeline-title">草稿提交</div><div class="timeline-desc">提交人：李明 · 状态：DRAFT → PENDING</div></div>
+        <div class="timeline-item"><div class="timeline-dot done"></div><div class="timeline-time">2026-06-15 14:20</div><div class="timeline-title">部门经理审批通过</div><div class="timeline-desc">审批人：张主任（临床运营部） · 意见：同意 · 状态：PENDING → APPROVED</div></div>
+        <div class="timeline-item"><div class="timeline-dot done"></div><div class="timeline-time">2026-06-16 10:15</div><div class="timeline-title">财务总监审批通过</div><div class="timeline-desc">审批人：王总监（财务部） · 意见：合规，同意付款 · 状态：APPROVED → PAID</div></div>
+        <div class="timeline-item"><div class="timeline-dot done"></div><div class="timeline-time">2026-06-17 08:00</div><div class="timeline-title">付款完成</div><div class="timeline-desc">付款方式：银行转账 · 银行流水：BK-20260617-005 · 状态：PAID</div></div>
+      </div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-outline" onclick="closeModal('modal-expense-detail')">关闭</button><button class="btn-sm">打印</button></div>
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- 模态框4: 补票 -->
+<!-- ================================================================ -->
+<div class="modal-overlay" id="modal-supply-invoice">
+  <div class="modal-box">
+    <div class="modal-header"><h4>🧾 补录发票</h4><button class="modal-close" onclick="closeModal('modal-supply-invoice')">&times;</button></div>
+    <div class="modal-body">
+      <div class="note-bar">ℹ️ 关联单据：PAY-20260618-002 · 供应商付款 ¥86,000.00 · 当前状态：待补票</div>
+      <div class="form-row">
+        <div class="form-group"><label>发票号码 <span class="req">*</span></label><input type="text" placeholder="如：01234567890"></div>
+        <div class="form-group"><label>不含税金额 <span class="req">*</span></label><div style="position:relative;"><span style="position:absolute;left:12px;top:9px;color:#6b7280;">¥</span><input type="number" step="0.01" placeholder="0.00" style="padding-left:28px;" oninput="calcSupplyTax()"></div></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>税率 <span class="req">*</span></label><select id="supply-taxrate" onchange="calcSupplyTax()"><option value="0">0%</option><option value="1">1%</option><option value="3" selected>3%</option><option value="6">6%</option><option value="9">9%</option><option value="13">13%</option></select></div>
+        <div class="form-group"><label>发票日期 <span class="req">*</span></label><input type="date" value="2026-06-20"></div>
+      </div>
+      <div class="form-row full"><div class="form-group"><label>发票附件</label><div style="display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border:1px dashed #d1d5db;border-radius:8px;font-size:13px;color:#6b7280;cursor:pointer;" onclick="showToast('文件上传功能（原型模拟）','info')">📎 上传发票照片/PDF</div></div></div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-outline" onclick="closeModal('modal-supply-invoice')">取消</button><button class="btn btn-primary" onclick="closeModal('modal-supply-invoice');showToast('发票已补录，单据状态更新为已核销','success')">确认补票</button></div>
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- 模态框5: 结算确认 -->
+<!-- ================================================================ -->
+<div class="modal-overlay" id="modal-settlement-confirm">
+  <div class="modal-box lg">
+    <div class="modal-header"><h4>⚖️ 结算确认 - HT-2026-001</h4><button class="modal-close" onclick="closeModal('modal-settlement-confirm')">&times;</button></div>
+    <div class="modal-body">
+      <div class="info-section-title">对账明细</div>
+      <table style="width:100%;border:1px solid #e5e7eb;border-radius:8px;font-size:13px;">
+        <thead><tr style="background:#f8fafc;"><th style="padding:8px 12px;text-align:left;font-size:12px;color:#6b7280;">项目</th><th style="padding:8px 12px;text-align:right;font-size:12px;color:#6b7280;">金额</th></tr></thead>
+        <tbody>
+          <tr><td style="padding:8px 12px;border-bottom:1px solid #f3f4f6;">合同总额</td><td style="padding:8px 12px;text-align:right;border-bottom:1px solid #f3f4f6;font-weight:500;">¥3,900,000</td></tr>
+          <tr><td style="padding:8px 12px;border-bottom:1px solid #f3f4f6;">已收款</td><td style="padding:8px 12px;text-align:right;border-bottom:1px solid #f3f4f6;color:#16a34a;font-weight:500;">¥2,000,000</td></tr>
+          <tr><td style="padding:8px 12px;border-bottom:1px solid #f3f4f6;">待收款</td><td style="padding:8px 12px;text-align:right;border-bottom:1px solid #f3f4f6;color:#d97706;font-weight:500;">¥1,900,000</td></tr>
+          <tr><td style="padding:8px 12px;border-bottom:1px solid #f3f4f6;">已开票</td><td style="padding:8px 12px;text-align:right;border-bottom:1px solid #f3f4f6;">¥1,200,000</td></tr>
+          <tr><td style="padding:8px 12px;border-bottom:1px solid #f3f4f6;">已付款（支出）</td><td style="padding:8px 12px;text-align:right;border-bottom:1px solid #f3f4f6;color:#dc2626;font-weight:500;">¥1,280,000</td></tr>
+          <tr><td style="padding:8px 12px;border-bottom:1px solid #f3f4f6;">净额（已收-已付）</td><td style="padding:8px 12px;text-align:right;border-bottom:1px solid #f3f4f6;color:#16a34a;font-weight:600;">¥720,000</td></tr>
+          <tr><td style="padding:8px 12px;">发票缺口（已收-已开）</td><td style="padding:8px 12px;text-align:right;color:#d97706;font-weight:500;">¥800,000</td></tr>
+        </tbody>
+      </table>
+      <hr class="form-divider">
+      <div class="form-row full"><div class="form-group"><label>差异说明</label><textarea rows="3" placeholder="说明收支差异原因...">收款进度51.3%，支出已付85.3%，存在阶段性收支不平衡，属正常项目执行节奏。</textarea></div></div>
+      <div class="form-row full"><div class="form-group"><label>结算备注</label><textarea rows="2" placeholder="结算备注..."></textarea></div></div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-outline" onclick="closeModal('modal-settlement-confirm')">取消</button><button class="btn btn-primary" onclick="closeModal('modal-settlement-confirm');showToast('结算已确认','success')">确认结算</button></div>
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- 模态框6: 单据转移 -->
+<!-- ================================================================ -->
+<div class="modal-overlay" id="modal-transfer">
+  <div class="modal-box lg">
+    <div class="modal-header"><h4>📋 单据转移</h4><button class="modal-close" onclick="closeModal('modal-transfer')">&times;</button></div>
+    <div class="modal-body">
+      <div class="note-bar">ℹ️ 转移操作将记录日志，包括转出人、转入人、转移单据列表和操作时间。</div>
+      <div class="form-row">
+        <div class="form-group"><label>转出人</label><input type="text" readonly value="赵强（临床运营部）" style="background:#f8fafc;"></div>
+        <div class="form-group"><label>目标接收人 <span class="req">*</span></label><select><option value="">请选择接收人</option><option>李明（临床运营部）</option><option>王芳（临床运营部）</option><option>陈静（数据统计部）</option></select></div>
+      </div>
+      <div class="form-row full"><div class="form-group"><label>转移原因</label><select><option>项目交接</option><option>人员离职</option><option>部门调整</option><option>其他</option></select></div></div>
+      <hr class="form-divider">
+      <div class="info-section-title">待转移单据（勾选）</div>
+      <table style="width:100%;border:1px solid #e5e7eb;border-radius:8px;font-size:13px;">
+        <thead><tr style="background:#f8fafc;"><th style="padding:8px 12px;text-align:left;font-size:12px;color:#6b7280;width:32px;"><input type="checkbox" checked onclick="toggleAllTransfer(this)"></th><th style="padding:8px 12px;text-align:left;font-size:12px;color:#6b7280;">单据编号</th><th style="padding:8px 12px;text-align:left;font-size:12px;color:#6b7280;">类型</th><th style="padding:8px 12px;text-align:left;font-size:12px;color:#6b7280;">金额</th><th style="padding:8px 12px;text-align:left;font-size:12px;color:#6b7280;">状态</th></tr></thead>
+        <tbody id="transfer-list">
+          <tr><td style="padding:8px 12px;"><input type="checkbox" checked></td><td style="padding:8px 12px;color:#0369a1;">PAY-20260617-003</td><td style="padding:8px 12px;">员工借款</td><td style="padding:8px 12px;">¥10,000</td><td style="padding:8px 12px;"><span class="badge badge-orange">待审批</span></td></tr>
+          <tr><td style="padding:8px 12px;"><input type="checkbox" checked></td><td style="padding:8px 12px;color:#0369a1;">PAY-20260601-010</td><td style="padding:8px 12px;">员工借款</td><td style="padding:8px 12px;">¥15,000</td><td style="padding:8px 12px;"><span class="badge badge-green">已审批</span></td></tr>
+          <tr><td style="padding:8px 12px;"><input type="checkbox"></td><td style="padding:8px 12px;color:#0369a1;">PAY-20260528-015</td><td style="padding:8px 12px;">日常报销</td><td style="padding:8px 12px;">¥2,200</td><td style="padding:8px 12px;"><span class="badge badge-blue">已付款</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="modal-footer"><button class="btn btn-outline" onclick="closeModal('modal-transfer')">取消</button><button class="btn btn-primary" onclick="closeModal('modal-transfer');showToast('单据已转移，操作日志已记录','success')">确认转移</button></div>
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- 模态框7: 开票 -->
+<!-- ================================================================ -->
+<div class="modal-overlay" id="modal-issue-invoice">
+  <div class="modal-box">
+    <div class="modal-header"><h4>🧾 申请开票</h4><button class="modal-close" onclick="closeModal('modal-issue-invoice')">&times;</button></div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group"><label>关联合同 <span class="req">*</span></label><select><option value="">请选择合同</option><option>HT-2026-001 吉源干细胞项目合同</option><option>HT-2026-003 慢病真实世界研究合同</option></select></div>
+        <div class="form-group"><label>发票类型 <span class="req">*</span></label><select><option>增值税专用发票</option><option>增值税普通发票</option><option>电子发票</option></select></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>不含税金额 <span class="req">*</span></label><div style="position:relative;"><span style="position:absolute;left:12px;top:9px;color:#6b7280;">¥</span><input type="number" step="0.01" placeholder="0.00" style="padding-left:28px;" oninput="calcIssueTax()"></div></div>
+        <div class="form-group"><label>税率 <span class="req">*</span></label><select id="issue-taxrate" onchange="calcIssueTax()"><option value="6" selected>6%</option><option value="9">9%</option><option value="13">13%</option><option value="0">0%</option></select></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>税额</label><input type="text" readonly id="issue-tax-val" placeholder="自动计算" style="background:#f8fafc;"></div>
+        <div class="form-group"><label>价税合计</label><input type="text" readonly id="issue-total-val" placeholder="自动计算" style="background:#f8fafc;"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>购买方名称 <span class="req">*</span></label><input type="text" placeholder="如：吉源生物科技有限公司"></div>
+        <div class="form-group"><label>纳税人识别号 <span class="req">*</span></label><input type="text" placeholder="如：91110108MA01XXXXX"></div>
+      </div>
+      <div class="form-row full"><div class="form-group"><label>备注</label><textarea rows="2" placeholder="开票备注..."></textarea></div></div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-outline" onclick="closeModal('modal-issue-invoice')">取消</button><button class="btn btn-primary" onclick="closeModal('modal-issue-invoice');showToast('开票申请已提交','success')">提交申请</button></div>
+  </div>
+</div>
+
+<script>
+// ===== Tab切换 =====
+function switchTab(name, e) {
+  document.querySelectorAll('.tab-item').forEach(function(t){t.classList.remove('active')});
+  document.querySelectorAll('.tab-panel').forEach(function(p){p.classList.remove('active')});
+  e.currentTarget.classList.add('active');
+  document.getElementById('panel-' + name).classList.add('active');
+}
+
+// ===== 子Tab切换 =====
+function switchSubTab(name, el) {
+  el.parentElement.querySelectorAll('.subtab-item').forEach(function(s){s.classList.remove('active')});
+  el.classList.add('active');
+  // 隐藏所有同面板子Tab内容
+  var panel = el.closest('.tab-panel');
+  panel.querySelectorAll('[id^="subtab-"]').forEach(function(c){c.style.display='none'});
+  var target = document.getElementById('subtab-' + name);
+  if (target) target.style.display = 'block';
+  // 支出管理的子Tab筛选
+  if (name.startsWith('expense-')) {
+    filterExpenseByType(name);
+  }
+}
+
+// ===== 支出子Tab筛选 =====
+function filterExpenseByType(tabName) {
+  var typeMap = {'expense-all':'','expense-reimburse':'报销','expense-loan':'借款','expense-vendor':'供应商付款'};
+  var filter = typeMap[tabName] || '';
+  var rows = document.querySelectorAll('#expense-table tbody tr');
+  rows.forEach(function(row){
+    if (!filter) { row.style.display=''; return; }
+    var badge = row.querySelector('.badge');
+    if (badge && badge.textContent.indexOf(filter) >= 0) row.style.display='';
+    else row.style.display='none';
+  });
+}
+
+// ===== 模态框 =====
+function openModal(id) { document.getElementById(id).classList.add('show'); }
+function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+document.querySelectorAll('.modal-overlay').forEach(function(m){
+  m.addEventListener('click', function(e){ if(e.target === m) m.classList.remove('show'); });
+});
+
+// ===== 表格筛选 =====
+function filterTable(tableId, keyword) {
+  var table = document.getElementById(tableId);
+  if (!table) return;
+  var rows = table.querySelectorAll('tbody tr');
+  var kw = keyword.toLowerCase().trim();
+  rows.forEach(function(row){
+    row.style.display = (kw === '' || row.textContent.toLowerCase().indexOf(kw) >= 0) ? '' : 'none';
+  });
+}
+
+// ===== 全选转移单据 =====
+function toggleAllTransfer(cb) {
+  document.querySelectorAll('#transfer-list input[type=checkbox]').forEach(function(c){c.checked = cb.checked});
+}
+
+// ===== 补票税额计算 =====
+function calcSupplyTax() {
+  var modal = document.getElementById('modal-supply-invoice');
+  var amountInput = modal.querySelector('input[type=number]');
+  var rateSel = document.getElementById('supply-taxrate');
+  if (amountInput && rateSel) {
+    var pretax = parseFloat(amountInput.value) || 0;
+    var rate = parseFloat(rateSel.value) || 0;
+    if (pretax > 0) {
+      var tax = pretax * rate / 100;
+      var total = pretax + tax;
+      amountInput.setAttribute('title', '税额：¥' + tax.toFixed(2) + ' | 价税合计：¥' + total.toFixed(2));
+    }
+  }
+}
+
+// ===== 开票税额计算 =====
+function calcIssueTax() {
+  var modal = document.getElementById('modal-issue-invoice');
+  var amountInput = modal.querySelector('input[type=number]');
+  var rateSel = document.getElementById('issue-taxrate');
+  var taxVal = document.getElementById('issue-tax-val');
+  var totalVal = document.getElementById('issue-total-val');
+  if (amountInput && rateSel) {
+    var pretax = parseFloat(amountInput.value) || 0;
+    var rate = parseFloat(rateSel.value) || 0;
+    var tax = pretax * rate / 100;
+    var total = pretax + tax;
+    if (taxVal) taxVal.value = '¥' + tax.toFixed(2);
+    if (totalVal) totalVal.value = '¥' + total.toFixed(2);
+  }
+}
+
+// ===== Toast =====
+function showToast(msg, type) {
+  var old = document.querySelector('.toast');
+  if (old) old.remove();
+  var t = document.createElement('div');
+  t.className = 'toast toast-' + (type || 'success');
+  var icon = type === 'error' ? '✕' : type === 'info' ? 'ℹ' : '✓';
+  t.innerHTML = '<span>' + icon + '</span><span>' + msg + '</span>';
+  document.body.appendChild(t);
+  setTimeout(function(){t.style.opacity='0';t.style.transition='opacity .3s';setTimeout(function(){if(t.parentNode)t.remove()},300)},2800);
+}
+</script>
+
+</body>
+</html>
